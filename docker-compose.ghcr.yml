@@ -1,0 +1,25 @@
+services:
+  backend:
+    image: ghcr.io/leonardsoncc/dinheiros/backend:latest
+    ports:
+      - "9021:8080"
+    env_file:
+      - .env
+    networks:
+      - dinheiros-network
+
+  frontend:
+    image: ghcr.io/leonardsoncc/dinheiros/frontend:latest
+    ports:
+      - "9020:80"
+    depends_on:
+      - backend
+    networks:
+      - dinheiros-network
+
+volumes:
+  postgres_data:
+
+networks:
+  dinheiros-network:
+    driver: bridge
