@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,7 +14,6 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   
   const {
@@ -32,7 +31,9 @@ export default function Login() {
       
       localStorage.setItem('token', response.data.token);
       toast.success('Logged in successfully!');
-      navigate('/');
+
+      // Force a full page reload to ensure all state is properly initialized
+      window.location.href = '/';
     } catch (error) {
       toast.error('Invalid email or password');
       console.error('Login error:', error);
