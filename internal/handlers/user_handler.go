@@ -44,7 +44,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 	if err != nil {
 		status := http.StatusInternalServerError
 		errMsg := err.Error()
-		
+
 		switch errMsg := err.Error(); errMsg {
 		case "email already registered":
 			status = http.StatusConflict
@@ -85,7 +85,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	if err != nil {
 		status := http.StatusInternalServerError
 		errMsg := "An error occurred"
-		
+
 		switch err.Error() {
 		case "invalid credentials":
 			status = http.StatusUnauthorized
@@ -93,7 +93,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		case "error generating token":
 			errMsg = "Error generating authentication token"
 		}
-		
+
 		c.JSON(status, gin.H{"error": errMsg})
 		return
 	}

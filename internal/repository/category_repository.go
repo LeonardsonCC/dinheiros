@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"gorm.io/gorm"
 	"github.com/leccarvalho/dinheiros/internal/models"
+	"gorm.io/gorm"
 )
 
 type CategoryRepository interface {

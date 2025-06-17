@@ -3,8 +3,8 @@ package repository
 import (
 	"errors"
 
-	"gorm.io/gorm"
 	"github.com/leccarvalho/dinheiros/internal/models"
+	"gorm.io/gorm"
 )
 
 // Common repository errors

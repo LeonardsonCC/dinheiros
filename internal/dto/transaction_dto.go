@@ -21,14 +21,14 @@ type CategoryResponse struct {
 }
 
 type TransactionResponse struct {
-	ID          uint              `json:"id"`
-	Date        time.Time         `json:"date"`
-	Amount      float64           `json:"amount"`
-	Type        string            `json:"type"`
-	Description string            `json:"description"`
+	ID          uint               `json:"id"`
+	Date        time.Time          `json:"date"`
+	Amount      float64            `json:"amount"`
+	Type        string             `json:"type"`
+	Description string             `json:"description"`
 	Categories  []CategoryResponse `json:"categories"`
-	AccountID   uint              `json:"account_id"`
-	ToAccountID *uint             `json:"to_account_id,omitempty"`
+	AccountID   uint               `json:"account_id"`
+	ToAccountID *uint              `json:"to_account_id,omitempty"`
 }
 
 func ToTransactionResponse(transaction *models.Transaction) TransactionResponse {

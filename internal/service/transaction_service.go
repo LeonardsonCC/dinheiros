@@ -9,7 +9,7 @@ import (
 )
 
 type TransactionService interface {
-	CreateTransaction(userID uint, accountID uint, amount float64, transactionType models.TransactionType, 
+	CreateTransaction(userID uint, accountID uint, amount float64, transactionType models.TransactionType,
 		description string, toAccountID *uint, categoryIDs []uint, date time.Time) (*models.Transaction, error)
 	GetTransactionByID(userID uint, transactionID uint) (*models.Transaction, error)
 	GetTransactionsByAccountID(userID uint, accountID uint) ([]models.Transaction, error)
@@ -20,7 +20,7 @@ type TransactionService interface {
 
 type transactionService struct {
 	transactionRepo repo.TransactionRepository
-	accountRepo    repo.AccountRepository
+	accountRepo     repo.AccountRepository
 }
 
 func NewTransactionService(
@@ -29,7 +29,7 @@ func NewTransactionService(
 ) TransactionService {
 	return &transactionService{
 		transactionRepo: transactionRepo,
-		accountRepo:    accountRepo,
+		accountRepo:     accountRepo,
 	}
 }
 

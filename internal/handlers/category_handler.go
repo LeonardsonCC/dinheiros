@@ -50,8 +50,8 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 
 // CreateCategoryRequest represents the request body for creating a category
 type CreateCategoryRequest struct {
-	Name        string          `json:"name" binding:"required"`
-	Description string          `json:"description"`
+	Name        string                 `json:"name" binding:"required"`
+	Description string                 `json:"description"`
 	Type        models.TransactionType `json:"type" binding:"required,oneof=income expense transfer"`
 }
 

@@ -19,14 +19,14 @@ type UserService interface {
 }
 
 type userService struct {
-	userRepo    repo.UserRepository
+	userRepo   repo.UserRepository
 	jwtManager *auth.JWTManager
 }
 
 // NewUserService creates a new instance of UserService
 func NewUserService(userRepo repo.UserRepository, jwtManager *auth.JWTManager) UserService {
 	return &userService{
-		userRepo:    userRepo,
+		userRepo:   userRepo,
 		jwtManager: jwtManager,
 	}
 }

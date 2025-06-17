@@ -10,12 +10,12 @@ type CreateAccountRequest struct {
 }
 
 type AccountResponse struct {
-	ID             uint                `json:"id"`
-	Name           string              `json:"name"`
-	Type           models.AccountType  `json:"type"`
-	Currency       string              `json:"currency"`
-	InitialBalance float64             `json:"initial_balance"`
-	Balance        float64             `json:"balance"`
+	ID             uint               `json:"id"`
+	Name           string             `json:"name"`
+	Type           models.AccountType `json:"type"`
+	Currency       string             `json:"currency"`
+	InitialBalance float64            `json:"initial_balance"`
+	Balance        float64            `json:"balance"`
 }
 
 func ToAccountResponse(account *models.Account) AccountResponse {

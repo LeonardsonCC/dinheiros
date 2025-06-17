@@ -28,7 +28,6 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 			// Dashboard summary
 			protected.GET("/summary", container.TransactionHandler.GetDashboardSummary)
 
-
 			// Account routes
 			accounts := protected.Group("/accounts")
 			{

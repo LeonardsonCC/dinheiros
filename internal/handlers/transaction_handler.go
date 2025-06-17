@@ -14,12 +14,12 @@ import (
 )
 
 type UpdateTransactionRequest struct {
-	Date        string    `json:"date"`
-	Amount      float64   `json:"amount"`
-	Type        string    `json:"type"`
-	Description string    `json:"description"`
-	CategoryIDs []uint    `json:"category_ids"`
-	ToAccountID *uint     `json:"to_account_id,omitempty"`
+	Date        string  `json:"date"`
+	Amount      float64 `json:"amount"`
+	Type        string  `json:"type"`
+	Description string  `json:"description"`
+	CategoryIDs []uint  `json:"category_ids"`
+	ToAccountID *uint   `json:"to_account_id,omitempty"`
 }
 
 type TransactionHandler struct {
