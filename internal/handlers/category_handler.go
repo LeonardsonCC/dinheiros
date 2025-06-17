@@ -4,48 +4,74 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"github.com/leccarvalho/dinheiros/internal/database"
 	"github.com/leccarvalho/dinheiros/internal/models"
+	"github.com/leccarvalho/dinheiros/internal/service"
 )
 
+// ErrorResponse represents an error response
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 type CategoryHandler struct {
-	db *gorm.DB
+	service service.CategoryService
 }
 
-func NewCategoryHandler() *CategoryHandler {
-	return &CategoryHandler{db: database.DB}
+func NewCategoryHandler(service service.CategoryService) *CategoryHandler {
+	return &CategoryHandler{service: service}
 }
 
-// ListCategories returns all categories
+// ListCategories returns all categories for the authenticated user
+// @Summary List all categories
+// @Description Get all categories for the authenticated user
+// @Tags categories
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {array} models.Category
+// @Failure 401 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /categories [get]
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
-	user, exists := c.Get("user")
+	userID, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
 		return
 	}
 
-	var categories []models.Category
-	if err := h.db.Where("user_id = ?", user.(uint)).Find(&categories).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch categories"})
+	categories, err := h.service.ListCategories(c.Request.Context(), userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch categories"})
 		return
 	}
 
 	c.JSON(http.StatusOK, categories)
 }
 
-// CreateCategory handles category creation
-func (h *CategoryHandler) CreateCategory(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
+// CreateCategoryRequest represents the request body for creating a category
+type CreateCategoryRequest struct {
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description"`
+}
 
-	type CreateCategoryRequest struct {
-		Name        string `json:"name" binding:"required"`
-		Description string `json:"description"`
+// CreateCategory handles category creation
+// @Summary Create a new category
+// @Description Create a new category for the authenticated user
+// @Tags categories
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param request body CreateCategoryRequest true "Category details"
+// @Success 201 {object} models.Category
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /categories [post]
+func (h *CategoryHandler) CreateCategory(c *gin.Context) {
+	userID, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
 	}
 
 	var req CreateCategoryRequest
@@ -57,11 +83,11 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	category := models.Category{
 		Name:        req.Name,
 		Description: req.Description,
-		UserID:      user.(uint),
+		UserID:      userID.(uint),
 	}
 
-	if err := h.db.Create(&category).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create category"})
+	if err := h.service.CreateCategory(c.Request.Context(), &category); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create category"})
 		return
 	}
 

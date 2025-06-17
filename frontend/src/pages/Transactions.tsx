@@ -60,8 +60,8 @@ export default function Transactions() {
           const transactionsRes = await api.get(transactionsUrl);
           console.log('Transactions response:', transactionsRes.data);
           
-          if (transactionsRes.data && transactionsRes.data.transactions) {
-            setTransactions(transactionsRes.data.transactions);
+          if (transactionsRes.data) {
+            setTransactions(transactionsRes.data);
           } else {
             console.warn('Unexpected transactions response format:', transactionsRes.data);
             setTransactions([]);

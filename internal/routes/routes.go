@@ -52,12 +52,12 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 				}
 			}
 
-			// Category routes - will be uncommented when implemented
-			// categories := protected.Group("/categories")
-			// {
-			// 	categories.GET("", container.CategoryHandler.ListCategories)
-			// 	categories.POST("", container.CategoryHandler.CreateCategory)
-			// }
+			// Category routes
+			categories := protected.Group("/categories")
+			{
+				categories.GET("", container.CategoryHandler.ListCategories)
+				categories.POST("", container.CategoryHandler.CreateCategory)
+			}
 		}
 	}
 
