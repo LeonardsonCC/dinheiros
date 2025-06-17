@@ -229,7 +229,12 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 	}
 
 	// Update the transaction fields
-	existingTx.Amount = req.Amount
+	// Ensure amount is always positive
+	amount := req.Amount
+	if amount < 0 {
+		amount = -amount // Convert to positive if negative
+	}
+	existingTx.Amount = amount
 	existingTx.Type = models.TransactionType(req.Type)
 	existingTx.Description = req.Description
 	existingTx.Date = parsedDate
