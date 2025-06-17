@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -110,24 +111,40 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	// Check if account exists and belongs to user
-	var account models.Account
-	if err := h.db.Where("id = ? AND user_id = ?", accountID, user.(*models.User).ID).First(&account).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	// Start a transaction to ensure data consistency
+	err = h.db.Transaction(func(tx *gorm.DB) error {
+		// Check if account exists and belongs to user
+		var account models.Account
+		if err := tx.Where("id = ? AND user_id = ?", accountID, user.(*models.User).ID).First(&account).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return fmt.Errorf("account not found")
+			}
+			return fmt.Errorf("error fetching account: %v", err)
+		}
+
+		// Delete all transactions related to this account (both as source and destination)
+		if err := tx.Where("account_id = ? OR to_account_id = ?", accountID, accountID).Delete(&models.Transaction{}).Error; err != nil {
+			return fmt.Errorf("error deleting related transactions: %v", err)
+		}
+
+		// Delete the account
+		if err := tx.Delete(&account).Error; err != nil {
+			return fmt.Errorf("error deleting account: %v", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		if err.Error() == "account not found" {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting account"})
-		return
-	}
-
-	// Delete the account
-	if err := h.db.Delete(&account).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting account"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting account: " + err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Account deleted successfully",
+		"message": "Account and all related transactions deleted successfully",
 	})
 }

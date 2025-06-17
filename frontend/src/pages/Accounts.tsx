@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 
@@ -27,6 +27,7 @@ interface ProcessedAccount {
 export default function Accounts() {
   const [accounts, setAccounts] = useState<ProcessedAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | number | null>(null);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -90,7 +91,7 @@ export default function Accounts() {
           });
         });
         setAccounts(accountsData);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching accounts:', error);
         const errorMessage = error.response?.data?.message || 'Failed to load accounts';
         toast.error(errorMessage);
@@ -102,6 +103,27 @@ export default function Accounts() {
 
     fetchAccounts();
   }, []);
+
+  const handleDelete = async (accountId: string | number) => {
+    if (!window.confirm('Are you sure you want to delete this account? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeletingId(accountId);
+      await api.delete(`/api/accounts/${accountId}`);
+      
+      // Remove the deleted account from the state
+      setAccounts(accounts.filter(account => account.id !== accountId));
+      toast.success('Account deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to delete account';
+      toast.error(errorMessage);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return <div className="p-8 text-center">Loading accounts...</div>;
@@ -122,25 +144,42 @@ export default function Accounts() {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {accounts.map((account) => (
-          <Link
-            key={account.id}
-            to={`/accounts/${account.id}/transactions`}
-            className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
-              <span className="text-sm text-gray-500">{account.currency}</span>
-            </div>
-            <p className="mt-2 text-2xl font-semibold text-gray-900">
-              {new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: account.currency || 'USD',
-              }).format(account.balance || 0)}
-            </p>
-            <div className="mt-4 text-sm text-primary-600 hover:text-primary-800">
-              View transactions →
-            </div>
-          </Link>
+          <div key={account.id} className="relative p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                handleDelete(account.id);
+              }}
+              disabled={deletingId === account.id}
+              className="absolute top-2 right-2 p-1 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity duration-200 disabled:opacity-50"
+              title="Delete account"
+            >
+              {deletingId === account.id ? (
+                <svg className="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <TrashIcon className="h-5 w-5" />
+              )}
+            </button>
+            <Link to={`/accounts/${account.id}/transactions`}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
+                <span className="text-sm text-gray-500">{account.currency}</span>
+              </div>
+              <p className="mt-2 text-2xl font-semibold text-gray-900">
+                {new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: account.currency || 'USD',
+                }).format(account.balance || 0)}
+              </p>
+              <div className="mt-4 text-sm text-primary-600 hover:text-primary-800">
+                View transactions →
+              </div>
+            </Link>
+          </div>
         ))}
       </div>
     </div>
