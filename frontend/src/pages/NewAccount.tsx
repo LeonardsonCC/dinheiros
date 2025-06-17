@@ -22,7 +22,7 @@ export default function NewAccount() {
       await api.post('/api/accounts', data);
       toast.success('Account created successfully!');
       navigate('/accounts');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating account:', error);
       const errorMessage = error.response?.data?.message || 'Failed to create account';
       toast.error(errorMessage);

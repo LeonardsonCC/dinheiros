@@ -20,8 +20,10 @@ func NewAccountHandler() *AccountHandler {
 }
 
 type CreateAccountRequest struct {
-	Name string             `json:"name" binding:"required"`
-	Type models.AccountType `json:"type" binding:"required,oneof=checking savings credit cash"`
+	Name           string             `json:"name" binding:"required"`
+	Type           models.AccountType `json:"type" binding:"required,oneof=checking savings credit cash"`
+	Currency       string             `json:"currency" binding:"required,oneof=BRL USD EUR"`
+	InitialBalance float64            `json:"initial_balance" binding:"required"`
 }
 
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
@@ -38,9 +40,12 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 	}
 
 	account := models.Account{
-		Name:   req.Name,
-		Type:   req.Type,
-		UserID: user.(*models.User).ID,
+		Name:           req.Name,
+		Type:           req.Type,
+		Currency:       req.Currency,
+		InitialBalance: req.InitialBalance,
+		Balance:        req.InitialBalance,
+		UserID:         user.(*models.User).ID,
 	}
 
 	if err := h.db.Create(&account).Error; err != nil {
