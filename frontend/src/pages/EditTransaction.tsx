@@ -277,7 +277,7 @@ export default function EditTransaction() {
               </div>
 
               {/* Description */}
-<div className="sm:col-span-2">
+              <div className="sm:col-span-2">
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                   Description
                 </label>

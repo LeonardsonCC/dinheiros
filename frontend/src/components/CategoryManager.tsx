@@ -14,14 +14,15 @@ export interface Category {
 }
 
 interface CategoryManagerProps {
+  initialType?: TransactionType;
   onCategoryAdded: (category: Category) => void;
 }
 
-export default function CategoryManager({ onCategoryAdded }: CategoryManagerProps) {
+export default function CategoryManager({ initialType = 'expense', onCategoryAdded }: CategoryManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [type, setType] = useState<TransactionType>('expense');
+  const [type, setType] = useState<TransactionType>(initialType);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +53,10 @@ export default function CategoryManager({ onCategoryAdded }: CategoryManagerProp
     }
   };
 
-  const openModal = () => setIsOpen(true);
+  const openModal = () => {
+    setType(initialType)
+    setIsOpen(true)
+  };
   const closeModal = () => {
     setIsOpen(false);
     setName('');

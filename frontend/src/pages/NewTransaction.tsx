@@ -270,6 +270,7 @@ export default function NewTransaction() {
               {/* Categories */}
               <div className="sm:col-span-2">
                 <CategoryManager 
+                  initialType={formData.type}
                   onCategoryAdded={(newCategory) => {
                     setAllCategories(prev => [...prev, newCategory]);
                     
