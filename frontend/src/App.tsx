@@ -21,6 +21,7 @@ function App() {
         <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
         <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
           <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="accounts">
             <Route index element={<Accounts />} />
             <Route path="new" element={<NewAccount />} />

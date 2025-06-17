@@ -1,29 +1,21 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/leccarvalho/dinheiros/internal/database"
+	"github.com/leccarvalho/dinheiros/internal/dto"
 	"github.com/leccarvalho/dinheiros/internal/models"
-	"gorm.io/gorm"
+	"github.com/leccarvalho/dinheiros/internal/service"
 )
 
 type AccountHandler struct {
-	db *gorm.DB
+	accountService service.AccountService
 }
 
-func NewAccountHandler() *AccountHandler {
-	return &AccountHandler{db: database.DB}
-}
-
-type CreateAccountRequest struct {
-	Name           string             `json:"name" binding:"required"`
-	Type           models.AccountType `json:"type" binding:"required,oneof=checking savings credit cash"`
-	Currency       string             `json:"currency" binding:"required,oneof=BRL USD EUR"`
-	InitialBalance float64            `json:"initial_balance" binding:"required"`
+func NewAccountHandler(accountService service.AccountService) *AccountHandler {
+	return &AccountHandler{accountService: accountService}
 }
 
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
@@ -33,7 +25,7 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		return
 	}
 
-	var req CreateAccountRequest
+	var req dto.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -44,18 +36,17 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		Type:           req.Type,
 		Currency:       req.Currency,
 		InitialBalance: req.InitialBalance,
-		Balance:        req.InitialBalance,
-		UserID:         user.(*models.User).ID,
+		UserID:         user.(uint),
 	}
 
-	if err := h.db.Create(&account).Error; err != nil {
+	if err := h.accountService.CreateAccount(&account); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating account"})
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Account created successfully",
-		"account": account,
+		"account": dto.ToAccountResponse(&account),
 	})
 }
 
@@ -66,14 +57,14 @@ func (h *AccountHandler) GetAccounts(c *gin.Context) {
 		return
 	}
 
-	var accounts []models.Account
-	if err := h.db.Where("user_id = ?", user.(*models.User).ID).Find(&accounts).Error; err != nil {
+	accounts, err := h.accountService.GetAccountsByUserID(user.(uint))
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching accounts"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"accounts": accounts,
+		"accounts": dto.ToAccountResponseList(accounts),
 	})
 }
 
@@ -84,23 +75,19 @@ func (h *AccountHandler) GetAccount(c *gin.Context) {
 		return
 	}
 
-	accountID, err := strconv.Atoi(c.Param("id"))
+	accountID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
 		return
 	}
 
-	var account models.Account
-	if err := h.db.Where("id = ? AND user_id = ?", accountID, user.(*models.User).ID).First(&account).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching account"})
+	account, err := h.accountService.GetAccountByID(uint(accountID), user.(uint))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, account)
+	c.JSON(http.StatusOK, dto.ToAccountResponse(account))
 }
 
 func (h *AccountHandler) DeleteAccount(c *gin.Context) {
@@ -110,46 +97,18 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	accountID, err := strconv.Atoi(c.Param("id"))
+	accountID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
 		return
 	}
 
-	// Start a transaction to ensure data consistency
-	err = h.db.Transaction(func(tx *gorm.DB) error {
-		// Check if account exists and belongs to user
-		var account models.Account
-		if err := tx.Where("id = ? AND user_id = ?", accountID, user.(*models.User).ID).First(&account).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				return fmt.Errorf("account not found")
-			}
-			return fmt.Errorf("error fetching account: %v", err)
-		}
-
-		// Delete all transactions related to this account (both as source and destination)
-		if err := tx.Where("account_id = ? OR to_account_id = ?", accountID, accountID).Delete(&models.Transaction{}).Error; err != nil {
-			return fmt.Errorf("error deleting related transactions: %v", err)
-		}
-
-		// Delete the account
-		if err := tx.Delete(&account).Error; err != nil {
-			return fmt.Errorf("error deleting account: %v", err)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		if err.Error() == "account not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting account: " + err.Error()})
+	if err := h.accountService.DeleteAccount(uint(accountID), user.(uint)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting account"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Account and all related transactions deleted successfully",
+		"message": "Account deleted successfully",
 	})
 }

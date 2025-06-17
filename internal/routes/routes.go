@@ -1,64 +1,65 @@
 package routes
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/leccarvalho/dinheiros/internal/handlers"
-    "github.com/leccarvalho/dinheiros/internal/middleware"
+	"github.com/gin-gonic/gin"
+	"github.com/leccarvalho/dinheiros/internal/di"
+	"github.com/leccarvalho/dinheiros/internal/middleware"
 )
 
-func SetupRoutes() *gin.Engine {
-    r := gin.Default()
+func SetupRoutes(container *di.Container) *gin.Engine {
+	r := gin.Default()
 
-    // Create handlers
-    userHandler := handlers.NewUserHandler()
-    accountHandler := handlers.NewAccountHandler()
-    transactionHandler := handlers.NewTransactionHandler()
-    categoryHandler := handlers.NewCategoryHandler()
+	// Public routes
+	api := r.Group("/api")
+	{
+		// Auth routes
+		authGroup := api.Group("/auth")
+		{
+			authGroup.POST("/register", container.UserHandler.Register)
+			authGroup.POST("/login", container.UserHandler.Login)
+		}
 
-    // Auth routes
-    auth := r.Group("/api/auth")
-    {
-        auth.POST("/register", userHandler.Register)
-        auth.POST("/login", userHandler.Login)
-    }
+		// Protected routes
+		protected := api.Group("")
+		// Create auth middleware with required dependencies
+		authMiddleware := middleware.AuthMiddleware(container.UserService, container.JWTManager)
+		protected.Use(authMiddleware)
+		{
+			// Dashboard summary
+			protected.GET("/summary", container.TransactionHandler.GetDashboardSummary)
 
-    // Protected routes
-    api := r.Group("/api")
-    api.Use(middleware.AuthMiddleware())
-    {
-        // Dashboard summary
-        api.GET("/summary", transactionHandler.GetDashboardSummary)
-        
-        // Account routes
-        accounts := api.Group("/accounts")
-        {
-            accounts.GET("", accountHandler.GetAccounts)
-            accounts.POST("", accountHandler.CreateAccount)
-            
-            // Single account operations
-            account := accounts.Group("/:id")
-            {
-                account.GET("", accountHandler.GetAccount)
-                account.DELETE("", accountHandler.DeleteAccount)
 
-                // Transaction routes for a specific account
-                transactions := account.Group("/transactions")
-                {
-                    transactions.GET("", transactionHandler.GetTransactions)
-                    transactions.POST("", transactionHandler.CreateTransaction)
-                    transactions.GET("/:transactionId", transactionHandler.GetTransaction)
-                    transactions.DELETE("/:transactionId", transactionHandler.DeleteTransaction)
-                }
-            }
+			// Account routes
+			accounts := protected.Group("/accounts")
+			{
+				accounts.GET("", container.AccountHandler.GetAccounts)
+				accounts.POST("", container.AccountHandler.CreateAccount)
 
-            // Category routes
-            categories := api.Group("/categories")
-            {
-                categories.GET("", categoryHandler.ListCategories)
-                categories.POST("", categoryHandler.CreateCategory)
-            }
-        }
-    }
+				// Single account operations
+				account := accounts.Group("/:id")
+				{
+					account.GET("", container.AccountHandler.GetAccount)
+					account.DELETE("", container.AccountHandler.DeleteAccount)
 
-    return r
+					// Transaction routes for a specific account
+					transactions := account.Group("/transactions")
+					{
+						transactions.GET("", container.TransactionHandler.GetTransactions)
+						transactions.POST("", container.TransactionHandler.CreateTransaction)
+						transactions.GET("/:transactionId", container.TransactionHandler.GetTransaction)
+						transactions.DELETE("/:transactionId", container.TransactionHandler.DeleteTransaction)
+					}
+				}
+			}
+
+			// Category routes - will be uncommented when implemented
+			// categories := protected.Group("/categories")
+			// {
+			// 	categories.GET("", container.CategoryHandler.ListCategories)
+			// 	categories.POST("", container.CategoryHandler.CreateCategory)
+			// }
+		}
+	}
+
+	return r
 }

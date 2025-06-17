@@ -27,7 +27,7 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 	}
 
 	var categories []models.Category
-	if err := h.db.Where("user_id = ?", user.(*models.User).ID).Find(&categories).Error; err != nil {
+	if err := h.db.Where("user_id = ?", user.(uint)).Find(&categories).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch categories"})
 		return
 	}
@@ -57,7 +57,7 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	category := models.Category{
 		Name:        req.Name,
 		Description: req.Description,
-		UserID:      user.(*models.User).ID,
+		UserID:      user.(uint),
 	}
 
 	if err := h.db.Create(&category).Error; err != nil {
