@@ -23,8 +23,7 @@ export default function Transactions() {
   const { accountId: accountIdParam } = useParams<{ accountId: string }>();
   // Ensure accountId is a number
   const accountId = accountIdParam ? Number(accountIdParam) : null;
-  console.log('Account ID from URL params:', accountId, 'Type:', typeof accountId);
-  
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [account, setAccount] = useState<{ name: string; balance: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,8 +39,7 @@ export default function Transactions() {
 
       try {
         setLoading(true);
-        console.log('Fetching transactions for account ID:', accountId, 'Type:', typeof accountId);
-        
+
         if (isNaN(accountId as number)) {
           throw new Error('Invalid account ID format');
         }
@@ -49,25 +47,21 @@ export default function Transactions() {
         try {
           // First, fetch account details to verify the account exists
           const accountUrl = `/api/accounts/${accountId}`;
-          console.log('Making request to:', accountUrl);
           const accountRes = await api.get(accountUrl);
-          console.log('Account response:', accountRes.data);
           setAccount(accountRes.data);
           
           // Then fetch transactions
           const transactionsUrl = `/api/accounts/${accountId}/transactions`;
-          console.log('Making request to:', transactionsUrl);
           const transactionsRes = await api.get(transactionsUrl);
-          console.log('Transactions response:', transactionsRes.data);
           
           if (transactionsRes.data) {
             setTransactions(transactionsRes.data);
           } else {
-            console.warn('Unexpected transactions response format:', transactionsRes.data);
+            console.warn('Unexpected transactions response format');
             setTransactions([]);
           }
         } catch (err: any) {
-          console.error('Error in fetch sequence:', err);
+          console.error('Error in fetch sequence');
           throw err; // Re-throw to be caught by the outer catch block
         }
       } catch (err: any) {
@@ -77,9 +71,6 @@ export default function Transactions() {
         if (err.response) {
           // The request was made and the server responded with a status code
           // that falls out of the range of 2xx
-          console.error('Error response data:', err.response.data);
-          console.error('Error status:', err.response.status);
-          console.error('Error headers:', err.response.headers);
           
           if (err.response.status === 404) {
             toast.error('Account not found');

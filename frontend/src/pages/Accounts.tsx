@@ -33,13 +33,7 @@ export default function Accounts() {
     const fetchAccounts = async () => {
       try {
         const response = await api.get('/api/accounts');
-        console.log('Raw API Response:', response);
-        console.log('Response data:', response.data);
-        console.log('Response data type:', typeof response.data);
-        console.log('Accounts in response:', response.data.accounts || response.data.data || response.data);
-        
-        // Log the raw response structure for debugging
-        console.log('Raw response structure:', JSON.stringify(response.data, null, 2));
+
         
         // Handle different possible response formats
         let accountsData: Account[] = [];
@@ -80,16 +74,6 @@ export default function Accounts() {
           };
         }).filter((account): account is ProcessedAccount => account !== null);
         
-        console.log('Processed accounts data:', accountsData);
-        // Log each account's ID to verify they exist
-        accountsData.forEach((account, index) => {
-          console.log(`Account ${index + 1}:`, {
-            id: account.id,
-            name: account.name,
-            balance: account.balance,
-            currency: account.currency
-          });
-        });
         setAccounts(accountsData);
       } catch (error: any) {
         console.error('Error fetching accounts:', error);
