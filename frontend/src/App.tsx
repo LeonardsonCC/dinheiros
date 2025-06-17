@@ -1,4 +1,3 @@
-import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
@@ -9,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import NewAccount from './pages/NewAccount';
 import NewTransaction from './pages/NewTransaction';
+import EditTransaction from './pages/EditTransaction';
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -27,6 +27,7 @@ function App() {
             <Route path="new" element={<NewAccount />} />
             <Route path=":accountId/transactions" element={<Transactions />} />
             <Route path=":accountId/transactions/new" element={<NewTransaction />} />
+            <Route path=":accountId/transactions/:transactionId/edit" element={<EditTransaction />} />
           </Route>
         </Route>
       </Routes>

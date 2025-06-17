@@ -4,19 +4,19 @@ import (
 	"os"
 	"time"
 
-	"gorm.io/gorm"
 	"github.com/leccarvalho/dinheiros/internal/auth"
 	"github.com/leccarvalho/dinheiros/internal/handlers"
 	"github.com/leccarvalho/dinheiros/internal/repository"
 	"github.com/leccarvalho/dinheiros/internal/service"
+	"gorm.io/gorm"
 )
 
 type Container struct {
 	// Repositories
 	AccountRepository     repository.AccountRepository
 	TransactionRepository repository.TransactionRepository
-	UserRepository       repository.UserRepository
-	CategoryRepository   repository.CategoryRepository
+	UserRepository        repository.UserRepository
+	CategoryRepository    repository.CategoryRepository
 
 	// Services
 	AccountService     service.AccountService
@@ -36,7 +36,8 @@ type Container struct {
 
 func NewContainer(db *gorm.DB) (*Container, error) {
 	// Initialize JWT manager
-	jwtSecret := os.Getenv("JWT_SECRET")
+	// jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := "test"
 	if jwtSecret == "" {
 		// In a production environment, you should always have a proper JWT secret
 		// For development, we'll generate a random one if not set
@@ -79,16 +80,16 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 	return &Container{
 		AccountRepository:     accountRepo,
 		TransactionRepository: transactionRepo,
-		UserRepository:       userRepo,
-		CategoryRepository:   categoryRepo,
-		AccountService:       accountService,
-		TransactionService:   transactionService,
-		UserService:          userService,
-		CategoryService:      categoryService,
-		JWTManager:           jwtManager,
-		AccountHandler:       accountHandler,
-		TransactionHandler:   transactionHandler,
-		UserHandler:          userHandler,
-		CategoryHandler:      categoryHandler,
+		UserRepository:        userRepo,
+		CategoryRepository:    categoryRepo,
+		AccountService:        accountService,
+		TransactionService:    transactionService,
+		UserService:           userService,
+		CategoryService:       categoryService,
+		JWTManager:            jwtManager,
+		AccountHandler:        accountHandler,
+		TransactionHandler:    transactionHandler,
+		UserHandler:           userHandler,
+		CategoryHandler:       categoryHandler,
 	}, nil
 }

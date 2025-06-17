@@ -76,6 +76,13 @@ func (s *transactionService) CreateTransaction(
 		return nil, err
 	}
 
+	// Associate categories if provided
+	if len(categoryIDs) > 0 {
+		if err := s.transactionRepo.AssociateCategories(transaction.ID, categoryIDs); err != nil {
+			return nil, err
+		}
+	}
+
 	// Update account balances
 	switch transactionType {
 	case models.TransactionTypeIncome:
@@ -125,13 +132,43 @@ func (s *transactionService) GetTransactionsByAccountID(userID uint, accountID u
 
 func (s *transactionService) UpdateTransaction(userID uint, transaction *models.Transaction) error {
 	// Verify transaction exists and belongs to user
-	_, err := s.transactionRepo.FindByID(transaction.ID, userID)
+	existingTx, err := s.transactionRepo.FindByID(transaction.ID, userID)
 	if err != nil {
 		return err
 	}
 
-	// TODO: Implement update logic with proper validation
-	return s.transactionRepo.Update(transaction)
+	// Update the categories
+	tx := s.transactionRepo.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Update transaction fields
+	err = tx.Model(&existingTx).Updates(transaction).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Update categories association
+	if len(transaction.Categories) > 0 {
+		err = tx.Model(&existingTx).Association("Categories").Replace(transaction.Categories)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	} else {
+		// If no categories provided, clear existing ones
+		err = tx.Model(&existingTx).Association("Categories").Clear()
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit().Error
 }
 
 func (s *transactionService) DeleteTransaction(userID uint, transactionID uint) error {

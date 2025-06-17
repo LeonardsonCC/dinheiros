@@ -47,6 +47,7 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 						transactions.GET("", container.TransactionHandler.GetTransactions)
 						transactions.POST("", container.TransactionHandler.CreateTransaction)
 						transactions.GET("/:transactionId", container.TransactionHandler.GetTransaction)
+						transactions.PUT("/:transactionId", container.TransactionHandler.UpdateTransaction)
 						transactions.DELETE("/:transactionId", container.TransactionHandler.DeleteTransaction)
 					}
 				}

@@ -15,7 +15,8 @@ type TransactionRepository interface {
 	Update(transaction *models.Transaction) error
 	Delete(id uint, userID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
-	
+	AssociateCategories(transactionID uint, categoryIDs []uint) error
+
 	// Transaction management
 	Begin() *gorm.DB
 	Commit(tx *gorm.DB) error
@@ -94,6 +95,34 @@ func (r *transactionRepository) Rollback(tx *gorm.DB) error {
 	return tx.Rollback().Error
 }
 
+func (r *transactionRepository) AssociateCategories(transactionID uint, categoryIDs []uint) error {
+	tx := r.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// First, clear existing categories
+	if err := tx.Exec("DELETE FROM transaction_categories WHERE transaction_id = ?", transactionID).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Add new category associations
+	for _, catID := range categoryIDs {
+		if err := tx.Exec(
+			"INSERT INTO transaction_categories (transaction_id, category_id) VALUES (?, ?)",
+			transactionID, catID,
+		).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit().Error
+}
+
 func (r *transactionRepository) GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error) {
 	// Get total balance from all accounts
 	var totalBalance struct{ Sum float64 }
@@ -113,7 +142,7 @@ func (r *transactionRepository) GetDashboardSummary(userID uint) (float64, float
 	var totalIncome struct{ Sum float64 }
 	err = r.db.Model(&models.Transaction{}).
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
-		Where("accounts.user_id = ? AND transactions.type = ? AND transactions.date >= ?", 
+		Where("accounts.user_id = ? AND transactions.type = ? AND transactions.date >= ?",
 			userID, models.TransactionTypeIncome, firstOfMonth).
 		Select("COALESCE(SUM(amount), 0) as sum").
 		Scan(&totalIncome).Error
@@ -126,7 +155,7 @@ func (r *transactionRepository) GetDashboardSummary(userID uint) (float64, float
 	var totalExpenses struct{ Sum float64 }
 	err = r.db.Model(&models.Transaction{}).
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
-		Where("accounts.user_id = ? AND transactions.type = ? AND transactions.date >= ?", 
+		Where("accounts.user_id = ? AND transactions.type = ? AND transactions.date >= ?",
 			userID, models.TransactionTypeExpense, firstOfMonth).
 		Select("COALESCE(SUM(amount), 0) as sum").
 		Scan(&totalExpenses).Error

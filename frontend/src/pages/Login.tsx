@@ -32,7 +32,7 @@ export default function Login() {
       
       localStorage.setItem('token', response.data.token);
       toast.success('Logged in successfully!');
-      navigate('/dashboard');
+      navigate('/');
     } catch (error) {
       toast.error('Invalid email or password');
       console.error('Login error:', error);

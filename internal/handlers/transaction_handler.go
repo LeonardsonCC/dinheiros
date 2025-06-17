@@ -8,8 +8,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/leccarvalho/dinheiros/internal/dto"
 	"github.com/leccarvalho/dinheiros/internal/errors"
+	"github.com/leccarvalho/dinheiros/internal/models"
 	"github.com/leccarvalho/dinheiros/internal/service"
+	"gorm.io/gorm"
 )
+
+type UpdateTransactionRequest struct {
+	Date        string    `json:"date"`
+	Amount      float64   `json:"amount"`
+	Type        string    `json:"type"`
+	Description string    `json:"description"`
+	CategoryIDs []uint    `json:"category_ids"`
+	ToAccountID *uint     `json:"to_account_id,omitempty"`
+}
 
 type TransactionHandler struct {
 	transactionService service.TransactionService
@@ -176,6 +187,86 @@ func (h *TransactionHandler) GetDashboardSummary(c *gin.Context) {
 		"recentTransactions":     recentTransactionsResponse,
 		"transactionsByCategory": transactionsByCategory,
 		"monthlyTrends":          monthlyTrends,
+	})
+}
+
+func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	transactionID, err := strconv.Atoi(c.Param("transactionId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+		return
+	}
+
+	// Get the existing transaction to verify ownership
+	existingTx, err := h.transactionService.GetTransactionByID(user.(uint), uint(transactionID))
+	if err != nil {
+		switch e := err.(type) {
+		case *errors.NotFoundError:
+			c.JSON(http.StatusNotFound, gin.H{"error": e.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching transaction"})
+		}
+		return
+	}
+
+	var req UpdateTransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Parse the date
+	parsedDate, err := time.Parse(time.RFC3339, req.Date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use ISO 8601 (e.g., 2023-01-01T12:00:00Z)"})
+		return
+	}
+
+	// Update the transaction fields
+	existingTx.Amount = req.Amount
+	existingTx.Type = models.TransactionType(req.Type)
+	existingTx.Description = req.Description
+	existingTx.Date = parsedDate
+	existingTx.ToAccountID = req.ToAccountID
+
+	// Update categories if provided
+	if req.CategoryIDs != nil {
+		existingTx.Categories = make([]*models.Category, len(req.CategoryIDs))
+		for i, catID := range req.CategoryIDs {
+			existingTx.Categories[i] = &models.Category{Model: gorm.Model{ID: catID}}
+		}
+	}
+
+	// Save the updated transaction
+	err = h.transactionService.UpdateTransaction(user.(uint), existingTx)
+	if err != nil {
+		switch e := err.(type) {
+		case *errors.ValidationError:
+			c.JSON(http.StatusBadRequest, gin.H{"error": e.Error()})
+		case *errors.NotFoundError:
+			c.JSON(http.StatusNotFound, gin.H{"error": e.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating transaction"})
+		}
+		return
+	}
+
+	// Fetch the updated transaction with all its relations
+	updatedTx, err := h.transactionService.GetTransactionByID(user.(uint), existingTx.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching updated transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Transaction updated successfully",
+		"transaction": dto.ToTransactionResponse(updatedTx),
 	})
 }
 
