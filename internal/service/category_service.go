@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/leccarvalho/dinheiros/internal/models"
 	"gorm.io/gorm"
@@ -29,5 +30,18 @@ func (s *categoryService) ListCategories(ctx context.Context, userID uint) ([]mo
 }
 
 func (s *categoryService) CreateCategory(ctx context.Context, category *models.Category) error {
+	// Check if category with same name and type already exists for this user
+	var count int64
+	if err := s.db.WithContext(ctx).
+		Model(&models.Category{}).
+		Where("user_id = ? AND name = ? AND type = ?", category.UserID, category.Name, category.Type).
+		Count(&count).Error; err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return errors.New("category with this name and type already exists")
+	}
+
 	return s.db.WithContext(ctx).Create(category).Error
 }

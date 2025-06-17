@@ -4,21 +4,24 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 
+export type TransactionType = 'income' | 'expense' | 'transfer';
+
 export interface Category {
   ID: number;
   name: string;
   description: string;
+  type: TransactionType;
 }
 
 interface CategoryManagerProps {
-  categories: Category[];
   onCategoryAdded: (category: Category) => void;
 }
 
-export default function CategoryManager({ categories, onCategoryAdded }: CategoryManagerProps) {
+export default function CategoryManager({ onCategoryAdded }: CategoryManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [type, setType] = useState<TransactionType>('expense');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +37,8 @@ export default function CategoryManager({ categories, onCategoryAdded }: Categor
       setIsSubmitting(true);
       const response = await api.post('/api/categories', {
         name: name.trim(),
-        description: description.trim()
+        description: description.trim(),
+        type: type
       });
       
       onCategoryAdded(response.data);
@@ -53,6 +57,7 @@ export default function CategoryManager({ categories, onCategoryAdded }: Categor
     setIsOpen(false);
     setName('');
     setDescription('');
+    setType('expense');
   };
 
   return (
@@ -131,6 +136,21 @@ export default function CategoryManager({ categories, onCategoryAdded }: Categor
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                           placeholder="Optional description"
                         />
+                      </div>
+                      <div className="mb-4">
+                        <label htmlFor="category-type" className="block text-sm font-medium text-gray-700">
+                          Type *
+                        </label>
+                        <select
+                          id="category-type"
+                          value={type}
+                          onChange={(e) => setType(e.target.value as TransactionType)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                        >
+                          <option value="expense">Expense</option>
+                          <option value="income">Income</option>
+                          <option value="transfer">Transfer</option>
+                        </select>
                       </div>
                       
                       <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">

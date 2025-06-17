@@ -32,7 +32,8 @@ export default function NewTransaction() {
     toAccountId: ''
   });
   
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -54,7 +55,10 @@ export default function NewTransaction() {
         ]);
         
         setAccounts(accountsRes.data);
-        setCategories(categoriesRes.data);
+        setAllCategories(categoriesRes.data);
+        // Initial filter based on default type ('expense')
+        const filtered = categoriesRes.data.filter((cat: Category) => cat.type === 'expense');
+        setFilteredCategories(filtered);
       } catch (error: any) {
         console.error('Error fetching data:', error);
         const errorMessage = error.response?.data?.error || 'Failed to load data';
@@ -67,6 +71,25 @@ export default function NewTransaction() {
 
     fetchData();
   }, [accountId]);
+
+  // Update filtered categories when transaction type changes
+  useEffect(() => {
+    const filtered = allCategories.filter(cat => cat.type === formData.type);
+    setFilteredCategories(filtered);
+    
+    // Clear selected categories if they don't match the new type
+    if (formData.categoryIds.length > 0) {
+      const validCategoryIds = filtered.map(c => c.ID);
+      const newCategoryIds = formData.categoryIds.filter(id => validCategoryIds.includes(id));
+      
+      if (newCategoryIds.length !== formData.categoryIds.length) {
+        setFormData(prev => ({
+          ...prev,
+          categoryIds: newCategoryIds
+        }));
+      }
+    }
+  }, [formData.type, allCategories]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -85,7 +108,7 @@ export default function NewTransaction() {
     
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value as TransactionType
     }));
   };
   
@@ -247,20 +270,23 @@ export default function NewTransaction() {
               {/* Categories */}
               <div className="sm:col-span-2">
                 <CategoryManager 
-                  categories={categories} 
                   onCategoryAdded={(newCategory) => {
-                    setCategories(prev => [...prev, newCategory]);
-                    // Auto-select the newly added category
-                    setFormData(prev => ({
-                      ...prev,
-                      categoryIds: [...prev.categoryIds, newCategory.ID]
-                    }));
+                    setAllCategories(prev => [...prev, newCategory]);
+                    
+                    // Only auto-select if the new category matches the current transaction type
+                    if (newCategory.type === formData.type) {
+                      setFilteredCategories(prev => [...prev, newCategory]);
+                      setFormData(prev => ({
+                        ...prev,
+                        categoryIds: [...prev.categoryIds, newCategory.ID]
+                      }));
+                    }
                   }} 
                 />
                 
-                {categories.length > 0 ? (
+                {filteredCategories.length > 0 ? (
                   <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {categories.map(category => (
+                    {filteredCategories.map(category => (
                       <div key={category.ID} className="flex items-center">
                         <input
                           type="checkbox"

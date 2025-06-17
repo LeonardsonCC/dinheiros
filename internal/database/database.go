@@ -25,6 +25,7 @@ func InitDB(dbPath string) error {
 		&models.User{},
 		&models.Account{},
 		&models.Transaction{},
+		&models.Category{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %v", err)
