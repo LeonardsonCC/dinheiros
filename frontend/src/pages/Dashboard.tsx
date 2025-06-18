@@ -105,7 +105,7 @@ export default function Dashboard() {
           <div className="px-5 py-3 bg-gray-50">
             <div className="text-sm">
               <Link
-                to="/transactions?type=income"
+                to="/accounts/transactions?types=income"
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
                 View all income
@@ -136,7 +136,7 @@ export default function Dashboard() {
           <div className="px-5 py-3 bg-gray-50">
             <div className="text-sm">
               <Link
-                to="/transactions?type=expense"
+                to="/accounts/transactions?types=expense"
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
                 View all expenses
@@ -151,7 +151,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-medium text-gray-900">Recent Transactions</h2>
           <Link
-            to="/transactions"
+            to="/accounts/transactions"
             className="text-sm font-medium text-blue-600 hover:text-blue-500"
           >
             View all

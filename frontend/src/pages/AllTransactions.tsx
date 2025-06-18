@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, Fragment, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback, Fragment, useRef, useMemo } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { PlusIcon, FunnelIcon, XMarkIcon, CheckIcon, ChevronUpDownIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Listbox, Transition } from '@headlessui/react';
 import api from '../services/api';
@@ -253,6 +253,10 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 };
 
 export default function AllTransactions() {
+  // Router hooks
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
   // State management
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -260,17 +264,20 @@ export default function AllTransactions() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   
+  // Parse filters from URL search params
+  const initialFilters = useMemo<FilterState>(() => ({
+    description: searchParams.get('description') || '',
+    minAmount: searchParams.get('minAmount') || '',
+    maxAmount: searchParams.get('maxAmount') || '',
+    startDate: searchParams.get('startDate') || '',
+    endDate: searchParams.get('endDate') || '',
+    types: searchParams.getAll('types') || [],
+    accountIds: searchParams.getAll('accountIds').map(Number).filter(id => !isNaN(id)),
+    categoryIds: searchParams.getAll('categoryIds').map(Number).filter(id => !isNaN(id)),
+  }), [searchParams]);
+  
   // Filters state
-  const [filters, setFilters] = useState<FilterState>({
-    description: '',
-    minAmount: '',
-    maxAmount: '',
-    startDate: '',
-    endDate: '',
-    types: [],
-    accountIds: [],
-    categoryIds: [],
-  });
+  const [filters, setFilters] = useState<FilterState>(initialFilters);
   
   // Pagination state
   const [pagination, setPagination] = useState<PaginationState>({
@@ -357,6 +364,31 @@ export default function AllTransactions() {
     fetchTransactions();
   }, [fetchTransactions]);
   
+  // Update URL search params when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    // Add filters to params if they have values
+    if (filters.description) params.set('description', filters.description);
+    if (filters.minAmount) params.set('minAmount', filters.minAmount);
+    if (filters.maxAmount) params.set('maxAmount', filters.maxAmount);
+    if (filters.startDate) params.set('startDate', filters.startDate);
+    if (filters.endDate) params.set('endDate', filters.endDate);
+    
+    // Handle array parameters
+    params.delete('types');
+    filters.types.forEach(type => params.append('types', type));
+    
+    params.delete('accountIds');
+    filters.accountIds.forEach(id => params.append('accountIds', id.toString()));
+    
+    params.delete('categoryIds');
+    filters.categoryIds.forEach(id => params.append('categoryIds', id.toString()));
+    
+    // Update URL without causing a navigation
+    navigate({ search: params.toString() }, { replace: true });
+  }, [filters, navigate]);
+
   // Handle filter changes
   const handleFilterChange = (field: keyof FilterState, value: any) => {
     setFilters(prev => ({
