@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import NewAccount from './pages/NewAccount';
 import NewTransaction from './pages/NewTransaction';
 import EditTransaction from './pages/EditTransaction';
+import Profile from './pages/Profile';
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -31,6 +32,9 @@ function App() {
             <Route path=":accountId/transactions/:transactionId/edit" element={<EditTransaction />} />
             <Route path="transactions" element={<AllTransactions />} />
           </Route>
+          
+          {/* Profile Route */}
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </div>

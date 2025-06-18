@@ -114,27 +114,104 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Failure 500 {object} map[string]string
 // @Router /users/me [get]
 func (h *UserHandler) GetCurrentUser(c *gin.Context) {
-	user, exists := c.Get("user")
+	// Get user ID from context (set by auth middleware)
+	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
 
-	// Get the user ID from the context
-	userID, ok := user.(uint)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user data in context"})
-		return
-	}
-
-	// Get the user from the service
-	userModel, err := h.userService.FindByID(userID)
+	// Get user from service
+	user, err := h.userService.FindByID(userID.(uint))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching user data"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving user"})
 		return
 	}
 
 	// Convert to response DTO
-	response := dto.ToUserResponse(userModel)
+	response := dto.ToUserResponse(user)
 	c.JSON(http.StatusOK, response)
+}
+
+// UpdateName handles updating the current user's name
+// @Summary Update user's name
+// @Description Update the current user's name
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param input body dto.UpdateNameRequest true "Name update data"
+// @Success 200 {object} dto.UserResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /users/me [patch]
+func (h *UserHandler) UpdateName(c *gin.Context) {
+	// Get user ID from context (set by auth middleware)
+	userID, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Parse request body
+	var req dto.UpdateNameRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Update user name
+	user, err := h.userService.UpdateName(userID.(uint), req.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update name"})
+		return
+	}
+
+	// Convert to response DTO
+	response := dto.ToUserResponse(user)
+	c.JSON(http.StatusOK, response)
+}
+
+// UpdatePassword handles updating the current user's password
+// @Summary Update user's password
+// @Description Update the current user's password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param input body dto.UpdatePasswordRequest true "Password update data"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /users/me/password [patch]
+func (h *UserHandler) UpdatePassword(c *gin.Context) {
+	// Get user ID from context (set by auth middleware)
+	userID, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Parse request body
+	var req dto.UpdatePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Update password
+	err := h.userService.UpdatePassword(userID.(uint), req.CurrentPassword, req.NewPassword)
+	if err != nil {
+		errMsg := "Failed to update password"
+		if err.Error() == "current password is incorrect" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": errMsg})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
 }

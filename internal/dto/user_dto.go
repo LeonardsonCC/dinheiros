@@ -46,3 +46,14 @@ func ToAuthResponse(message, token string, user *models.User) *AuthResponse {
 		User:    *ToUserResponse(user),
 	}
 }
+
+// UpdateNameRequest represents the request body for updating a user's name
+type UpdateNameRequest struct {
+	Name string `json:"name" binding:"required,min=2"`
+}
+
+// UpdatePasswordRequest represents the request body for updating a user's password
+type UpdatePasswordRequest struct {
+	CurrentPassword string `json:"currentPassword" binding:"required,min=6"`
+	NewPassword     string `json:"newPassword" binding:"required,min=6,nefield=CurrentPassword"`
+}

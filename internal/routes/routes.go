@@ -63,6 +63,14 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 				categories.GET("", container.CategoryHandler.ListCategories)
 				categories.POST("", container.CategoryHandler.CreateCategory)
 			}
+
+			// User profile routes
+			user := protected.Group("/users/me")
+			{
+				user.GET("", container.UserHandler.GetCurrentUser)
+				user.PATCH("", container.UserHandler.UpdateName)
+				user.PATCH("/password", container.UserHandler.UpdatePassword)
+			}
 		}
 	}
 

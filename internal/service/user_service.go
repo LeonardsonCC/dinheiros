@@ -16,11 +16,55 @@ type UserService interface {
 	Login(email, password string) (string, *models.User, error)
 	// FindByID finds a user by their ID
 	FindByID(id uint) (*models.User, error)
+	// UpdateName updates the user's name
+	UpdateName(id uint, name string) (*models.User, error)
+	// UpdatePassword updates the user's password after verifying the current password
+	UpdatePassword(id uint, currentPassword, newPassword string) error
 }
 
 type userService struct {
 	userRepo   repo.UserRepository
 	jwtManager *auth.JWTManager
+}
+
+// UpdateName updates the user's name
+func (s *userService) UpdateName(id uint, name string) (*models.User, error) {
+	user, err := s.userRepo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Name = name
+	if err := s.userRepo.Update(user); err != nil {
+		return nil, errors.New("error updating user name")
+	}
+
+	return user, nil
+}
+
+// UpdatePassword updates the user's password after verifying the current password
+func (s *userService) UpdatePassword(id uint, currentPassword, newPassword string) error {
+	user, err := s.userRepo.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	// Verify current password
+	if err := user.CheckPassword(currentPassword); err != nil {
+		return errors.New("current password is incorrect")
+	}
+
+	// Update to new password
+	user.Password = newPassword
+	if err := user.HashPassword(); err != nil {
+		return errors.New("error hashing new password")
+	}
+
+	if err := s.userRepo.Update(user); err != nil {
+		return errors.New("error updating password")
+	}
+
+	return nil
 }
 
 // NewUserService creates a new instance of UserService
