@@ -29,7 +29,8 @@ export default function NewTransaction() {
     description: '',
     categoryIds: [] as number[],
     date: new Date().toISOString(),
-    toAccountId: ''
+    toAccountId: '',
+    accountId: accountId ? accountId.toString() : ''
   });
   
   const [allCategories, setAllCategories] = useState<Category[]>([]);
@@ -42,8 +43,6 @@ export default function NewTransaction() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!accountId) return;
-      
       try {
         setLoading(true);
         setError(null);
@@ -54,7 +53,7 @@ export default function NewTransaction() {
           api.get('/api/categories')
         ]);
         
-        setAccounts(accountsRes.data);
+        setAccounts(accountsRes.data.accounts);
         setAllCategories(categoriesRes.data);
         // Initial filter based on default type ('expense')
         const filtered = categoriesRes.data.filter((cat: Category) => cat.type === 'expense');
@@ -108,7 +107,7 @@ export default function NewTransaction() {
     
     setFormData(prev => ({
       ...prev,
-      [name]: value as TransactionType
+      [name]: name === 'accountId' ? value : value as TransactionType
     }));
   };
   
@@ -136,8 +135,9 @@ export default function NewTransaction() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!accountId) {
-      toast.error('No account selected');
+    const selectedAccountId = accountId || formData.accountId;
+    if (!selectedAccountId) {
+      toast.error('Please select an account');
       return;
     }
 
@@ -153,10 +153,10 @@ export default function NewTransaction() {
         to_account_id: formData.type === 'transfer' ? formData.toAccountId : undefined
       };
 
-      await api.post(`/api/accounts/${accountId}/transactions`, payload);
+      await api.post(`/api/accounts/${selectedAccountId}/transactions`, payload);
       
       toast.success('Transaction added successfully');
-      navigate(`/accounts/${accountId}/transactions`);
+      navigate(`/accounts/${selectedAccountId}/transactions`);
     } catch (error: any) {
       console.error('Error creating transaction:', error);
       toast.error(error.response?.data?.message || 'Failed to add transaction');
@@ -212,6 +212,30 @@ export default function NewTransaction() {
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {/* Account Selection (only shown when accountId is not in URL) */}
+              {!accountId && (
+                <div className="sm:col-span-2">
+                  <label htmlFor="accountId" className="block text-sm font-medium text-gray-700">
+                    Account
+                  </label>
+                  <select
+                    id="accountId"
+                    name="accountId"
+                    value={formData.accountId}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    required
+                  >
+                    <option value="">Select an account</option>
+                    {accounts.length > 0 ? accounts.map(account => (
+                      <option key={account.id} value={account.id.toString()}>
+                        {account.name}
+                      </option>
+                    )) : <option value="">No accounts available</option>}
+                  </select>
+                </div>
+              )}
+
               {/* Transaction Type */}
               <div className="sm:col-span-2">
                 <label htmlFor="type" className="block text-sm font-medium text-gray-700">

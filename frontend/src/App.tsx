@@ -30,6 +30,7 @@ function App() {
             <Route path=":accountId/transactions" element={<Transactions />} />
             <Route path=":accountId/transactions/new" element={<NewTransaction />} />
             <Route path=":accountId/transactions/:transactionId/edit" element={<EditTransaction />} />
+            <Route path="transactions/new" element={<NewTransaction />} />
             <Route path="transactions" element={<AllTransactions />} />
           </Route>
           
