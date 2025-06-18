@@ -173,7 +173,7 @@ export default function Transactions() {
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul role="list" className="divide-y divide-gray-200">
-          {transactions.length > 0 ? (
+          {Array.isArray(transactions) && transactions.length > 0 ? (
             transactions.map((transaction) => (
               <li key={transaction.id} className="border-b border-gray-200">
                 <div className="px-4 py-4 sm:px-6">

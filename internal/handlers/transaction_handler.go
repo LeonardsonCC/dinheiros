@@ -1,9 +1,16 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
+
+	"mime/multipart"
 
 	"github.com/LeonardsonCC/dinheiros/internal/dto"
 	"github.com/LeonardsonCC/dinheiros/internal/errors"
@@ -24,12 +31,220 @@ type UpdateTransactionRequest struct {
 
 type TransactionHandler struct {
 	transactionService service.TransactionService
+	pdfService         service.PDFService
 }
 
-func NewTransactionHandler(transactionService service.TransactionService) *TransactionHandler {
+type ImportTransactionsRequest struct {
+	AccountID uint                  `form:"accountId" binding:"required"`
+	File      *multipart.FileHeader `form:"file" binding:"required"`
+}
+
+func NewTransactionHandler(transactionService service.TransactionService, pdfService service.PDFService) *TransactionHandler {
 	return &TransactionHandler{
 		transactionService: transactionService,
+		pdfService:         pdfService,
 	}
+}
+
+// maxUploadSize is the maximum allowed file size (10MB)
+const maxUploadSize = 10 << 20 // 10MB
+
+// isPDF checks if the file is a valid PDF by checking the magic number
+func isPDF(fileHeader *multipart.FileHeader) (bool, error) {
+	// Open the file
+	src, err := fileHeader.Open()
+	if err != nil {
+		return false, err
+	}
+	defer src.Close()
+
+	// Read the first 4 bytes to check the PDF magic number
+	buf := make([]byte, 4)
+	if _, err := src.Read(buf); err != nil {
+		return false, err
+	}
+
+	// Check if the file starts with the PDF magic number "%PDF"
+	return string(buf) == "%PDF", nil
+}
+
+// ImportTransactions handles the import of transactions from a file
+func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Get account ID from URL
+	accountIDStr := c.Param("accountId")
+	if accountIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Account ID is required"})
+		return
+	}
+
+	accountID, err := strconv.ParseUint(accountIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+		return
+	}
+
+	// Get the uploaded file
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File is required"})
+		return
+	}
+
+	// Validate file size
+	if file.Size > maxUploadSize {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File is too large. Maximum size is 10MB"})
+		return
+	}
+
+	// Check file type
+	if file.Header.Get("Content-Type") != "application/pdf" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Only PDF files are allowed"})
+		return
+	}
+
+	// Verify it's a valid PDF by checking the magic number
+	isValidPDF, err := isPDF(file)
+	if err != nil || !isValidPDF {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid PDF file"})
+		return
+	}
+
+	// Create uploads directory if it doesn't exist
+	if err := os.MkdirAll("uploads", 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create uploads directory"})
+		return
+	}
+
+	// Save the uploaded file with a unique name to prevent collisions
+	dst := filepath.Join("uploads", fmt.Sprintf("%d_%s", time.Now().UnixNano(), file.Filename))
+	if err := c.SaveUploadedFile(file, dst); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+		return
+	}
+	defer os.Remove(dst) // Clean up after processing
+
+	// Extract text from PDF
+	text, err := h.pdfService.ExtractText(dst)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process PDF: " + err.Error()})
+		return
+	}
+
+	// Parse transactions from text
+	transactions, err := parseTransactionsFromText(text, uint(accountID))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse transactions: " + err.Error()})
+		return
+	}
+
+	// Create transactions
+	createdCount := 0
+	for _, tx := range transactions {
+		_, err := h.transactionService.CreateTransaction(
+			user.(uint),
+			tx.AccountID,
+			tx.Amount,
+			tx.Type,
+			tx.Description,
+			tx.ToAccountID,
+			nil, // No categories for now
+			tx.Date,
+		)
+		if err != nil {
+			// Log the error but continue with other transactions
+			fmt.Printf("Failed to create transaction: %v\n", err)
+			continue
+		}
+		createdCount++
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":               "File processed successfully",
+		"transactions_imported": createdCount,
+	})
+}
+
+// parseTransactionsFromText parses transactions from the extracted text
+// This is a basic implementation that can be customized based on the actual PDF format
+func parseTransactionsFromText(text string, accountID uint) ([]models.Transaction, error) {
+	// Split the text into lines
+	lines := strings.Split(text, "\n")
+
+	var transactions []models.Transaction
+
+	// This is a very basic parser that looks for transaction-like patterns
+	// You'll need to customize this based on your actual PDF format
+	for _, line := range lines {
+		// Skip empty lines
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		// Look for date-like patterns (e.g., 01/01/2023 or 2023-01-01)
+		// This is just an example - adjust the pattern based on your PDF format
+		datePattern := `(\d{2}[/-]\d{2}[/-]\d{2,4})`
+		re := regexp.MustCompile(datePattern)
+		matches := re.FindStringSubmatch(line)
+		if len(matches) == 0 {
+			continue
+		}
+
+		// Try to parse the date
+		date, err := time.Parse("02/01/2006", matches[1])
+		if err != nil {
+			// Try alternative format
+			date, err = time.Parse("02-01-2006", matches[1])
+			if err != nil {
+				continue
+			}
+		}
+
+		// Look for amount patterns (e.g., $100.00 or 100,00)
+		amountPattern := `[\$€]?\s*(\d+[\.,]\d{2})`
+		re = regexp.MustCompile(amountPattern)
+		amountMatches := re.FindStringSubmatch(line)
+		if len(amountMatches) == 0 {
+			continue
+		}
+
+		// Parse the amount
+		amountStr := strings.ReplaceAll(strings.ReplaceAll(amountMatches[1], ",", "."), " ", "")
+		amount, err := strconv.ParseFloat(amountStr, 64)
+		if err != nil {
+			continue
+		}
+
+		// Determine if it's an expense or income based on the amount
+		// This is just an example - adjust based on your needs
+		transactionType := models.TransactionTypeExpense
+		if amount > 0 {
+			transactionType = models.TransactionTypeIncome
+		}
+
+		// Create a description by taking the rest of the line
+		description := strings.TrimSpace(strings.ReplaceAll(line, matches[0], ""))
+		description = strings.TrimSpace(strings.ReplaceAll(description, amountMatches[0], ""))
+
+		// Create the transaction
+		transaction := models.Transaction{
+			AccountID:   accountID,
+			Amount:      amount,
+			Type:        transactionType,
+			Description: description,
+			Date:        date,
+		}
+
+		transactions = append(transactions, transaction)
+	}
+
+	return transactions, nil
 }
 
 func (h *TransactionHandler) CreateTransaction(c *gin.Context) {

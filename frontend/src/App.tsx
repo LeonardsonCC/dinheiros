@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import NewAccount from './pages/NewAccount';
 import NewTransaction from './pages/NewTransaction';
 import EditTransaction from './pages/EditTransaction';
+import ImportTransactions from './pages/ImportTransactions';
 import Profile from './pages/Profile';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
             <Route path="new" element={<NewAccount />} />
             <Route path=":accountId/transactions" element={<Transactions />} />
             <Route path=":accountId/transactions/new" element={<NewTransaction />} />
+            <Route path=":accountId/transactions/import" element={<ImportTransactions />} />
             <Route path=":accountId/transactions/:transactionId/edit" element={<EditTransaction />} />
             <Route path="transactions/new" element={<NewTransaction />} />
             <Route path="transactions" element={<AllTransactions />} />
