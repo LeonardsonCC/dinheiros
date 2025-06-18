@@ -34,7 +34,6 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 	account := models.Account{
 		Name:           req.Name,
 		Type:           req.Type,
-		Currency:       req.Currency,
 		InitialBalance: req.InitialBalance,
 		UserID:         user.(uint),
 	}

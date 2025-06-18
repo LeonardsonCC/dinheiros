@@ -12,8 +12,6 @@ interface Account {
   accountName?: string;
   balance: number;
   currentBalance?: number;
-  currency: string;
-  currencyCode?: string;
 }
 
 // Internal type for the processed account data
@@ -21,7 +19,6 @@ interface ProcessedAccount {
   id: number | string;
   name: string;
   balance: number;
-  currency: string;
 }
 
 export default function Accounts() {
@@ -57,24 +54,20 @@ export default function Accounts() {
           }
         }
         
-        // Map the accounts to ensure consistent field names and types
-        accountsData = accountsData.map(account => {
-          // Ensure we have a valid ID
+        // Process the accounts data to ensure consistent structure
+        const processedAccounts = accountsData.map(account => {
+          // Handle different ID field names
           const accountId = account.id || account._id || account.ID;
-          if (!accountId) {
-            console.warn('Account missing ID:', account);
-            return null;
-          }
-          
+          if (!accountId) return null;
+
           return {
             id: accountId,
             name: account.name || account.accountName || 'Unnamed Account',
-            balance: account.balance || account.currentBalance || 0,
-            currency: account.currency || account.currencyCode || 'USD'
+            balance: account.balance || account.currentBalance || 0
           };
         }).filter((account): account is ProcessedAccount => account !== null);
         
-        setAccounts(accountsData);
+        setAccounts(processedAccounts);
       } catch (error: any) {
         console.error('Error fetching accounts:', error);
         const errorMessage = error.response?.data?.message || 'Failed to load accounts';
@@ -149,14 +142,11 @@ export default function Accounts() {
               )}
             </button>
             <Link to={`/accounts/${account.id}/transactions`}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
-                <span className="text-sm text-gray-500">{account.currency}</span>
-              </div>
+              <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
               <p className="mt-2 text-2xl font-semibold text-gray-900">
                 {new Intl.NumberFormat('en-US', {
                   style: 'currency',
-                  currency: account.currency || 'USD',
+                  currency: 'BRL',
                 }).format(account.balance || 0)}
               </p>
               <div className="mt-4 text-sm text-primary-600 hover:text-primary-800">

@@ -14,7 +14,6 @@ export default function NewAccount() {
     const data = {
       name: formData.get('name') as string,
       type: formData.get('type') as string,
-      currency: formData.get('currency') as string,
       initial_balance: Number(formData.get('initial_balance'))
     };
     try {
@@ -67,23 +66,6 @@ export default function NewAccount() {
                 <option value="cash">Cash</option>
               </select>
             </div>
-          </div>
-
-          <div>
-            <label htmlFor="currency" className="block text-sm font-medium text-gray-700">
-              Currency
-            </label>
-            <select
-              id="currency"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              name="currency"
-              required
-            >
-              <option value="BRL">BRL (R$)</option>
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-            </select>
-
           </div>
 
           <div>
