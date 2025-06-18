@@ -1,3 +1,6 @@
 dinheiros.db
 
 frontend/node_modules/
+frontend/dist/
+
+bin/

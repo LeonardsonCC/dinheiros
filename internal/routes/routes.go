@@ -74,5 +74,11 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 		}
 	}
 
+	// Static file server - should be the last route
+	r.NoRoute(func(c *gin.Context) {
+		c.File("frontend/dist/index.html")
+	})
+	r.Static("/assets", "frontend/dist/assets")
+
 	return r
 }

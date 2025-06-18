@@ -1,4 +1,4 @@
-.PHONY: run setup-frontend
+.PHONY: run setup-frontend build-frontend build
 
 # Default target when running just 'make'
 run: setup-frontend
@@ -35,12 +35,28 @@ clean:
 	rm -rf frontend/node_modules frontend/dist
 	go clean
 
+# Build the frontend assets
+build-frontend:
+	@echo "Building frontend..."
+	cd frontend && npm run build
+	mkdir -p bin/frontend
+	cp -r frontend/dist/* bin/frontend
+
+# Build production binary with embedded frontend
+build: build-frontend
+	@echo "Building production binary..."
+	env go build -ldflags="-s -w" -o bin/dinheiros ./cmd/dinheiros
+
+
+
 help:
 	@echo "Available targets:"
-	@echo "  run           - Start both frontend and backend in development mode (default)"
-	@echo "  backend      - Start only the backend server"
-	@echo "  frontend     - Start only the frontend development server"
+	@echo "  run            - Start both frontend and backend in development mode (default)"
+	@echo "  backend        - Start only the backend server"
+	@echo "  frontend       - Start only the frontend development server"
 	@echo "  setup-frontend - Install frontend dependencies"
-	@echo "  deps          - Install Go dependencies"
-	@echo "  clean         - Remove generated files"
-	@echo "  help          - Show this help message"
+	@echo "  build-frontend - Build frontend assets"
+	@echo "  build          - Build production binary with embedded frontend"
+	@echo "  deps           - Install Go dependencies"
+	@echo "  clean          - Remove generated files"
+	@echo "  help           - Show this help message"
