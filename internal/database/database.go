@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/leccarvalho/dinheiros/internal/models"
+	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

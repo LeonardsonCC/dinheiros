@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/LeonardsonCC/dinheiros/internal/auth"
+	"github.com/LeonardsonCC/dinheiros/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/leccarvalho/dinheiros/internal/auth"
-	"github.com/leccarvalho/dinheiros/internal/service"
 )
 
 // AuthMiddleware creates a middleware that validates JWT tokens and sets the user in the context

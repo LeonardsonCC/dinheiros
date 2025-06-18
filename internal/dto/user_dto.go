@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/leccarvalho/dinheiros/internal/models"
+import "github.com/LeonardsonCC/dinheiros/internal/models"
 
 // RegisterRequest represents the request body for user registration
 type RegisterRequest struct {

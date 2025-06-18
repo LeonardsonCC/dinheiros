@@ -3,9 +3,9 @@ package service
 import (
 	"time"
 
-	"github.com/leccarvalho/dinheiros/internal/errors"
-	"github.com/leccarvalho/dinheiros/internal/models"
-	repo "github.com/leccarvalho/dinheiros/internal/repository"
+	"github.com/LeonardsonCC/dinheiros/internal/errors"
+	"github.com/LeonardsonCC/dinheiros/internal/models"
+	repo "github.com/LeonardsonCC/dinheiros/internal/repository"
 )
 
 type TransactionService interface {
@@ -142,16 +142,16 @@ func (s *transactionService) GetTransactionsByAccountID(userID uint, accountID u
 
 	transactions, _, err := s.transactionRepo.FindByUserID(
 		userID,
-		nil, // transactionTypes
+		nil,               // transactionTypes
 		[]uint{accountID}, // accountIDs
-		nil, // categoryIDs
-		"",  // description
-		nil, // minAmount
-		nil, // maxAmount
-		nil, // startDate
-		nil, // endDate
-		0,   // page (0 means no pagination)
-		0,   // pageSize (0 means no pagination)
+		nil,               // categoryIDs
+		"",                // description
+		nil,               // minAmount
+		nil,               // maxAmount
+		nil,               // startDate
+		nil,               // endDate
+		0,                 // page (0 means no pagination)
+		0,                 // pageSize (0 means no pagination)
 	)
 	return transactions, err
 }

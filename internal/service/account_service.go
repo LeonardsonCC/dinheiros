@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/leccarvalho/dinheiros/internal/models"
-	"github.com/leccarvalho/dinheiros/internal/repository"
+	"github.com/LeonardsonCC/dinheiros/internal/models"
+	"github.com/LeonardsonCC/dinheiros/internal/repository"
 )
 
 type AccountService interface {

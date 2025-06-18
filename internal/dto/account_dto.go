@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/leccarvalho/dinheiros/internal/models"
+import "github.com/LeonardsonCC/dinheiros/internal/models"
 
 type CreateAccountRequest struct {
 	Name           string             `json:"name" binding:"required"`

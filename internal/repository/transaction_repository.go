@@ -3,7 +3,7 @@ package repository
 import (
 	"time"
 
-	"github.com/leccarvalho/dinheiros/internal/models"
+	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"gorm.io/gorm"
 )
 

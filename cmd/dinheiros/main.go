@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/leccarvalho/dinheiros/config"
-	"github.com/leccarvalho/dinheiros/internal/database"
-	"github.com/leccarvalho/dinheiros/internal/di"
-	"github.com/leccarvalho/dinheiros/internal/routes"
+	"github.com/LeonardsonCC/dinheiros/config"
+	"github.com/LeonardsonCC/dinheiros/internal/database"
+	"github.com/LeonardsonCC/dinheiros/internal/di"
+	"github.com/LeonardsonCC/dinheiros/internal/routes"
 )
 
 func main() {

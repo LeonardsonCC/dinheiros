@@ -4,10 +4,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/leccarvalho/dinheiros/internal/auth"
-	"github.com/leccarvalho/dinheiros/internal/handlers"
-	"github.com/leccarvalho/dinheiros/internal/repository"
-	"github.com/leccarvalho/dinheiros/internal/service"
+	"github.com/LeonardsonCC/dinheiros/internal/auth"
+	"github.com/LeonardsonCC/dinheiros/internal/handlers"
+	"github.com/LeonardsonCC/dinheiros/internal/repository"
+	"github.com/LeonardsonCC/dinheiros/internal/service"
 	"gorm.io/gorm"
 )
 

@@ -3,9 +3,9 @@ package service
 import (
 	"errors"
 
-	"github.com/leccarvalho/dinheiros/internal/auth"
-	"github.com/leccarvalho/dinheiros/internal/models"
-	repo "github.com/leccarvalho/dinheiros/internal/repository"
+	"github.com/LeonardsonCC/dinheiros/internal/auth"
+	"github.com/LeonardsonCC/dinheiros/internal/models"
+	repo "github.com/LeonardsonCC/dinheiros/internal/repository"
 )
 
 // UserService defines the interface for user-related operations

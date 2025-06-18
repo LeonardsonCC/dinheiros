@@ -3,20 +3,20 @@ package dto
 import (
 	"time"
 
-	"github.com/leccarvalho/dinheiros/internal/models"
+	"github.com/LeonardsonCC/dinheiros/internal/models"
 )
 
 type ListTransactionsRequest struct {
-	Types        []models.TransactionType `form:"types"`
-	AccountIDs   []uint                   `form:"account_ids"`
-	CategoryIDs  []uint                   `form:"category_ids"`
-	Description  string                   `form:"description"`
-	MinAmount    *float64                 `form:"min_amount"`
-	MaxAmount    *float64                 `form:"max_amount"`
-	StartDate    *time.Time               `form:"start_date" time_format:"2006-01-02"`
-	EndDate      *time.Time               `form:"end_date" time_format:"2006-01-02"`
-	Page         int                      `form:"page,default=1" binding:"min=1"`
-	PageSize     int                      `form:"page_size,default=20" binding:"min=1,max=100"`
+	Types       []models.TransactionType `form:"types"`
+	AccountIDs  []uint                   `form:"account_ids"`
+	CategoryIDs []uint                   `form:"category_ids"`
+	Description string                   `form:"description"`
+	MinAmount   *float64                 `form:"min_amount"`
+	MaxAmount   *float64                 `form:"max_amount"`
+	StartDate   *time.Time               `form:"start_date" time_format:"2006-01-02"`
+	EndDate     *time.Time               `form:"end_date" time_format:"2006-01-02"`
+	Page        int                      `form:"page,default=1" binding:"min=1"`
+	PageSize    int                      `form:"page_size,default=20" binding:"min=1,max=100"`
 }
 
 type PaginationMeta struct {

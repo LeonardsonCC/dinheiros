@@ -1,4 +1,4 @@
-module github.com/leccarvalho/dinheiros
+module github.com/LeonardsonCC/dinheiros
 
 go 1.24.3
 

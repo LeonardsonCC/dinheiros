@@ -1,12 +1,12 @@
 package dto
 
-import "github.com/leccarvalho/dinheiros/internal/models"
+import "github.com/LeonardsonCC/dinheiros/internal/models"
 
 // CategoryDTO represents the category data sent in responses
 type CategoryDTO struct {
-	ID          uint                `json:"id"`
-	Name        string              `json:"name"`
-	Description string              `json:"description"`
+	ID          uint                   `json:"id"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
 	Type        models.TransactionType `json:"type"`
 }
 
@@ -31,8 +31,8 @@ func ToCategoryDTOs(categories []models.Category) []CategoryDTO {
 
 // CreateCategoryRequest represents the request body for creating a category
 type CreateCategoryRequest struct {
-	Name        string              `json:"name" binding:"required"`
-	Description string              `json:"description"`
+	Name        string                 `json:"name" binding:"required"`
+	Description string                 `json:"description"`
 	Type        models.TransactionType `json:"type" binding:"required,oneof=income expense transfer"`
 }
 

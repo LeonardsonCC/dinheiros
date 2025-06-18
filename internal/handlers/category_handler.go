@@ -3,11 +3,10 @@ package handlers
 import (
 	"net/http"
 
-
+	"github.com/LeonardsonCC/dinheiros/internal/dto"
+	"github.com/LeonardsonCC/dinheiros/internal/models"
+	"github.com/LeonardsonCC/dinheiros/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/leccarvalho/dinheiros/internal/dto"
-	"github.com/leccarvalho/dinheiros/internal/models"
-	"github.com/leccarvalho/dinheiros/internal/service"
 )
 
 // ErrorResponse represents an error response

@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/leccarvalho/dinheiros/internal/models"
 )
 
 var (
