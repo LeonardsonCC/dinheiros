@@ -262,7 +262,7 @@ export default function AllTransactions() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   
   // Parse filters from URL search params
   const initialFilters = useMemo<FilterState>(() => ({
