@@ -12,6 +12,19 @@ type TransactionRepository interface {
 	Create(transaction *models.Transaction) error
 	FindByID(id uint, userID uint) (*models.Transaction, error)
 	FindByAccountID(accountID uint, userID uint) ([]models.Transaction, error)
+	FindByUserID(
+		userID uint,
+		transactionTypes []models.TransactionType,
+		accountIDs []uint,
+		categoryIDs []uint,
+		description string,
+		minAmount *float64,
+		maxAmount *float64,
+		startDate *time.Time,
+		endDate *time.Time,
+		page int,
+		pageSize int,
+	) ([]models.Transaction, int64, error)
 	Update(transaction *models.Transaction) error
 	Delete(id uint, userID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
@@ -50,19 +63,108 @@ func (r *transactionRepository) FindByID(id uint, userID uint) (*models.Transact
 }
 
 func (r *transactionRepository) FindByAccountID(accountID uint, userID uint) ([]models.Transaction, error) {
-	var transactions []models.Transaction
+	transactions, _, err := r.FindByUserID(
+		userID,
+		nil,               // transactionTypes
+		[]uint{accountID}, // accountIDs
+		nil,               // categoryIDs
+		"",                // description
+		nil,               // minAmount
+		nil,               // maxAmount
+		nil,               // startDate
+		nil,               // endDate
+		0,                 // page (0 means no pagination)
+		0,                 // pageSize (0 means no pagination)
+	)
+	return transactions, err
+}
 
-	err := r.db.Preload("Categories").
+func (r *transactionRepository) FindByUserID(
+	userID uint,
+	transactionTypes []models.TransactionType,
+	accountIDs []uint,
+	categoryIDs []uint,
+	description string,
+	minAmount *float64,
+	maxAmount *float64,
+	startDate *time.Time,
+	endDate *time.Time,
+	page int,
+	pageSize int,
+) ([]models.Transaction, int64, error) {
+	var transactions []models.Transaction
+	var total int64
+
+	// Start building the query
+	tx := r.db.Model(&models.Transaction{}).
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
-		Where("transactions.account_id = ? AND accounts.user_id = ?", accountID, userID).
-		Order("date DESC").
+		Where("accounts.user_id = ?", userID)
+
+	// Apply filters
+	if len(transactionTypes) > 0 {
+		tx = tx.Where("transactions.type IN ?", transactionTypes)
+	}
+
+	if len(accountIDs) > 0 {
+		tx = tx.Where("transactions.account_id IN ?", accountIDs)
+	}
+
+	if description != "" {
+		tx = tx.Where("transactions.description LIKE ?", "%"+description+"%")
+	}
+
+	if minAmount != nil {
+		tx = tx.Where("transactions.amount >= ?", *minAmount)
+	}
+
+	if maxAmount != nil {
+		tx = tx.Where("transactions.amount <= ?", *maxAmount)
+	}
+
+	if startDate != nil {
+		tx = tx.Where("transactions.date >= ?", *startDate)
+	}
+
+	if endDate != nil {
+		// Include the entire end date
+		endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, endDate.Location())
+		tx = tx.Where("transactions.date <= ?", endOfDay)
+	}
+
+	// Get total count for pagination
+	if page > 0 && pageSize > 0 {
+		if err := tx.Count(&total).Error; err != nil {
+			return nil, 0, err
+		}
+	}
+
+	// Apply category filter if needed
+	if len(categoryIDs) > 0 {
+		tx = tx.Joins("JOIN transaction_categories ON transaction_categories.transaction_id = transactions.id").
+			Where("transaction_categories.category_id IN ?", categoryIDs)
+	}
+
+	// Apply pagination
+	offset := (page - 1) * pageSize
+	if page > 0 && pageSize > 0 {
+		tx = tx.Offset(offset).Limit(pageSize)
+	}
+
+	// Execute the query with preloading categories
+	err := tx.Preload("Categories").
+		Order("transactions.date DESC, transactions.id DESC").
 		Find(&transactions).Error
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return transactions, nil
+	// If no pagination was used, set total to the number of results
+	if page <= 0 || pageSize <= 0 {
+		total = int64(len(transactions))
+	}
+
+	return transactions, total, nil
 }
 
 func (r *transactionRepository) Update(transaction *models.Transaction) error {

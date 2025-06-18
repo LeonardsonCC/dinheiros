@@ -52,6 +52,11 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 				}
 			}
 
+			transactions := protected.Group("/transactions")
+			{
+				transactions.GET("", container.TransactionHandler.ListTransactions)
+			}
+
 			// Category routes
 			categories := protected.Group("/categories")
 			{

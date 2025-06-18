@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { HomeIcon, BanknotesIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BanknotesIcon, ArrowLeftOnRectangleIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -32,6 +32,13 @@ const Layout = () => {
               >
                 <BanknotesIcon className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" />
                 Accounts
+              </Link>
+              <Link
+                to="/accounts/transactions"
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 group"
+              >
+                <CurrencyDollarIcon className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" />
+                All Transactions
               </Link>
               <button
                 onClick={handleLogout}

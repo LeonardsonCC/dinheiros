@@ -13,6 +13,19 @@ type TransactionService interface {
 		description string, toAccountID *uint, categoryIDs []uint, date time.Time) (*models.Transaction, error)
 	GetTransactionByID(userID uint, transactionID uint) (*models.Transaction, error)
 	GetTransactionsByAccountID(userID uint, accountID uint) ([]models.Transaction, error)
+	ListTransactions(
+		userID uint,
+		transactionTypes []models.TransactionType,
+		accountIDs []uint,
+		categoryIDs []uint,
+		description string,
+		minAmount *float64,
+		maxAmount *float64,
+		startDate *time.Time,
+		endDate *time.Time,
+		page int,
+		pageSize int,
+	) ([]models.Transaction, int64, error)
 	UpdateTransaction(userID uint, transaction *models.Transaction) error
 	DeleteTransaction(userID uint, transactionID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
@@ -127,7 +140,70 @@ func (s *transactionService) GetTransactionsByAccountID(userID uint, accountID u
 		return nil, err
 	}
 
-	return s.transactionRepo.FindByAccountID(accountID, userID)
+	transactions, _, err := s.transactionRepo.FindByUserID(
+		userID,
+		nil, // transactionTypes
+		[]uint{accountID}, // accountIDs
+		nil, // categoryIDs
+		"",  // description
+		nil, // minAmount
+		nil, // maxAmount
+		nil, // startDate
+		nil, // endDate
+		0,   // page (0 means no pagination)
+		0,   // pageSize (0 means no pagination)
+	)
+	return transactions, err
+}
+
+func (s *transactionService) ListTransactions(
+	userID uint,
+	transactionTypes []models.TransactionType,
+	accountIDs []uint,
+	categoryIDs []uint,
+	description string,
+	minAmount *float64,
+	maxAmount *float64,
+	startDate *time.Time,
+	endDate *time.Time,
+	page int,
+	pageSize int,
+) ([]models.Transaction, int64, error) {
+	// Verify accounts belong to user if accountIDs are provided
+	if len(accountIDs) > 0 {
+		userAccounts, err := s.accountRepo.FindByUserID(userID)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		// Create a map of valid account IDs for this user
+		validAccountIDs := make(map[uint]bool)
+		for _, account := range userAccounts {
+			validAccountIDs[account.ID] = true
+		}
+
+		// Verify all requested account IDs are valid
+		for _, id := range accountIDs {
+			if !validAccountIDs[id] {
+				return nil, 0, errors.ErrNotFound
+			}
+		}
+	}
+
+	// Call the repository method with all filters
+	return s.transactionRepo.FindByUserID(
+		userID,
+		transactionTypes,
+		accountIDs,
+		categoryIDs,
+		description,
+		minAmount,
+		maxAmount,
+		startDate,
+		endDate,
+		page,
+		pageSize,
+	)
 }
 
 func (s *transactionService) UpdateTransaction(userID uint, transaction *models.Transaction) error {

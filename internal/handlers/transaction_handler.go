@@ -88,6 +88,67 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 	})
 }
 
+func (h *TransactionHandler) ListTransactions(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Parse query parameters
+	var req dto.ListTransactionsRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get user ID from context
+	userID := user.(uint)
+
+	// Call service to get transactions
+	transactions, total, err := h.transactionService.ListTransactions(
+		userID,
+		req.Types,
+		req.AccountIDs,
+		req.CategoryIDs,
+		req.Description,
+		req.MinAmount,
+		req.MaxAmount,
+		req.StartDate,
+		req.EndDate,
+		req.Page,
+		req.PageSize,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch transactions"})
+		return
+	}
+
+	// Convert transactions to response DTOs
+	transactionResponses := make([]dto.TransactionResponse, len(transactions))
+	for i, t := range transactions {
+		transactionResponses[i] = dto.ToTransactionResponse(&t)
+	}
+
+	// Calculate pagination metadata
+	totalPages := int((total + int64(req.PageSize) - 1) / int64(req.PageSize))
+	if req.PageSize == 0 {
+		totalPages = 1
+	}
+
+	// Return response
+	c.JSON(http.StatusOK, dto.ListTransactionsResponse{
+		Data: transactionResponses,
+		Pagination: dto.PaginationMeta{
+			CurrentPage: req.Page,
+			PageSize:    req.PageSize,
+			TotalItems:  total,
+			TotalPages:  totalPages,
+		},
+	})
+}
+
 func (h *TransactionHandler) GetTransactions(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {

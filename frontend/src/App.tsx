@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
+import AllTransactions from './pages/AllTransactions';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NewAccount from './pages/NewAccount';
@@ -28,6 +29,7 @@ function App() {
             <Route path=":accountId/transactions" element={<Transactions />} />
             <Route path=":accountId/transactions/new" element={<NewTransaction />} />
             <Route path=":accountId/transactions/:transactionId/edit" element={<EditTransaction />} />
+            <Route path="transactions" element={<AllTransactions />} />
           </Route>
         </Route>
       </Routes>

@@ -3,7 +3,9 @@ package handlers
 import (
 	"net/http"
 
+
 	"github.com/gin-gonic/gin"
+	"github.com/leccarvalho/dinheiros/internal/dto"
 	"github.com/leccarvalho/dinheiros/internal/models"
 	"github.com/leccarvalho/dinheiros/internal/service"
 )
@@ -28,7 +30,7 @@ func NewCategoryHandler(service service.CategoryService) *CategoryHandler {
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Success 200 {array} models.Category
+// @Success 200 {array} dto.CategoryDTO
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /categories [get]
@@ -45,14 +47,7 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, categories)
-}
-
-// CreateCategoryRequest represents the request body for creating a category
-type CreateCategoryRequest struct {
-	Name        string                 `json:"name" binding:"required"`
-	Description string                 `json:"description"`
-	Type        models.TransactionType `json:"type" binding:"required,oneof=income expense transfer"`
+	c.JSON(http.StatusOK, dto.ToCategoryDTOs(categories))
 }
 
 // CreateCategory handles category creation
@@ -62,8 +57,8 @@ type CreateCategoryRequest struct {
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Param request body CreateCategoryRequest true "Category details"
-// @Success 201 {object} models.Category
+// @Param request body dto.CreateCategoryRequest true "Category details"
+// @Success 201 {object} dto.CategoryDTO
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -75,23 +70,24 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		return
 	}
 
-	var req CreateCategoryRequest
+	var req dto.CreateCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	category := models.Category{
-		Name:        req.Name,
-		Description: req.Description,
-		Type:        req.Type,
-		UserID:      userID.(uint),
-	}
-
+	category := req.ToModel(userID.(uint))
 	if err := h.service.CreateCategory(c.Request.Context(), &category); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create category"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, category)
+	c.JSON(http.StatusCreated, dto.ToCategoryDTO(category))
+}
+
+// CreateCategoryRequest represents the request body for creating a category
+type CreateCategoryRequest struct {
+	Name        string                 `json:"name" binding:"required"`
+	Description string                 `json:"description"`
+	Type        models.TransactionType `json:"type" binding:"required,oneof=income expense transfer"`
 }
