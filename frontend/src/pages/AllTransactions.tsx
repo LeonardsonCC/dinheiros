@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, FunnelIcon, XMarkIcon, CheckIcon, ChevronUpDownIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { Listbox, Transition } from '@headlessui/react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 
@@ -43,6 +44,213 @@ interface PaginationState {
   totalItems: number;
   totalPages: number;
 }
+
+// Types for MultiSelectDropdown
+interface SelectOption {
+  id: number;
+  name: string;
+}
+
+interface MultiSelectDropdownProps {
+  options: SelectOption[];
+  selected: number[];
+  onChange: (selected: number[]) => void;
+  placeholder?: string;
+}
+
+// MultiSelectDropdown component
+const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
+  options,
+  selected,
+  onChange,
+  placeholder = 'Select...',
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<number[]>(selected);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const filteredOptions = options.filter((option: SelectOption) =>
+    option.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const toggleOption = (optionId: number, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    const newSelected = selected.includes(optionId)
+      ? selected.filter((id: number) => id !== optionId)
+      : [...selected, optionId];
+    setSelectedItems(newSelected);
+    onChange(newSelected);
+  };
+
+  const removeOption = (optionId: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newSelected = selected.filter((id: number) => id !== optionId);
+    setSelectedItems(newSelected);
+    onChange(newSelected);
+  };
+
+  const clearAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedItems([]);
+    onChange([]);
+  };
+
+  return (
+    <Listbox as="div" className="relative" value={selectedItems} multiple ref={dropdownRef}>
+      {() => (
+        <>
+          <div className="relative">
+            <Listbox.Button
+              className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+              onClick={() => {
+                setIsOpen(!isOpen);
+                setSearchTerm('');
+              }}
+            >
+              <div className="flex flex-wrap gap-1">
+                {selectedItems.length === 0 ? (
+                  <span className="text-gray-500 truncate">{placeholder}</span>
+                ) : (
+                  selectedItems.map((id: number) => {
+                    const option = options.find((opt: SelectOption) => opt.id === id);
+                    return (
+                      <span
+                        key={id}
+                        className="inline-flex items-center rounded bg-indigo-100 px-2 py-0.5 text-sm font-medium text-indigo-800"
+                      >
+                        {option?.name}
+                        <XCircleIcon
+                          className="ml-1 h-4 w-4 text-indigo-500 hover:text-indigo-700"
+                          onClick={(e) => removeOption(id, e)}
+                        />
+                      </span>
+                    );
+                  })
+                )}
+              </div>
+              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              </span>
+            </Listbox.Button>
+
+            <Transition
+              show={isOpen}
+              as={Fragment}
+              leave="transition ease-in duration-100"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <Listbox.Options
+                static
+                className="mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 4px)',
+                  left: 0,
+                  right: 0,
+                  zIndex: 9999,
+                  maxHeight: '300px',
+                  overflowY: 'auto'
+                }}
+              >
+                <div className="sticky top-0 z-10 bg-white p-2">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    {searchTerm && (
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSearchTerm('');
+                        }}
+                      >
+                        <XMarkIcon className="h-4 w-4 text-gray-400" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {filteredOptions.length === 0 ? (
+                  <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                    No items found.
+                  </div>
+                ) : (
+                  filteredOptions.map((option: SelectOption) => (
+                    <Listbox.Option
+                      key={option.id}
+                      className={({ active }) =>
+                        `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                          active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+                        }`
+                      }
+                      value={option.id}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleOption(option.id, e);
+                      }}
+                    >
+                      {({ selected }) => (
+                        <>
+                          <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                            {option.name}
+                          </span>
+                          {selected ? (
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                              <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                          ) : null}
+                        </>
+                      )}
+                    </Listbox.Option>
+                  ))
+                )}
+                {selectedItems.length > 0 && (
+                  <div className="sticky bottom-0 z-10 border-t border-gray-100 bg-gray-50 p-2">
+                    <button
+                      type="button"
+                      className="w-full rounded-md border border-transparent bg-white px-3 py-1.5 text-left text-sm font-medium text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearAll(e);
+                      }}
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
+              </Listbox.Options>
+            </Transition>
+          </div>
+        </>
+      )}
+    </Listbox>
+  );
+};
 
 export default function AllTransactions() {
   // State management
@@ -268,7 +476,7 @@ export default function AllTransactions() {
 
       {/* Filters */}
       {showFilters && (
-        <div className="mt-6 bg-white shadow overflow-hidden rounded-lg p-6">
+        <div className="mt-6 bg-white shadow rounded-lg p-6 relative" style={{ overflow: 'visible' }}>
           <h2 className="text-lg font-medium text-gray-900 mb-4">Filters</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Description filter */}
@@ -316,55 +524,29 @@ export default function AllTransactions() {
             {/* Account filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Accounts</label>
-              <div className="space-y-2 max-h-40 overflow-y-auto p-2 border rounded">
-                {accounts.length > 0 ? accounts.map((account) => (
-                  <div key={account.id} className="flex items-center">
-                    <input
-                      id={`account-${account.id}`}
-                      type="checkbox"
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      checked={filters.accountIds.includes(account.id)}
-                      onChange={(e) => {
-                        const newAccountIds = e.target.checked
-                          ? [...filters.accountIds, account.id]
-                          : filters.accountIds.filter((id) => id !== account.id);
-                        handleFilterChange('accountIds', newAccountIds);
-                      }}
-                    />
-                    <label htmlFor={`account-${account.id}`} className="ml-2 text-sm text-gray-700">
-                      {account.name}
-                    </label>
-                  </div>
-                )) : (
-                  <div className="text-gray-500">No accounts found</div>
-                )}
-              </div>
+              <MultiSelectDropdown
+                options={accounts.map(account => ({
+                  id: account.id,
+                  name: account.name
+                }))}
+                selected={filters.accountIds}
+                onChange={(selected) => handleFilterChange('accountIds', selected)}
+                placeholder="Select accounts..."
+              />
             </div>
 
             {/* Category filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
-              <div className="space-y-2 max-h-40 overflow-y-auto p-2 border rounded">
-                {categories && categories.map((category) => (
-                  <div key={category.id} className="flex items-center">
-                    <input
-                      id={`category-${category.id}`}
-                      type="checkbox"
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      checked={filters.categoryIds.includes(category.id)}
-                      onChange={(e) => {
-                        const newCategoryIds = e.target.checked
-                          ? [...filters.categoryIds, category.id]
-                          : filters.categoryIds.filter((id) => id !== category.id);
-                        handleFilterChange('categoryIds', newCategoryIds);
-                      }}
-                    />
-                    <label htmlFor={`category-${category.id}`} className="ml-2 text-sm text-gray-700">
-                      {category.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
+              <MultiSelectDropdown
+                options={categories.map(category => ({
+                  id: category.id,
+                  name: category.name
+                }))}
+                selected={filters.categoryIds}
+                onChange={(selected) => handleFilterChange('categoryIds', selected)}
+                placeholder="Select categories..."
+              />
             </div>
 
             {/* Amount range */}
@@ -374,9 +556,6 @@ export default function AllTransactions() {
                   Min Amount
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm">$</span>
-                  </div>
                   <input
                     type="number"
                     name="min-amount"
@@ -393,9 +572,6 @@ export default function AllTransactions() {
                   Max Amount
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm">$</span>
-                  </div>
                   <input
                     type="number"
                     name="max-amount"
