@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"time"
 
 	"github.com/LeonardsonCC/dinheiros/internal/models"
@@ -156,6 +157,9 @@ func (r *transactionRepository) FindByUserID(
 		Find(&transactions).Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []models.Transaction{}, 0, nil
+		}
 		return nil, 0, err
 	}
 

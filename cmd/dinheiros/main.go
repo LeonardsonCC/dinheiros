@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/joho/godotenv"
 	"github.com/LeonardsonCC/dinheiros/config"
 	"github.com/LeonardsonCC/dinheiros/internal/database"
 	"github.com/LeonardsonCC/dinheiros/internal/di"
 	"github.com/LeonardsonCC/dinheiros/internal/routes"
+	"github.com/joho/godotenv"
 )
 
 func main() {

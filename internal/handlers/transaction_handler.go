@@ -77,7 +77,7 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 	}
 
 	// Get account ID from URL
-	accountIDStr := c.Param("accountId")
+	accountIDStr := c.Param("id")
 	if accountIDStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Account ID is required"})
 		return
@@ -379,12 +379,19 @@ func (h *TransactionHandler) GetTransactions(c *gin.Context) {
 
 	transactions, err := h.transactionService.GetTransactionsByAccountID(user.(uint), uint(accountID))
 	if err != nil {
-		switch e := err.(type) {
-		case *errors.NotFoundError:
-			c.JSON(http.StatusNotFound, gin.H{"error": e.Error()})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching transactions"})
+		// Only treat as error if it's not NotFoundError
+		if _, ok := err.(*errors.NotFoundError); ok {
+			// If NotFoundError, treat as empty list
+			c.JSON(http.StatusOK, dto.ToTransactionResponseList([]models.Transaction{}))
+			return
 		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching transactions"})
+		return
+	}
+
+	// If transactions is nil, treat as empty list
+	if len(transactions) == 0 {
+		c.JSON(http.StatusOK, dto.ToTransactionResponseList([]models.Transaction{}))
 		return
 	}
 

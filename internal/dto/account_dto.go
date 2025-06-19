@@ -5,7 +5,7 @@ import "github.com/LeonardsonCC/dinheiros/internal/models"
 type CreateAccountRequest struct {
 	Name           string             `json:"name" binding:"required"`
 	Type           models.AccountType `json:"type" binding:"required,oneof=checking savings credit cash"`
-	InitialBalance float64            `json:"initial_balance" binding:"required"`
+	InitialBalance float64            `json:"initial_balance" binding:""`
 }
 
 type AccountResponse struct {
