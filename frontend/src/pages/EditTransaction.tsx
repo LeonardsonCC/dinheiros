@@ -23,6 +23,15 @@ interface TransactionData {
   toAccountId: string;
 }
 
+interface AxiosError {
+  response?: {
+    data?: {
+      error?: string;
+      message?: string;
+    };
+  };
+}
+
 export default function EditTransaction() {
   const { accountId: accountIdParam, transactionId } = useParams<{ accountId: string; transactionId: string }>();
   const accountId = accountIdParam ? Number(accountIdParam) : null;
@@ -80,15 +89,21 @@ export default function EditTransaction() {
           type: transaction.type,
           amount: Math.abs(transaction.amount).toString(),
           description: transaction.description,
-          categoryIds: transaction.categories ? transaction.categories.map((c: any) => c.id) : [],
+          categoryIds: transaction.categories ? transaction.categories.map((c: { id: number }) => c.id) : [],
           date: transaction.date,
           toAccountId: transaction.toAccountId ? transaction.toAccountId.toString() : ''
         });
         
         setDateInput(formatDateForInput(transaction.date));
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error fetching data:', error);
-        const errorMessage = error.response?.data?.error || 'Failed to load transaction data';
+        let errorMessage = 'Failed to load transaction data';
+        if (typeof error === 'object' && error !== null && 'response' in error) {
+          const err = error as AxiosError;
+          if (typeof err.response?.data?.error === 'string') {
+            errorMessage = err.response.data.error;
+          }
+        }
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -181,9 +196,16 @@ export default function EditTransaction() {
       
       toast.success('Transaction updated successfully');
       navigate(`/accounts/${accountId}/transactions`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating transaction:', error);
-      toast.error(error.response?.data?.message || 'Failed to update transaction');
+      let errorMessage = 'Failed to update transaction';
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const err = error as AxiosError;
+        if (typeof err.response?.data?.message === 'string') {
+          errorMessage = err.response.data.message;
+        }
+      }
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -303,7 +325,7 @@ export default function EditTransaction() {
                       setFilteredCategories(prev => [...prev, newCategory]);
                       setFormData(prev => ({
                         ...prev,
-                        categoryIds: [...prev.categoryIds, newCategory.ID]
+                        categoryIds: [...prev.categoryIds, newCategory.id]
                       }));
                     }
                   }} 
@@ -332,7 +354,7 @@ export default function EditTransaction() {
                   </div>
                 ) : (
                   <p className="mt-1 text-sm text-gray-500">
-                    No categories yet. Click 'Add Category' to create one.
+                    No categories yet. Click &apos;Add Category&apos; to create one.
                   </p>
                 )}
               </div>

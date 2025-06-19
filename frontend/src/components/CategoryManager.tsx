@@ -18,6 +18,14 @@ interface CategoryManagerProps {
   onCategoryAdded: (category: Category) => void;
 }
 
+interface AxiosError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
 export default function CategoryManager({ initialType = 'expense', onCategoryAdded }: CategoryManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
@@ -45,9 +53,16 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
       onCategoryAdded(response.data);
       toast.success('Category added successfully');
       closeModal();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to add category';
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const err = error as AxiosError;
+        if (typeof err.response?.data?.message === 'string') {
+          errorMessage = err.response.data.message;
+        }
+      }
       console.error('Error creating category:', error);
-      toast.error(error.response?.data?.message || 'Failed to add category');
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

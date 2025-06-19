@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/LeonardsonCC/dinheiros/config"
-	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
+
+	// "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -26,7 +26,7 @@ func InitDB(cfg *config.Config) error {
 	case "sqlite3":
 		fallthrough
 	default:
-		dialector = sqlite.Open(cfg.DBPath)
+		// dialector = sqlite.Open(cfg.DBPath)
 	}
 
 	DB, err = gorm.Open(dialector, &gorm.Config{
@@ -37,15 +37,15 @@ func InitDB(cfg *config.Config) error {
 	}
 
 	// Auto migrate the schema
-	err = DB.AutoMigrate(
-		&models.User{},
-		&models.Account{},
-		&models.Transaction{},
-		&models.Category{},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to migrate database: %v", err)
-	}
+	// err = DB.AutoMigrate(
+	// 	&models.User{},
+	// 	&models.Account{},
+	// 	&models.Transaction{},
+	// 	&models.Category{},
+	// )
+	// if err != nil {
+	// 	return fmt.Errorf("failed to migrate database: %v", err)
+	// }
 
 	return nil
 }

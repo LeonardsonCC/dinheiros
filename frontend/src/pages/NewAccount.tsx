@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 
+interface AxiosError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
 export default function NewAccount() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -21,9 +29,15 @@ export default function NewAccount() {
       await api.post('/api/accounts', data);
       toast.success('Account created successfully!');
       navigate('/accounts');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to create account';
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const err = error as AxiosError;
+        if (typeof err.response?.data?.message === 'string') {
+          errorMessage = err.response.data.message;
+        }
+      }
       console.error('Error creating account:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to create account';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

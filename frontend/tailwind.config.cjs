@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-undef
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [

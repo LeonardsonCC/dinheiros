@@ -4,6 +4,14 @@ import { ArrowLongLeftIcon, DocumentTextIcon, XMarkIcon } from '@heroicons/react
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 
+interface AxiosError {
+  response?: {
+    data?: {
+      error?: string;
+    };
+  };
+}
+
 export default function ImportTransactions() {
   const { accountId } = useParams<{ accountId: string }>();
   const navigate = useNavigate();
@@ -110,12 +118,18 @@ export default function ImportTransactions() {
 
       toast.success(`Successfully imported ${response.data.transactions_imported} transactions`);
       navigate(`/accounts/${accountId}/transactions`);
-    } catch (error: any) {
-      console.error('Error importing transactions:', error);
-      const errorMessage = error.response?.data?.error || 'Failed to import transactions';
-      toast.error(errorMessage);
-      setFileError(errorMessage);
-    } finally {
+    } catch (error: unknown) {
+        let errorMessage = 'Failed to import transactions';
+        if (typeof error === 'object' && error !== null && 'response' in error) {
+          const err = error as AxiosError;
+          if (typeof err.response?.data?.error === 'string') {
+            errorMessage = err.response.data.error;
+          }
+        }
+        console.error('Error importing transactions:', error);
+        toast.error(errorMessage);
+        setFileError(errorMessage);
+      } finally {
       setIsLoading(false);
     }
   };

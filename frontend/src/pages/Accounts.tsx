@@ -21,6 +21,14 @@ interface ProcessedAccount {
   balance: number;
 }
 
+interface AxiosError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
 export default function Accounts() {
   const [accounts, setAccounts] = useState<ProcessedAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,9 +76,15 @@ export default function Accounts() {
         }).filter((account): account is ProcessedAccount => account !== null);
         
         setAccounts(processedAccounts);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        let errorMessage = 'Failed to load accounts';
+        if (typeof error === 'object' && error !== null && 'response' in error) {
+          const err = error as AxiosError;
+          if (typeof err.response?.data?.message === 'string') {
+            errorMessage = err.response.data.message;
+          }
+        }
         console.error('Error fetching accounts:', error);
-        const errorMessage = error.response?.data?.message || 'Failed to load accounts';
         toast.error(errorMessage);
         setAccounts([]);
       } finally {
@@ -93,9 +107,15 @@ export default function Accounts() {
       // Remove the deleted account from the state
       setAccounts(accounts.filter(account => account.id !== accountId));
       toast.success('Account deleted successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to delete account';
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const err = error as AxiosError;
+        if (typeof err.response?.data?.message === 'string') {
+          errorMessage = err.response.data.message;
+        }
+      }
       console.error('Error deleting account:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to delete account';
       toast.error(errorMessage);
     } finally {
       setDeletingId(null);

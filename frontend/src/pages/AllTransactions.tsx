@@ -390,7 +390,7 @@ export default function AllTransactions() {
   }, [filters, navigate]);
 
   // Handle filter changes
-  const handleFilterChange = (field: keyof FilterState, value: any) => {
+  const handleFilterChange = (field: keyof FilterState, value: unknown) => {
     setFilters(prev => ({
       ...prev,
       [field]: value,
@@ -741,7 +741,9 @@ export default function AllTransactions() {
                                 </span>
                               ))
                             ) : (
-                              <span className="text-gray-400">No categories</span>
+                              <p className="mt-1 text-sm text-gray-500">
+                                No categories yet. Click &apos;Add Category&apos; to create one.
+                              </p>
                             )}
                           </div>
                         </td>

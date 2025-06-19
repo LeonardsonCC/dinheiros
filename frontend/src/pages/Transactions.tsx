@@ -19,6 +19,14 @@ interface Transaction {
   toAccountId?: number;
 }
 
+interface AxiosError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
 export default function Transactions() {
   const { accountId: accountIdParam } = useParams<{ accountId: string }>();
   // Ensure accountId is a number
@@ -60,25 +68,20 @@ export default function Transactions() {
             console.warn('Unexpected transactions response format');
             setTransactions([]);
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('Error in fetch sequence');
           throw err; // Re-throw to be caught by the outer catch block
         }
-      } catch (err: any) {
-        console.error('Error fetching data:', err);
-        
-        // More specific error messages based on the error
-        if (err.response) {
-          toast.error(`Error: ${err.response.data?.message || 'Failed to load data'}`);
-        } else if (err.request) {
-          // The request was made but no response was received
-          console.error('No response received:', err.request);
-          toast.error('No response from server');
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.error('Error message:', err.message);
-          toast.error(`Error: ${err.message}`);
+      } catch (err: unknown) {
+        let errorMessage = 'Failed to load data';
+        if (typeof err === 'object' && err !== null && 'response' in err) {
+          const error = err as AxiosError;
+          if (typeof error.response?.data?.message === 'string') {
+            errorMessage = error.response.data.message;
+          }
         }
+        console.error('Error fetching data:', err);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -127,9 +130,16 @@ export default function Transactions() {
       }
       
       toast.success('Transaction deleted successfully');
-    } catch (err: any) {
+    } catch (err: unknown) {
+      let errorMessage = 'Failed to delete transaction';
+      if (typeof err === 'object' && err !== null && 'response' in err) {
+        const error = err as AxiosError;
+        if (typeof error.response?.data?.message === 'string') {
+          errorMessage = error.response.data.message;
+        }
+      }
       console.error('Error deleting transaction:', err);
-      toast.error(err.response?.data?.message || 'Failed to delete transaction');
+      toast.error(errorMessage);
     } finally {
       setDeletingId(null);
     }

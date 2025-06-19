@@ -14,6 +14,15 @@ import { Category } from '../components/CategoryManager';
 
 type TransactionType = 'income' | 'expense' | 'transfer';
 
+interface AxiosError {
+  response?: {
+    data?: {
+      error?: string;
+      message?: string;
+    };
+  };
+}
+
 export default function NewTransaction() {
   const { accountId: accountIdParam } = useParams<{ accountId: string }>();
   const accountId = accountIdParam ? Number(accountIdParam) : null;
@@ -58,9 +67,15 @@ export default function NewTransaction() {
         // Initial filter based on default type ('expense')
         const filtered = categoriesRes.data.filter((cat: Category) => cat.type === 'expense');
         setFilteredCategories(filtered);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        let errorMessage = 'Failed to load data';
+        if (typeof error === 'object' && error !== null && 'response' in error) {
+          const err = error as AxiosError;
+          if (typeof err.response?.data?.error === 'string') {
+            errorMessage = err.response.data.error;
+          }
+        }
         console.error('Error fetching data:', error);
-        const errorMessage = error.response?.data?.error || 'Failed to load data';
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -78,7 +93,7 @@ export default function NewTransaction() {
     
     // Clear selected categories if they don't match the new type
     if (formData.categoryIds.length > 0) {
-      const validCategoryIds = filtered.map(c => c.ID);
+      const validCategoryIds = filtered.map(c => c.id);
       const newCategoryIds = formData.categoryIds.filter(id => validCategoryIds.includes(id));
       
       if (newCategoryIds.length !== formData.categoryIds.length) {
@@ -157,9 +172,16 @@ export default function NewTransaction() {
       
       toast.success('Transaction added successfully');
       navigate(`/accounts/${selectedAccountId}/transactions`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to add transaction';
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const err = error as AxiosError;
+        if (typeof err.response?.data?.message === 'string') {
+          errorMessage = err.response.data.message;
+        }
+      }
       console.error('Error creating transaction:', error);
-      toast.error(error.response?.data?.message || 'Failed to add transaction');
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -303,7 +325,7 @@ export default function NewTransaction() {
                       setFilteredCategories(prev => [...prev, newCategory]);
                       setFormData(prev => ({
                         ...prev,
-                        categoryIds: [...prev.categoryIds, newCategory.ID]
+                        categoryIds: [...prev.categoryIds, newCategory.id]
                       }));
                     }
                   }} 
@@ -332,7 +354,7 @@ export default function NewTransaction() {
                   </div>
                 ) : (
                   <p className="mt-1 text-sm text-gray-500">
-                    No categories yet. Click 'Add Category' to create one.
+                    No categories yet. Click &apos;Add Category&apos; to create one.
                   </p>
                 )}
               </div>
