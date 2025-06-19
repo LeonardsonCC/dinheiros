@@ -3,7 +3,9 @@ package database
 import (
 	"fmt"
 
+	"github.com/LeonardsonCC/dinheiros/config"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -11,9 +13,23 @@ import (
 
 var DB *gorm.DB
 
-func InitDB(dbPath string) error {
+// InitDB initializes the database connection based on config
+func InitDB(cfg *config.Config) error {
 	var err error
-	DB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+	var dialector gorm.Dialector
+
+	switch cfg.DBType {
+	case "postgres":
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+			cfg.DBHost, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBPort)
+		dialector = postgres.Open(dsn)
+	case "sqlite3":
+		fallthrough
+	default:
+		dialector = sqlite.Open(cfg.DBPath)
+	}
+
+	DB, err = gorm.Open(dialector, &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {

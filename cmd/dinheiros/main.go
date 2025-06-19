@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/LeonardsonCC/dinheiros/config"
 	"github.com/LeonardsonCC/dinheiros/internal/database"
 	"github.com/LeonardsonCC/dinheiros/internal/di"
@@ -10,12 +11,14 @@ import (
 )
 
 func main() {
+	// Load .env file if present
+	_ = godotenv.Load()
+
 	// Load configuration
 	cfg := config.LoadConfig()
 
 	// Initialize database
-	err := database.InitDB(cfg.DBPath)
-	if err != nil {
+	if err := database.InitDB(cfg); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
