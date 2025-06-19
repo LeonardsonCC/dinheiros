@@ -120,41 +120,45 @@ export default function Accounts() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {accounts.map((account) => (
-          <div key={account.id} className="relative p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                handleDelete(account.id);
-              }}
-              disabled={deletingId === account.id}
-              className="absolute top-2 right-2 p-1 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity duration-200 disabled:opacity-50"
-              title="Delete account"
-            >
-              {deletingId === account.id ? (
-                <svg className="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <TrashIcon className="h-5 w-5" />
-              )}
-            </button>
-            <Link to={`/accounts/${account.id}/transactions`}>
-              <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
-              <p className="mt-2 text-2xl font-semibold text-gray-900">
-                {new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: 'BRL',
-                }).format(account.balance || 0)}
-              </p>
-              <div className="mt-4 text-sm text-primary-600 hover:text-primary-800">
-                View transactions →
-              </div>
-            </Link>
-          </div>
-        ))}
+        {accounts.length === 0 ? (
+          <div className="col-span-full p-8 text-center text-gray-500">No accounts found. Add an account to get started.</div>
+        ) : (
+          accounts.map((account) => (
+            <div key={account.id} className="relative p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleDelete(account.id);
+                }}
+                disabled={deletingId === account.id}
+                className="absolute top-2 right-2 p-1 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity duration-200 disabled:opacity-50"
+                title="Delete account"
+              >
+                {deletingId === account.id ? (
+                  <svg className="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <TrashIcon className="h-5 w-5" />
+                )}
+              </button>
+              <Link to={`/accounts/${account.id}/transactions`}>
+                <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
+                <p className="mt-2 text-2xl font-semibold text-gray-900">
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  }).format(account.balance || 0)}
+                </p>
+                <div className="mt-4 text-sm text-primary-600 hover:text-primary-800">
+                  View transactions →
+                </div>
+              </Link>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
