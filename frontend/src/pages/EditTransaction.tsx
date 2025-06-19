@@ -106,7 +106,7 @@ export default function EditTransaction() {
     
     // Clear selected categories if they don't match the new type
     if (formData.categoryIds.length > 0) {
-      const validCategoryIds = filtered.map((c: Category) => c.ID);
+      const validCategoryIds = filtered.map((c: Category) => c.id);
       const newCategoryIds = formData.categoryIds.filter((id: number) => validCategoryIds.includes(id));
       
       if (newCategoryIds.length !== formData.categoryIds.length) {
@@ -312,16 +312,16 @@ export default function EditTransaction() {
                 {filteredCategories.length > 0 ? (
                   <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
                     {filteredCategories.map(category => (
-                      <div key={category.ID} className="flex items-center">
+                      <div key={category.id} className="flex items-center">
                         <input
                           type="checkbox"
-                          id={`category-${category.ID}`}
-                          checked={formData.categoryIds.includes(category.ID)}
-                          onChange={() => handleCategoryChange(category.ID)}
+                          id={`category-${category.id}`}
+                          checked={formData.categoryIds.includes(category.id)}
+                          onChange={() => handleCategoryChange(category.id)}
                           className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                         />
                         <label 
-                          htmlFor={`category-${category.ID}`} 
+                          htmlFor={`category-${category.id}`} 
                           className="ml-2 block text-sm text-gray-700 truncate"
                           title={category.description}
                         >

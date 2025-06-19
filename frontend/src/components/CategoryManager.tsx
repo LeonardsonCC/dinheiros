@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
 export interface Category {
-  ID: number;
+  id: number;
   name: string;
   description: string;
   type: TransactionType;

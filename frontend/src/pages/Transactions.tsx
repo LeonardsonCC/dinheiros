@@ -69,16 +69,7 @@ export default function Transactions() {
         
         // More specific error messages based on the error
         if (err.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          
-          if (err.response.status === 404) {
-            toast.error('Account not found');
-          } else if (err.response.status === 400) {
-            toast.error('Invalid account ID format');
-          } else {
-            toast.error(`Error: ${err.response.data?.message || 'Failed to load data'}`);
-          }
+          toast.error(`Error: ${err.response.data?.message || 'Failed to load data'}`);
         } else if (err.request) {
           // The request was made but no response was received
           console.error('No response received:', err.request);
