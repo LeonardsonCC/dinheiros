@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLongLeftIcon, DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
@@ -13,13 +13,31 @@ interface AxiosError {
 }
 
 export default function ImportTransactions() {
-  const { accountId } = useParams<{ accountId: string }>();
+  const { accountId: urlAccountId } = useParams<{ accountId: string }>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isValidFile, setIsValidFile] = useState(true);
   const [fileError, setFileError] = useState('');
+  const [accounts, setAccounts] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>(urlAccountId || '');
+  const [accountsLoading, setAccountsLoading] = useState(false);
+
+  // Fetch accounts if accountId is not in URL
+  useEffect(() => {
+    if (!urlAccountId) {
+      setAccountsLoading(true);
+      api.get('/api/accounts')
+        .then((res) => {
+          setAccounts(res.data.accounts || []);
+        })
+        .catch(() => {
+          toast.error('Failed to load accounts');
+        })
+        .finally(() => setAccountsLoading(false));
+    }
+  }, [urlAccountId]);
 
   const validateFile = useCallback((file: File): boolean => {
     // Check file type
@@ -87,9 +105,14 @@ export default function ImportTransactions() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    // Use selectedAccountId instead of accountId
+    const accountId = selectedAccountId;
     if (!selectedFile) {
       toast.error('Please select a file to upload');
+      return;
+    }
+    if (!accountId) {
+      toast.error('Please select an account');
       return;
     }
 
@@ -101,7 +124,7 @@ export default function ImportTransactions() {
 
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('accountId', accountId || '');
+    formData.append('accountId', accountId);
 
     try {
       setIsLoading(true);
@@ -134,6 +157,39 @@ export default function ImportTransactions() {
     }
   };
 
+  // Dedicated account selection page if no accountId in URL and none selected
+  if (!urlAccountId && !selectedAccountId) {
+    return (
+      <div className="p-6 max-w-lg mx-auto">
+        <h1 className="text-2xl font-bold mb-4">Select an Account</h1>
+        {accountsLoading ? (
+          <p>Loading accounts...</p>
+        ) : accounts.length === 0 ? (
+          <p className="text-gray-500">No accounts found.</p>
+        ) : (
+          <ul className="space-y-2">
+            {accounts.map(acc => (
+              <li key={acc.id}>
+                <button
+                  className="w-full text-left px-4 py-2 rounded bg-primary-100 hover:bg-primary-200 text-primary-800 font-medium"
+                  onClick={() => setSelectedAccountId(acc.id)}
+                >
+                  {acc.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button
+          onClick={() => navigate(-1)}
+          className="mt-6 text-sm text-gray-600 hover:text-gray-900 flex items-center"
+        >
+          <ArrowLongLeftIcon className="w-4 h-4 mr-1" /> Back
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -153,6 +209,25 @@ export default function ImportTransactions() {
       <div className="bg-white shadow sm:rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {!urlAccountId && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Account <span className="text-red-500">*</span>
+                </label>
+                <select
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  value={selectedAccountId}
+                  onChange={e => setSelectedAccountId(e.target.value)}
+                  disabled={accountsLoading}
+                  required
+                >
+                  <option value="">-- Select an account --</option>
+                  {accounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 PDF File
