@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 
 	"mime/multipart"
@@ -15,6 +16,7 @@ import (
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/LeonardsonCC/dinheiros/internal/service"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 )
 
@@ -515,38 +517,52 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 		return
 	}
 
+	var createdMu = &sync.Mutex{}
 	var created []models.Transaction
-	for _, t := range req.Transactions {
-		var parsedDate time.Time
-		var err error
-		if t.Date != "" {
-			parsedDate, err = time.Parse("2006-01-02", t.Date)
-			if err != nil {
-				parsedDate, err = time.Parse(time.RFC3339, t.Date)
-				if err != nil {
-					parsedDate = time.Now()
-				}
-			}
-		} else {
-			parsedDate = time.Now()
-		}
-		txType := models.TransactionType(t.Type)
 
-		transaction, err := h.transactionService.CreateTransaction(
-			user.(uint),
-			uint(accountID),
-			t.Amount,
-			txType,
-			t.Description,
-			nil, // ToAccountID
-			t.CategoryIDs,
-			parsedDate,
-		)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		created = append(created, *transaction)
+	g, _ := errgroup.WithContext(c.Request.Context())
+
+	for _, t := range req.Transactions {
+		t := t // capture loop variable
+		g.Go(func() error {
+			var parsedDate time.Time
+			var err error
+			if t.Date != "" {
+				parsedDate, err = time.Parse("2006-01-02", t.Date)
+				if err != nil {
+					parsedDate, err = time.Parse(time.RFC3339, t.Date)
+					if err != nil {
+						parsedDate = time.Now()
+					}
+				}
+			} else {
+				parsedDate = time.Now()
+			}
+			txType := models.TransactionType(t.Type)
+
+			transaction, err := h.transactionService.CreateTransaction(
+				user.(uint),
+				uint(accountID),
+				t.Amount,
+				txType,
+				t.Description,
+				nil, // ToAccountID
+				t.CategoryIDs,
+				parsedDate,
+			)
+			if err != nil {
+				return err
+			}
+			createdMu.Lock()
+			created = append(created, *transaction)
+			createdMu.Unlock()
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
