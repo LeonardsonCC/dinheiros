@@ -1,8 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, Fragment, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLongLeftIcon, DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowLongLeftIcon, DocumentTextIcon, XMarkIcon, ChevronUpDownIcon, PlusIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { Transition } from '@headlessui/react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import CategoryManager from '../components/CategoryManager';
 
 interface AxiosError {
   response?: {
@@ -18,6 +20,7 @@ interface TransactionDraft {
   description: string;
   amount: number;
   category: string;
+  ignored?: boolean;
   [key: string]: any;
 }
 
@@ -35,6 +38,7 @@ export default function ImportTransactions() {
   const [transactions, setTransactions] = useState<TransactionDraft[]>([]);
   const [saveLoading, setSaveLoading] = useState(false);
   const [categories, setCategories] = useState<Array<{ id: number; name: string; type: string }>>([]);
+  const [categoryManagerOpenIdx, setCategoryManagerOpenIdx] = useState<number | null>(null);
 
   // Fetch accounts if accountId is not in URL
   useEffect(() => {
@@ -189,22 +193,18 @@ export default function ImportTransactions() {
     setTransactions(prev => prev.map((t, i) => i === idx ? { ...t, [field]: value } : t));
   };
 
-  const handleCategoryChange = (txIdx: number, categoryId: number) => {
-    setTransactions(prev => prev.map((t, i) => {
-      if (i !== txIdx) return t;
-      const ids = Array.isArray(t.categoryIds) ? [...t.categoryIds] : [];
-      const idx = ids.indexOf(categoryId);
-      if (idx === -1) ids.push(categoryId);
-      else ids.splice(idx, 1);
-      return { ...t, categoryIds: ids };
-    }));
+  // Add a helper to toggle ignored state
+  const toggleIgnoreTransaction = (idx: number) => {
+    setTransactions(prev => prev.map((t, i) => i === idx ? { ...t, ignored: !t.ignored } : t));
   };
 
   const handleSaveTransactions = async () => {
     if (!selectedAccountId || transactions.length === 0) return;
     setSaveLoading(true);
     try {
-      await api.post(`/api/accounts/${selectedAccountId}/transactions/bulk`, { transactions });
+      // Filter out ignored transactions
+      const toSave = transactions.filter(t => !t.ignored);
+      await api.post(`/api/accounts/${selectedAccountId}/transactions/bulk`, { transactions: toSave });
       toast.success('Transactions saved successfully!');
       navigate(`/accounts/${selectedAccountId}/transactions`);
     } catch (error) {
@@ -247,6 +247,161 @@ export default function ImportTransactions() {
     );
   }
 
+  // MultiSelectDropdown for categories (inline, for table usage)
+  function CategoryMultiSelectDropdown({
+    options,
+    selected,
+    onChange,
+    disabled,
+    placeholder = 'Select categories...',
+    onAddCategory,
+  }: {
+    options: { id: number; name: string }[];
+    selected: number[];
+    onChange: (selected: number[]) => void;
+    disabled?: boolean;
+    placeholder?: string;
+    onAddCategory?: (name: string) => void;
+  }) {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
+    const [newCategory, setNewCategory] = useState('');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+          setIsOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const filteredOptions = options.filter(option =>
+      option.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const toggleOption = (optionId: number) => {
+      if (disabled) return;
+      const newSelected = selected.includes(optionId)
+        ? selected.filter(id => id !== optionId)
+        : [...selected, optionId];
+      onChange(newSelected);
+    };
+
+    const handleAddCategory = () => {
+      if (onAddCategory && newCategory.trim()) {
+        onAddCategory(newCategory.trim());
+        setNewCategory('');
+        setSearchTerm('');
+      }
+    };
+
+    return (
+      <div className="relative" ref={dropdownRef}>
+        <button
+          type="button"
+          className={`w-full border rounded px-1 py-0.5 text-left bg-white h-10 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          onClick={() => !disabled && setIsOpen(v => !v)}
+          disabled={disabled}
+        >
+          <div className="flex flex-wrap gap-1">
+            {selected.length === 0 ? (
+              <span className="text-gray-400">{placeholder}</span>
+            ) : (
+              selected.map(id => {
+                const option = options.find(opt => opt.id === id);
+                return (
+                  <span key={id} className="inline-flex items-center rounded bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800">
+                    {option?.name}
+                    <XMarkIcon
+                      className="ml-1 h-3 w-3 text-indigo-500 hover:text-indigo-700 cursor-pointer"
+                      onClick={e => {
+                        e.stopPropagation();
+                        toggleOption(id);
+                      }}
+                    />
+                  </span>
+                );
+              })
+            )}
+          </div>
+          <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+            <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+          </span>
+        </button>
+        <Transition
+          show={isOpen}
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-xs">
+            <div className="p-2">
+              <input
+                type="text"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
+                placeholder="Search or add category..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                onClick={e => e.stopPropagation()}
+              />
+            </div>
+            {filteredOptions.length === 0 && searchTerm.trim() ? (
+              <div className="px-3 py-2 text-gray-500 flex items-center justify-between">
+                <span>No match. Add "{searchTerm}"?</span>
+                {onAddCategory && (
+                  <button
+                    type="button"
+                    className="ml-2 inline-flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 text-xs"
+                    onClick={() => { setNewCategory(searchTerm); handleAddCategory(); setIsOpen(false); }}
+                  >
+                    <PlusIcon className="h-4 w-4 mr-1" /> Add
+                  </button>
+                )}
+              </div>
+            ) : null}
+            {filteredOptions.map(option => (
+              <div
+                key={option.id}
+                className={`cursor-pointer px-3 py-2 hover:bg-indigo-50 flex items-center ${selected.includes(option.id) ? 'font-semibold text-indigo-700' : ''}`}
+                onClick={() => toggleOption(option.id)}
+              >
+                {option.name}
+                {selected.includes(option.id) && (
+                  <CheckIcon className="ml-2 h-4 w-4 text-indigo-600" />
+                )}
+              </div>
+            ))}
+          </div>
+        </Transition>
+      </div>
+    );
+  }
+
+  // Add category creation logic
+  const handleAddCategory = async (name: string, type: string) => {
+    try {
+      const res = await api.post('/api/categories', { name, type });
+      setCategories(prev => [...prev, res.data]);
+      toast.success('Category added!');
+    } catch {
+      toast.error('Failed to add category');
+    }
+  };
+
+  const handleCategoryAdded = (cat: any, idx: number) => {
+    setCategories(prev => [...prev, cat]);
+    setTransactions(prev => prev.map((t, i) =>
+      i === idx
+        ? { ...t, categoryIds: [...(t.categoryIds || []), cat.id] }
+        : t
+    ));
+    setCategoryManagerOpenIdx(null);
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -269,73 +424,97 @@ export default function ImportTransactions() {
             <div>
               <h2 className="text-lg font-bold mb-2">Review & Edit Transactions</h2>
               <div className="overflow-x-auto">
-                <table className="min-w-full text-sm border mb-4">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="p-2 border">Type</th>
-                      <th className="p-2 border">Date</th>
-                      <th className="p-2 border">Description</th>
-                      <th className="p-2 border">Amount</th>
-                      <th className="p-2 border">Categories</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.map((t, idx) => (
-                      <tr key={idx}>
-                        <td className="border p-1">
-                          <select
-                            className="border rounded px-1 py-0.5 w-full"
-                            value={t.type || 'expense'}
-                            onChange={e => handleTransactionChange(idx, 'type', e.target.value)}
-                          >
-                            <option value="expense">Expense</option>
-                            <option value="income">Income</option>
-                            <option value="transfer">Transfer</option>
-                          </select>
-                        </td>
-                        <td className="border p-1">
-                          <input
-                            type="date"
-                            className="border rounded px-1 py-0.5 w-full"
-                            value={t.date}
-                            onChange={e => handleTransactionChange(idx, 'date', e.target.value)}
-                          />
-                        </td>
-                        <td className="border p-1">
-                          <input
-                            type="text"
-                            className="border rounded px-1 py-0.5 w-full"
-                            value={t.description}
-                            onChange={e => handleTransactionChange(idx, 'description', e.target.value)}
-                          />
-                        </td>
-                        <td className="border p-1">
-                          <input
-                            type="number"
-                            className="border rounded px-1 py-0.5 w-full"
-                            value={t.amount}
-                            onChange={e => handleTransactionChange(idx, 'amount', parseFloat(e.target.value))}
-                          />
-                        </td>
-                        <td className="border p-1">
-                          <div className="flex flex-wrap gap-2">
-                            {getFilteredCategories(t.type || 'expense').map(cat => (
-                              <label key={cat.id} className="flex items-center space-x-1">
-                                <input
-                                  type="checkbox"
-                                  checked={Array.isArray(t.categoryIds) && t.categoryIds.includes(cat.id)}
-                                  onChange={() => handleCategoryChange(idx, cat.id)}
-                                  className="h-4 w-4 text-primary-600 border-gray-300 rounded"
+                <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-300">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Type</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Description</th>
+                          <th className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">Amount</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Categories</th>
+                          <th className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 cursor-pointer select-none" onClick={() => {
+                            const allIgnored = transactions.length > 0 && transactions.every(t => t.ignored);
+                            setTransactions(prev => prev.map(t => ({ ...t, ignored: !allIgnored })));
+                          }} title="Toggle all">Ignore</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 bg-white">
+                        {transactions.map((t, idx) => (
+                          <tr key={idx} className={`hover:bg-gray-50 ${t.ignored ? 'opacity-40 line-through bg-gray-100' : ''}`}> 
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              <select
+                                className="border rounded px-1 py-0.5 w-full"
+                                value={t.type || 'expense'}
+                                onChange={e => handleTransactionChange(idx, 'type', e.target.value)}
+                                disabled={t.ignored}
+                              >
+                                <option value="expense">Expense</option>
+                                <option value="income">Income</option>
+                                <option value="transfer">Transfer</option>
+                              </select>
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                              <input
+                                type="date"
+                                className="border rounded px-1 py-0.5 w-full"
+                                value={t.date}
+                                onChange={e => handleTransactionChange(idx, 'date', e.target.value)}
+                                disabled={t.ignored}
+                              />
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                              <input
+                                type="text"
+                                className="border rounded px-1 py-0.5 w-full"
+                                value={t.description}
+                                onChange={e => handleTransactionChange(idx, 'description', e.target.value)}
+                                disabled={t.ignored}
+                              />
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 text-right">
+                              <input
+                                type="number"
+                                className="border rounded px-1 py-0.5 w-full text-right"
+                                value={t.amount}
+                                onChange={e => handleTransactionChange(idx, 'amount', parseFloat(e.target.value))}
+                                disabled={t.ignored}
+                              />
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                              <div className="flex items-center gap-2">
+                                <CategoryMultiSelectDropdown
+                                  options={getFilteredCategories(t.type || 'expense')}
+                                  selected={Array.isArray(t.categoryIds) ? t.categoryIds : []}
+                                  onChange={catIds => handleTransactionChange(idx, 'categoryIds', catIds)}
+                                  disabled={t.ignored}
+                                  onAddCategory={name => handleAddCategory(name, t.type || 'expense')}
                                 />
-                                <span className="text-xs">{cat.name}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                                <CategoryManager
+                                  initialType={t.type || 'expense'}
+                                  onCategoryAdded={cat => handleCategoryAdded(cat, idx)}
+                                  buttonVariant="icon"
+                                  buttonClassName="ml-1"
+                                />
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                              <button
+                                type="button"
+                                onClick={() => toggleIgnoreTransaction(idx)}
+                                className={`text-gray-400 hover:text-red-500 transition ${t.ignored ? 'opacity-100' : ''}`}
+                                title={t.ignored ? 'Restore transaction' : 'Ignore transaction'}
+                              >
+                                <XMarkIcon className="h-5 w-5 inline" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
               <div className="flex justify-end space-x-3">
                 <button

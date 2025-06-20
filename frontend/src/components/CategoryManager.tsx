@@ -16,6 +16,8 @@ export interface Category {
 interface CategoryManagerProps {
   initialType?: TransactionType;
   onCategoryAdded: (category: Category) => void;
+  buttonVariant?: 'default' | 'icon'; // add this prop
+  buttonClassName?: string; // allow custom class
 }
 
 interface AxiosError {
@@ -26,7 +28,7 @@ interface AxiosError {
   };
 }
 
-export default function CategoryManager({ initialType = 'expense', onCategoryAdded }: CategoryManagerProps) {
+export default function CategoryManager({ initialType = 'expense', onCategoryAdded, buttonVariant = 'default', buttonClassName }: CategoryManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -82,17 +84,30 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
   return (
     <>
       <div className="flex justify-between items-center mb-2">
-        <span className="block text-sm font-medium text-gray-700">
-          Categories
-        </span>
-        <button
-          type="button"
-          onClick={openModal}
-          className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-primary-700 bg-primary-100 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-        >
-          <PlusIcon className="h-3.5 w-3.5 mr-1" />
-          Add Category
-        </button>
+        {buttonVariant === 'icon' ? (
+          <button
+            type="button"
+            onClick={openModal}
+            className={`p-1 rounded-full bg-primary-100 hover:bg-primary-200 text-primary-700 ${buttonClassName || ''}`}
+            title="Add Category"
+          >
+            <PlusIcon className="h-4 w-4" />
+          </button>
+        ) : (
+          <>
+            <span className="block text-sm font-medium text-gray-700">
+              Categories
+            </span>
+            <button
+              type="button"
+              onClick={openModal}
+              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-primary-700 bg-primary-100 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <PlusIcon className="h-3.5 w-3.5 mr-1" />
+              Add Category
+            </button>
+          </>
+        )}
       </div>
 
       <Transition appear show={isOpen} as={Fragment}>
