@@ -23,7 +23,6 @@ type Container struct {
 	TransactionService service.TransactionService
 	UserService        service.UserService
 	CategoryService    service.CategoryService
-	PDFService         service.PDFService
 
 	// Auth
 	JWTManager *auth.JWTManager
@@ -71,11 +70,10 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 	transactionService := service.NewTransactionService(transactionRepo, accountRepo)
 	userService := service.NewUserService(userRepo, jwtManager)
 	categoryService := service.NewCategoryService(db) // Using db directly as per the service implementation
-	pdfService := service.NewPDFService()
 
 	// Initialize handlers
 	accountHandler := handlers.NewAccountHandler(accountService)
-	transactionHandler := handlers.NewTransactionHandler(transactionService, pdfService)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
 	userHandler := handlers.NewUserHandler(userService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
@@ -88,7 +86,6 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 		TransactionService:    transactionService,
 		UserService:           userService,
 		CategoryService:       categoryService,
-		PDFService:            pdfService,
 		JWTManager:            jwtManager,
 		AccountHandler:        accountHandler,
 		TransactionHandler:    transactionHandler,

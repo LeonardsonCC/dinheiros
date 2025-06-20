@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"mime/multipart"
@@ -30,7 +29,6 @@ type UpdateTransactionRequest struct {
 
 type TransactionHandler struct {
 	transactionService service.TransactionService
-	pdfService         service.PDFService
 }
 
 type ImportTransactionsRequest struct {
@@ -38,10 +36,9 @@ type ImportTransactionsRequest struct {
 	File      *multipart.FileHeader `form:"file" binding:"required"`
 }
 
-func NewTransactionHandler(transactionService service.TransactionService, pdfService service.PDFService) *TransactionHandler {
+func NewTransactionHandler(transactionService service.TransactionService) *TransactionHandler {
 	return &TransactionHandler{
 		transactionService: transactionService,
-		pdfService:         pdfService,
 	}
 }
 
@@ -129,16 +126,9 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 	defer os.Remove(dst) // Clean up after processing
 
 	// Extract transaction lines from PDF
-	lines, err := h.pdfService.ExtractTransactions(dst)
+	transactions, err := h.transactionService.ExtractTransactionsFromPDF(dst, uint(accountID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process PDF: " + err.Error()})
-		return
-	}
-
-	// Parse transactions from lines
-	transactions, err := parseTransactionsFromLines(lines, uint(accountID))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse transactions: " + err.Error()})
 		return
 	}
 
@@ -146,53 +136,6 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"transactions": transactions,
 	})
-}
-
-// parseTransactionsFromLines parses transactions from the extracted lines
-func parseTransactionsFromLines(lines []string, accountID uint) ([]models.Transaction, error) {
-	var transactions []models.Transaction
-	for _, line := range lines {
-		fields := strings.Split(line, " | ")
-		if len(fields) < 5 {
-			continue // skip incomplete rows
-		}
-		dateStr := strings.TrimSpace(fields[0])
-		description := strings.TrimSpace(fields[2])
-		valor := strings.TrimSpace(fields[3])
-		valorParts := strings.Fields(valor)
-		if len(valorParts) < 2 {
-			continue
-		}
-		amountStr := strings.ReplaceAll(valorParts[0], ".", "")
-		amountStr = strings.ReplaceAll(amountStr, ",", ".")
-		amount, err := strconv.ParseFloat(amountStr, 64)
-		if err != nil {
-			continue
-		}
-		if amount == 0 {
-			continue // skip zero-amount transactions
-		}
-		var txType models.TransactionType = models.TransactionTypeExpense
-		if strings.ToUpper(valorParts[1]) == "C" {
-			txType = models.TransactionTypeIncome
-		}
-		date, err := time.Parse("02/01/2006", dateStr)
-		if err != nil {
-			date, err = time.Parse("02-01-2006", dateStr)
-			if err != nil {
-				continue
-			}
-		}
-		transaction := models.Transaction{
-			AccountID:   accountID,
-			Amount:      amount,
-			Type:        txType,
-			Description: description,
-			Date:        date,
-		}
-		transactions = append(transactions, transaction)
-	}
-	return transactions, nil
 }
 
 func (h *TransactionHandler) CreateTransaction(c *gin.Context) {

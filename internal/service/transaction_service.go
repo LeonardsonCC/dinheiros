@@ -5,6 +5,7 @@ import (
 
 	"github.com/LeonardsonCC/dinheiros/internal/errors"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
+	"github.com/LeonardsonCC/dinheiros/internal/pdfextractors"
 	repo "github.com/LeonardsonCC/dinheiros/internal/repository"
 )
 
@@ -29,6 +30,7 @@ type TransactionService interface {
 	UpdateTransaction(userID uint, transaction *models.Transaction) error
 	DeleteTransaction(userID uint, transactionID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
+	ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error)
 }
 
 type transactionService struct {
@@ -289,4 +291,15 @@ func (s *transactionService) DeleteTransaction(userID uint, transactionID uint) 
 
 func (s *transactionService) GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error) {
 	return s.transactionRepo.GetDashboardSummary(userID)
+}
+
+func (s *transactionService) ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error) {
+	extractor := pdfextractors.GetExtractorByName("caixa")
+
+	transactions, err := extractor.ExtractTransactions(filePath, accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	return transactions, nil
 }
