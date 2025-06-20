@@ -52,7 +52,7 @@ type TransactionResponse struct {
 	Type        string             `json:"type"`
 	Description string             `json:"description"`
 	Categories  []CategoryResponse `json:"categories"`
-	AccountID   uint               `json:"account_id"`
+	Account     AccountResponse    `json:"account"`
 	ToAccountID *uint              `json:"to_account_id,omitempty"`
 }
 
@@ -72,7 +72,7 @@ func ToTransactionResponse(transaction *models.Transaction) TransactionResponse 
 		Type:        string(transaction.Type),
 		Description: transaction.Description,
 		Categories:  categories,
-		AccountID:   transaction.AccountID,
+		Account:     ToAccountResponse(&transaction.Account),
 		ToAccountID: transaction.ToAccountID,
 	}
 }

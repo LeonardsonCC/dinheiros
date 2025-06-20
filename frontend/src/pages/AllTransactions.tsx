@@ -742,7 +742,7 @@ export default function AllTransactions() {
                               ))
                             ) : (
                               <p className="mt-1 text-sm text-gray-500">
-                                No categories yet. Click &apos;Add Category&apos; to create one.
+                                N/A
                               </p>
                             )}
                           </div>

@@ -152,7 +152,7 @@ func (r *transactionRepository) FindByUserID(
 	}
 
 	// Execute the query with preloading categories
-	err := tx.Preload("Categories").
+	err := tx.Preload("Account").Preload("Categories").
 		Order("transactions.date DESC, transactions.id DESC").
 		Find(&transactions).Error
 
