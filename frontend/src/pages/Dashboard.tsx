@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpIcon, ArrowDownIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
+import Loading from '../components/Loading';
 
 interface Summary {
   totalBalance: number;
@@ -36,7 +37,7 @@ export default function Dashboard() {
   }, []);
 
   if (loading) {
-    return <div className="p-8 text-center">Loading dashboard...</div>;
+    return <Loading message="Loading dashboard..." />;
   }
 
   const formatCurrency = (amount: number) => {

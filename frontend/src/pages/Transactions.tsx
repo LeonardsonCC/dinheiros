@@ -4,6 +4,7 @@ import { PlusIcon, ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import TransactionsTable from '../components/TransactionsTable';
+import Loading from '../components/Loading';
 
 interface Category {
   id: number;
@@ -113,7 +114,7 @@ export default function Transactions() {
   }, [transactions]);
 
   if (loading) {
-    return <div className="p-8 text-center">Loading transactions...</div>;
+    return <Loading message="Loading transactions..." />;
   }
 
   const formatCurrency = (amount: number) => {

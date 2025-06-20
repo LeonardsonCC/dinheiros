@@ -5,6 +5,7 @@ import { Transition } from '@headlessui/react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
+import Loading from '../components/Loading';
 
 interface AxiosError {
   response?: {
@@ -213,6 +214,10 @@ export default function ImportTransactions() {
     }
   };
 
+  if (isLoading || accountsLoading) {
+    return <Loading message="Loading accounts..." />;
+  }
+
   // Dedicated account selection page if no accountId in URL and none selected
   if (!urlAccountId && !selectedAccountId) {
     return (
@@ -399,6 +404,10 @@ export default function ImportTransactions() {
         : t
     ));
   };
+
+  if (isLoading || accountsLoading) {
+    return <Loading message="Loading..." />;
+  }
 
   return (
     <div className="p-6">

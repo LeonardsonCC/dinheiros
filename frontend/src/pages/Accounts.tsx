@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import Loading from '../components/Loading';
 
 interface Account {
   id: number | string;
@@ -123,7 +124,7 @@ export default function Accounts() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Loading accounts...</div>;
+    return <Loading message="Loading accounts..." />;
   }
 
   return (

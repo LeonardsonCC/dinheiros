@@ -5,6 +5,7 @@ import { Listbox, Transition } from '@headlessui/react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import TransactionsTable from '../components/TransactionsTable';
+import Loading from '../components/Loading';
 
 // Type definitions
 interface Account {
@@ -467,11 +468,7 @@ export default function AllTransactions() {
 
   // Show loading state
   if (loading && transactions.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
+    return <Loading message="Loading transactions..." />;
   }
 
   // Handle delete transaction
