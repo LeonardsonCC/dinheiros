@@ -199,7 +199,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                   <div className="flex items-center space-x-2">
                     <div className="flex items-center">
                       <label htmlFor="per-page" className="mr-2 text-sm text-gray-700">
-                        Rows per page:
+                        Size:
                       </label>
                       <select
                         id="per-page"
