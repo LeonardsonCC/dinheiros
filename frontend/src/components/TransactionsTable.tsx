@@ -39,6 +39,7 @@ interface TransactionsTableProps {
   getSortIndicator: (key: keyof Transaction) => React.ReactNode;
   formatCurrency: (amount: number) => string;
   formatDate: (dateString: string) => string;
+  renderActions?: (transaction: Transaction) => React.ReactNode; // Optional actions column
 }
 
 const TransactionsTable: React.FC<TransactionsTableProps> = ({
@@ -52,6 +53,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   getSortIndicator,
   formatCurrency,
   formatDate,
+  renderActions,
 }) => {
   return (
     <div className="mt-8 flex flex-col">
@@ -97,12 +99,17 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                       <span className="ml-1">{getSortIndicator('amount')}</span>
                     </div>
                   </th>
+                  {renderActions && (
+                    <th className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {transactions.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-3 py-4 text-sm text-gray-500 text-center">
+                    <td colSpan={renderActions ? 6 : 5} className="px-3 py-4 text-sm text-gray-500 text-center">
                       {loading ? 'Loading transactions...' : 'No transactions found'}
                     </td>
                   </tr>
@@ -150,6 +157,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                         {transaction.type === 'expense' ? '-' : ''}
                         {formatCurrency(transaction.amount)}
                       </td>
+                      {renderActions && (
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                          {renderActions(transaction)}
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}

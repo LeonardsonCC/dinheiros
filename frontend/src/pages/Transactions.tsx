@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { PlusIcon, ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import TransactionsTable from '../components/TransactionsTable';
 
 interface Category {
   id: number;
@@ -17,6 +18,7 @@ interface Transaction {
   date: string;
   categories: Category[];
   toAccountId?: number;
+  account?: { id: number; name: string }; // Added account field
 }
 
 interface AxiosError {
@@ -36,6 +38,17 @@ export default function Transactions() {
   const [account, setAccount] = useState<{ name: string; balance: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // Pagination and sorting state for TransactionsTable
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 10,
+    totalItems: transactions.length,
+    totalPages: Math.max(1, Math.ceil(transactions.length / 10)),
+  });
+  // Fix sortConfig typing for TransactionsTable
+  type TransactionTableKey = keyof Transaction;
+  const [sortConfig, setSortConfig] = useState<{ key: TransactionTableKey; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -89,6 +102,15 @@ export default function Transactions() {
 
     fetchData();
   }, [accountId]);
+
+  useEffect(() => {
+    setPagination(prev => ({
+      ...prev,
+      totalItems: transactions.length,
+      totalPages: Math.max(1, Math.ceil(transactions.length / prev.pageSize)),
+      currentPage: Math.min(prev.currentPage, Math.max(1, Math.ceil(transactions.length / prev.pageSize)))
+    }));
+  }, [transactions]);
 
   if (loading) {
     return <div className="p-8 text-center">Loading transactions...</div>;
@@ -145,6 +167,44 @@ export default function Transactions() {
     }
   };
 
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, currentPage: newPage }));
+  };
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPagination(prev => ({ ...prev, pageSize: Number(e.target.value), currentPage: 1 }));
+  };
+  const handleSort = (key: TransactionTableKey) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
+    }));
+  };
+  const getSortIndicator = (key: TransactionTableKey) => {
+    if (sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? '↑' : '↓';
+  };
+
+  // Adapt transactions for TransactionsTable (add dummy account field)
+  const paginatedSortedTransactions = [...transactions]
+    .sort((a, b) => {
+      let aValue: any = a[sortConfig.key as keyof Transaction];
+      let bValue: any = b[sortConfig.key as keyof Transaction];
+      if (sortConfig.key === 'date') {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      }
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    })
+    .slice((pagination.currentPage - 1) * pagination.pageSize, pagination.currentPage * pagination.pageSize)
+    .map(tx => ({
+      ...tx,
+      account: { id: accountId || 0, name: account?.name || 'Account' },
+      toAccount: tx.toAccountId ? { id: tx.toAccountId, name: '' } : undefined,
+    }));
+
+  // Use TransactionsTable for displaying transactions
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -172,89 +232,37 @@ export default function Transactions() {
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul role="list" className="divide-y divide-gray-200">
-          {Array.isArray(transactions) && transactions.length > 0 ? (
-            transactions.map((transaction) => (
-              <li key={transaction.id} className="border-b border-gray-200">
-                <div className="px-4 py-4 sm:px-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {transaction.description}
-                        </p>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          transaction.type === 'income' 
-                            ? 'bg-green-100 text-green-800' 
-                            : transaction.type === 'expense' 
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
-                        </span>
-                      </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-1">
-                        <span className="text-xs text-gray-500">
-                          {new Date(transaction.date).toLocaleDateString()}
-                        </span>
-                        {transaction.categories && transaction.categories.length > 0 && (
-                          <>
-                            <span className="text-xs text-gray-500">•</span>
-                            <div className="flex flex-wrap gap-1">
-                              {transaction.categories.map(category => (
-                                <span 
-                                  key={category.id} 
-                                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-                                >
-                                  {category.name}
-                                </span>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="ml-4 flex-shrink-0 flex flex-col items-end">
-                      <p className={`text-sm font-medium ${
-                        transaction.type === 'income' 
-                          ? 'text-green-600' 
-                          : transaction.type === 'expense' 
-                            ? 'text-red-600'
-                            : 'text-blue-600'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}
-                        {formatCurrency(transaction.amount)}
-                      </p>
-                      <div className="mt-2 flex items-center space-x-3">
-                        <Link
-                          to={`/accounts/${accountId}/transactions/${transaction.id}/edit`}
-                          className="text-primary-600 hover:text-primary-900 text-sm"
-                        >
-                          Edit
-                        </Link>
-                        <span className="text-gray-300">|</span>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteTransaction(transaction.id)}
-                          disabled={deletingId === transaction.id}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50 text-sm"
-                        >
-                          {deletingId === transaction.id ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            ))
-          ) : (
-            <li className="px-4 py-12 text-center text-gray-500">
-              No transactions found. Add your first transaction to get started.
-            </li>
-          )}
-        </ul>
-      </div>
+      <TransactionsTable
+        transactions={paginatedSortedTransactions as any}
+        loading={loading}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        sortConfig={sortConfig as any}
+        onSort={handleSort as any}
+        getSortIndicator={getSortIndicator as any}
+        formatCurrency={formatCurrency}
+        formatDate={(dateString: string) => new Date(dateString).toLocaleDateString()}
+        renderActions={(transaction) => (
+          <div className="flex items-center space-x-3 justify-center">
+            <Link
+              to={`/accounts/${accountId}/transactions/${transaction.id}/edit`}
+              className="text-primary-600 hover:text-primary-900 text-sm"
+            >
+              Edit
+            </Link>
+            <span className="text-gray-300">|</span>
+            <button
+              type="button"
+              onClick={() => handleDeleteTransaction(transaction.id)}
+              disabled={deletingId === transaction.id}
+              className="text-red-600 hover:text-red-900 disabled:opacity-50 text-sm"
+            >
+              {deletingId === transaction.id ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        )}
+      />
     </div>
   );
 }

@@ -264,7 +264,8 @@ export default function AllTransactions() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(true);
-  
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
   // Parse filters from URL search params
   const initialFilters = useMemo<FilterState>(() => ({
     description: searchParams.get('description') || '',
@@ -473,6 +474,29 @@ export default function AllTransactions() {
     );
   }
 
+  // Handle delete transaction
+  const handleDeleteTransaction = async (transaction: Transaction) => {
+    if (!window.confirm('Are you sure you want to delete this transaction? This action cannot be undone.')) {
+      return;
+    }
+    setDeletingId(transaction.id);
+    try {
+      // Use account.id from transaction object
+      await api.delete(`/api/accounts/${transaction.account.id}/transactions/${transaction.id}`);
+      toast.success('Transaction deleted successfully');
+      // Refresh transactions
+      fetchTransactions();
+    } catch (err: any) {
+      let errorMessage = 'Failed to delete transaction';
+      if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      toast.error(errorMessage);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="sm:flex sm:items-center">
@@ -673,6 +697,25 @@ export default function AllTransactions() {
         getSortIndicator={getSortIndicator}
         formatCurrency={formatCurrency}
         formatDate={formatDate}
+        renderActions={(transaction: Transaction) => (
+          <div className="flex items-center space-x-3 justify-center">
+            <Link
+              to={`/accounts/${transaction.account.id}/transactions/${transaction.id}/edit`}
+              className="text-primary-600 hover:text-primary-900 text-sm"
+            >
+              Edit
+            </Link>
+            <span className="text-gray-300">|</span>
+            <button
+              type="button"
+              onClick={() => handleDeleteTransaction(transaction)}
+              disabled={deletingId === transaction.id}
+              className="text-red-600 hover:text-red-900 disabled:opacity-50 text-sm"
+            >
+              {deletingId === transaction.id ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        )}
       />
     </div>
   );
