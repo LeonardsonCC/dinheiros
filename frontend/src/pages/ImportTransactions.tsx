@@ -38,7 +38,6 @@ export default function ImportTransactions() {
   const [transactions, setTransactions] = useState<TransactionDraft[]>([]);
   const [saveLoading, setSaveLoading] = useState(false);
   const [categories, setCategories] = useState<Array<{ id: number; name: string; type: string }>>([]);
-  const [categoryManagerOpenIdx, setCategoryManagerOpenIdx] = useState<number | null>(null);
 
   // Fetch accounts if accountId is not in URL
   useEffect(() => {
@@ -399,7 +398,6 @@ export default function ImportTransactions() {
         ? { ...t, categoryIds: [...(t.categoryIds || []), cat.id] }
         : t
     ));
-    setCategoryManagerOpenIdx(null);
   };
 
   return (
