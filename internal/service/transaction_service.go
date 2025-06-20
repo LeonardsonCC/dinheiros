@@ -1,6 +1,7 @@
 package service
 
 import (
+	"sort"
 	"time"
 
 	"github.com/LeonardsonCC/dinheiros/internal/errors"
@@ -32,6 +33,10 @@ type TransactionService interface {
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
 	ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error)
 	AssociateCategories(transactionID uint, categoryIDs []uint) error
+	GetTransactionsPerDay(userID uint) (*TransactionsPerDayData, error)
+	GetAmountByMonth(userID uint) (*AmountByMonthData, error)
+	GetAmountByAccount(userID uint) (*AmountByAccountData, error)
+	GetAmountByCategory(userID uint) (*AmountByCategoryData, error)
 }
 
 type transactionService struct {
@@ -308,4 +313,114 @@ func (s *transactionService) ExtractTransactionsFromPDF(filePath string, account
 // Implement AssociateCategories method in transactionService
 func (s *transactionService) AssociateCategories(transactionID uint, categoryIDs []uint) error {
 	return s.transactionRepo.AssociateCategories(transactionID, categoryIDs)
+}
+
+// Statistics data structures
+type TransactionsPerDayData struct {
+	Labels []string `json:"labels"`
+	Data   []int    `json:"data"`
+}
+
+type AmountByMonthData struct {
+	Labels []string  `json:"labels"`
+	Data   []float64 `json:"data"`
+}
+
+type AmountByAccountData struct {
+	Labels []string  `json:"labels"`
+	Data   []float64 `json:"data"`
+}
+
+type AmountByCategoryData struct {
+	Labels []string  `json:"labels"`
+	Data   []float64 `json:"data"`
+}
+
+func (s *transactionService) GetTransactionsPerDay(userID uint) (*TransactionsPerDayData, error) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, nil, nil, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	perDay := make(map[string]int)
+	for _, tx := range transactions {
+		date := tx.Date.Format("2006-01-02")
+		perDay[date]++
+	}
+	labels := make([]string, 0, len(perDay))
+	for date := range perDay {
+		labels = append(labels, date)
+	}
+	// Sort labels
+	sort.Strings(labels)
+	data := make([]int, len(labels))
+	for i, date := range labels {
+		data[i] = perDay[date]
+	}
+	return &TransactionsPerDayData{Labels: labels, Data: data}, nil
+}
+
+func (s *transactionService) GetAmountByMonth(userID uint) (*AmountByMonthData, error) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, nil, nil, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	byMonth := make(map[string]float64)
+	for _, tx := range transactions {
+		month := tx.Date.Format("2006-01")
+		byMonth[month] += tx.Amount
+	}
+	labels := make([]string, 0, len(byMonth))
+	for month := range byMonth {
+		labels = append(labels, month)
+	}
+	sort.Strings(labels)
+	data := make([]float64, len(labels))
+	for i, month := range labels {
+		data[i] = byMonth[month]
+	}
+	return &AmountByMonthData{Labels: labels, Data: data}, nil
+}
+
+func (s *transactionService) GetAmountByAccount(userID uint) (*AmountByAccountData, error) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, nil, nil, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	byAccount := make(map[string]float64)
+	for _, tx := range transactions {
+		byAccount[tx.Account.Name] += tx.Amount
+	}
+	labels := make([]string, 0, len(byAccount))
+	for acc := range byAccount {
+		labels = append(labels, acc)
+	}
+	sort.Strings(labels)
+	data := make([]float64, len(labels))
+	for i, acc := range labels {
+		data[i] = byAccount[acc]
+	}
+	return &AmountByAccountData{Labels: labels, Data: data}, nil
+}
+
+func (s *transactionService) GetAmountByCategory(userID uint) (*AmountByCategoryData, error) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, nil, nil, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	byCategory := make(map[string]float64)
+	for _, tx := range transactions {
+		for _, cat := range tx.Categories {
+			byCategory[cat.Name] += tx.Amount
+		}
+	}
+	labels := make([]string, 0, len(byCategory))
+	for cat := range byCategory {
+		labels = append(labels, cat)
+	}
+	sort.Strings(labels)
+	data := make([]float64, len(labels))
+	for i, cat := range labels {
+		data[i] = byCategory[cat]
+	}
+	return &AmountByCategoryData{Labels: labels, Data: data}, nil
 }

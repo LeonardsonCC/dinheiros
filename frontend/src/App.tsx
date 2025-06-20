@@ -12,6 +12,7 @@ import NewTransaction from './pages/NewTransaction';
 import EditTransaction from './pages/EditTransaction';
 import ImportTransactions from './pages/ImportTransactions';
 import Profile from './pages/Profile';
+import Statistics from './pages/Statistics';
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -39,6 +40,7 @@ function App() {
           
           {/* Profile Route */}
           <Route path="profile" element={<Profile />} />
+          <Route path="statistics" element={<Statistics />} />
         </Route>
       </Routes>
     </div>

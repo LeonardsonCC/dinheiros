@@ -559,3 +559,80 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 		"transactions": created,
 	})
 }
+
+func ensureChartJsFormat(labels []string, data []float64) map[string]interface{} {
+	return map[string]interface{}{
+		"labels": labels,
+		"datasets": []map[string]interface{}{
+			{
+				"label":           "Amount",
+				"data":            data,
+				"backgroundColor": []string{"#3b82f6", "#6366f1", "#f59e42", "#ef4444", "#10b981", "#fbbf24", "#a78bfa", "#f472b6", "#34d399", "#f87171"},
+			},
+		},
+	}
+}
+
+func ensureChartJsFormatInt(labels []string, data []int) map[string]interface{} {
+	floatData := make([]float64, len(data))
+	for i, v := range data {
+		floatData[i] = float64(v)
+	}
+	return ensureChartJsFormat(labels, floatData)
+}
+
+func (h *TransactionHandler) GetStatisticsTransactionsPerDay(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	data, err := h.transactionService.GetTransactionsPerDay(user.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
+		return
+	}
+	c.JSON(http.StatusOK, ensureChartJsFormatInt(data.Labels, data.Data))
+}
+
+func (h *TransactionHandler) GetStatisticsAmountByMonth(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	data, err := h.transactionService.GetAmountByMonth(user.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
+		return
+	}
+	c.JSON(http.StatusOK, ensureChartJsFormat(data.Labels, data.Data))
+}
+
+func (h *TransactionHandler) GetStatisticsAmountByAccount(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	data, err := h.transactionService.GetAmountByAccount(user.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
+		return
+	}
+	c.JSON(http.StatusOK, ensureChartJsFormat(data.Labels, data.Data))
+}
+
+func (h *TransactionHandler) GetStatisticsAmountByCategory(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	data, err := h.transactionService.GetAmountByCategory(user.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
+		return
+	}
+	c.JSON(http.StatusOK, ensureChartJsFormat(data.Labels, data.Data))
+}

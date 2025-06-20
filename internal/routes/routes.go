@@ -73,6 +73,15 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 				user.PATCH("", container.UserHandler.UpdateName)
 				user.PATCH("/password", container.UserHandler.UpdatePassword)
 			}
+
+			// Statistics routes
+			statistics := protected.Group("/statistics")
+			{
+				statistics.GET("/transactions-per-day", container.TransactionHandler.GetStatisticsTransactionsPerDay)
+				statistics.GET("/amount-by-month", container.TransactionHandler.GetStatisticsAmountByMonth)
+				statistics.GET("/amount-by-account", container.TransactionHandler.GetStatisticsAmountByAccount)
+				statistics.GET("/amount-by-category", container.TransactionHandler.GetStatisticsAmountByCategory)
+			}
 		}
 	}
 
