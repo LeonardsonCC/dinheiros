@@ -29,6 +29,7 @@ type UpdateTransactionRequest struct {
 
 type TransactionHandler struct {
 	transactionService service.TransactionService
+	categoryService    service.CategoryService
 }
 
 type ImportTransactionsRequest struct {
@@ -36,9 +37,10 @@ type ImportTransactionsRequest struct {
 	File      *multipart.FileHeader `form:"file" binding:"required"`
 }
 
-func NewTransactionHandler(transactionService service.TransactionService) *TransactionHandler {
+func NewTransactionHandler(transactionService service.TransactionService, categoryService service.CategoryService) *TransactionHandler {
 	return &TransactionHandler{
 		transactionService: transactionService,
+		categoryService:    categoryService,
 	}
 }
 
@@ -512,6 +514,7 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No transactions provided"})
 		return
 	}
+
 	var created []models.Transaction
 	for _, t := range req.Transactions {
 		var parsedDate time.Time
@@ -519,16 +522,30 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 		if t.Date != "" {
 			parsedDate, err = time.Parse("2006-01-02", t.Date)
 			if err != nil {
-				// Try ISO 8601 (from JS Date input)
 				parsedDate, err = time.Parse(time.RFC3339, t.Date)
 				if err != nil {
-					parsedDate = time.Now() // fallback to today
+					parsedDate = time.Now()
 				}
 			}
 		} else {
 			parsedDate = time.Now()
 		}
 		txType := models.TransactionType(t.Type)
+
+		// Look up category by name, type, and user using categoryService
+		var categoryIDs []uint
+		if t.Category != "" {
+			categories, err := h.categoryService.ListCategories(c.Request.Context(), user.(uint))
+			if err == nil {
+				for _, cat := range categories {
+					if cat.Name == t.Category && cat.Type == txType {
+						categoryIDs = []uint{cat.ID}
+						break
+					}
+				}
+			}
+		}
+
 		transaction, err := h.transactionService.CreateTransaction(
 			user.(uint),
 			uint(accountID),
@@ -536,7 +553,7 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 			txType,
 			t.Description,
 			nil, // ToAccountID
-			nil, // CategoryIDs (optional, can be extended)
+			categoryIDs,
 			parsedDate,
 		)
 		if err != nil {

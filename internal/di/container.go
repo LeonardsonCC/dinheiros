@@ -73,7 +73,7 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 
 	// Initialize handlers
 	accountHandler := handlers.NewAccountHandler(accountService)
-	transactionHandler := handlers.NewTransactionHandler(transactionService)
+	transactionHandler := handlers.NewTransactionHandler(transactionService, categoryService)
 	userHandler := handlers.NewUserHandler(userService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
