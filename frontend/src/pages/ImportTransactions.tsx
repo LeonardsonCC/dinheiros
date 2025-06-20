@@ -12,6 +12,15 @@ interface AxiosError {
   };
 }
 
+interface TransactionDraft {
+  id?: number;
+  date: string;
+  description: string;
+  amount: number;
+  category: string;
+  [key: string]: any;
+}
+
 export default function ImportTransactions() {
   const { accountId: urlAccountId } = useParams<{ accountId: string }>();
   const navigate = useNavigate();
@@ -23,6 +32,9 @@ export default function ImportTransactions() {
   const [accounts, setAccounts] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>(urlAccountId || '');
   const [accountsLoading, setAccountsLoading] = useState(false);
+  const [transactions, setTransactions] = useState<TransactionDraft[]>([]);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [categories, setCategories] = useState<Array<{ id: number; name: string; type: string }>>([]);
 
   // Fetch accounts if accountId is not in URL
   useEffect(() => {
@@ -38,6 +50,18 @@ export default function ImportTransactions() {
         .finally(() => setAccountsLoading(false));
     }
   }, [urlAccountId]);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    api.get('/api/categories')
+      .then((res) => setCategories(res.data.categories || res.data))
+      .catch(() => toast.error('Failed to load categories'));
+  }, []);
+
+  // Helper to get filtered categories by type
+  const getFilteredCategories = (type: string) => {
+    return categories.filter(cat => !type || cat.type === type);
+  };
 
   const validateFile = useCallback((file: File): boolean => {
     // Check file type
@@ -138,9 +162,13 @@ export default function ImportTransactions() {
           console.log(`Upload progress: ${progress}%`);
         },
       });
-
-      toast.success(`Successfully imported ${response.data.transactions_imported} transactions`);
-      navigate(`/accounts/${accountId}/transactions`);
+      // Instead of redirecting, show transactions for review
+      const txs = (response.data.transactions || []).map((t: any) => ({
+        ...t,
+        date: t.date ? new Date(t.date).toISOString().slice(0, 10) : '',
+      }));
+      setTransactions(txs);
+      toast.success(`Parsed ${txs.length} transactions. Review and save.`);
     } catch (error: unknown) {
         let errorMessage = 'Failed to import transactions';
         if (typeof error === 'object' && error !== null && 'response' in error) {
@@ -154,6 +182,35 @@ export default function ImportTransactions() {
         setFileError(errorMessage);
       } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleTransactionChange = (idx: number, field: string, value: any) => {
+    setTransactions(prev => prev.map((t, i) => i === idx ? { ...t, [field]: value } : t));
+  };
+
+  const handleCategoryChange = (txIdx: number, categoryId: number) => {
+    setTransactions(prev => prev.map((t, i) => {
+      if (i !== txIdx) return t;
+      const ids = Array.isArray(t.categoryIds) ? [...t.categoryIds] : [];
+      const idx = ids.indexOf(categoryId);
+      if (idx === -1) ids.push(categoryId);
+      else ids.splice(idx, 1);
+      return { ...t, categoryIds: ids };
+    }));
+  };
+
+  const handleSaveTransactions = async () => {
+    if (!selectedAccountId || transactions.length === 0) return;
+    setSaveLoading(true);
+    try {
+      await api.post(`/api/accounts/${selectedAccountId}/transactions/bulk`, { transactions });
+      toast.success('Transactions saved successfully!');
+      navigate(`/accounts/${selectedAccountId}/transactions`);
+    } catch (error) {
+      toast.error('Failed to save transactions');
+    } finally {
+      setSaveLoading(false);
     }
   };
 
@@ -208,113 +265,205 @@ export default function ImportTransactions() {
 
       <div className="bg-white shadow sm:rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {!urlAccountId && (
+          {transactions.length > 0 ? (
+            <div>
+              <h2 className="text-lg font-bold mb-2">Review & Edit Transactions</h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm border mb-4">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="p-2 border">Type</th>
+                      <th className="p-2 border">Date</th>
+                      <th className="p-2 border">Description</th>
+                      <th className="p-2 border">Amount</th>
+                      <th className="p-2 border">Categories</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map((t, idx) => (
+                      <tr key={idx}>
+                        <td className="border p-1">
+                          <select
+                            className="border rounded px-1 py-0.5 w-full"
+                            value={t.type || 'expense'}
+                            onChange={e => handleTransactionChange(idx, 'type', e.target.value)}
+                          >
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                            <option value="transfer">Transfer</option>
+                          </select>
+                        </td>
+                        <td className="border p-1">
+                          <input
+                            type="date"
+                            className="border rounded px-1 py-0.5 w-full"
+                            value={t.date}
+                            onChange={e => handleTransactionChange(idx, 'date', e.target.value)}
+                          />
+                        </td>
+                        <td className="border p-1">
+                          <input
+                            type="text"
+                            className="border rounded px-1 py-0.5 w-full"
+                            value={t.description}
+                            onChange={e => handleTransactionChange(idx, 'description', e.target.value)}
+                          />
+                        </td>
+                        <td className="border p-1">
+                          <input
+                            type="number"
+                            className="border rounded px-1 py-0.5 w-full"
+                            value={t.amount}
+                            onChange={e => handleTransactionChange(idx, 'amount', parseFloat(e.target.value))}
+                          />
+                        </td>
+                        <td className="border p-1">
+                          <div className="flex flex-wrap gap-2">
+                            {getFilteredCategories(t.type || 'expense').map(cat => (
+                              <label key={cat.id} className="flex items-center space-x-1">
+                                <input
+                                  type="checkbox"
+                                  checked={Array.isArray(t.categoryIds) && t.categoryIds.includes(cat.id)}
+                                  onChange={() => handleCategoryChange(idx, cat.id)}
+                                  className="h-4 w-4 text-primary-600 border-gray-300 rounded"
+                                />
+                                <span className="text-xs">{cat.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setTransactions([])}
+                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveTransactions}
+                  disabled={saveLoading}
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  {saveLoading ? 'Saving...' : 'Save Transactions'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {!urlAccountId && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Account <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    value={selectedAccountId}
+                    onChange={e => setSelectedAccountId(e.target.value)}
+                    disabled={accountsLoading}
+                    required
+                  >
+                    <option value="">-- Select an account --</option>
+                    {accounts.map(acc => (
+                      <option key={acc.id} value={acc.id}>{acc.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Select Account <span className="text-red-500">*</span>
+                  PDF File
+                  <span className="text-red-500">*</span>
                 </label>
-                <select
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  value={selectedAccountId}
-                  onChange={e => setSelectedAccountId(e.target.value)}
-                  disabled={accountsLoading}
-                  required
-                >
-                  <option value="">-- Select an account --</option>
-                  {accounts.map(acc => (
-                    <option key={acc.id} value={acc.id}>{acc.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                PDF File
-                <span className="text-red-500">*</span>
-              </label>
-              
-              {!selectedFile ? (
-                <div 
-                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${
-                    isDragging ? 'border-primary-500 bg-primary-50' : 'border-gray-300'
-                  } ${!isValidFile ? 'border-red-500' : ''}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <div className="space-y-1 text-center">
-                    <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex text-sm text-gray-600">
-                      <label
-                        htmlFor="file-upload"
-                        className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none"
-                      >
-                        <span>Upload a file</span>
-                        <input
-                          id="file-upload"
-                          name="file-upload"
-                          type="file"
-                          accept=".pdf"
-                          className="sr-only"
-                          onChange={handleFileChange}
-                        />
-                      </label>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">PDF up to 10MB</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-1 flex items-center justify-between px-4 py-3 bg-gray-50 rounded-md">
-                  <div className="flex items-center">
-                    <DocumentTextIcon className="h-5 w-5 text-gray-400 mr-3" />
-                    <span className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                      {selectedFile.name}
-                    </span>
-                    <span className="ml-2 text-xs text-gray-500">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={removeFile}
-                    className="text-gray-400 hover:text-gray-500"
+                
+                {!selectedFile ? (
+                  <div 
+                    className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${
+                      isDragging ? 'border-primary-500 bg-primary-50' : 'border-gray-300'
+                    } ${!isValidFile ? 'border-red-500' : ''}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
                   >
-                    <XMarkIcon className="h-5 w-5" />
-                    <span className="sr-only">Remove file</span>
-                  </button>
-                </div>
-              )}
-              
-              {fileError && (
-                <p className="mt-2 text-sm text-red-600">{fileError}</p>
-              )}
-              
-              <p className="mt-2 text-xs text-gray-500">
-                Supported formats: .pdf
-              </p>
-            </div>
+                    <div className="space-y-1 text-center">
+                      <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="flex text-sm text-gray-600">
+                        <label
+                          htmlFor="file-upload"
+                          className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none"
+                        >
+                          <span>Upload a file</span>
+                          <input
+                            id="file-upload"
+                            name="file-upload"
+                            type="file"
+                            accept=".pdf"
+                            className="sr-only"
+                            onChange={handleFileChange}
+                          />
+                        </label>
+                        <p className="pl-1">or drag and drop</p>
+                      </div>
+                      <p className="text-xs text-gray-500">PDF up to 10MB</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-1 flex items-center justify-between px-4 py-3 bg-gray-50 rounded-md">
+                    <div className="flex items-center">
+                      <DocumentTextIcon className="h-5 w-5 text-gray-400 mr-3" />
+                      <span className="text-sm font-medium text-gray-900 truncate max-w-xs">
+                        {selectedFile.name}
+                      </span>
+                      <span className="ml-2 text-xs text-gray-500">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeFile}
+                      className="text-gray-400 hover:text-gray-500"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                      <span className="sr-only">Remove file</span>
+                    </button>
+                  </div>
+                )}
+                
+                {fileError && (
+                  <p className="mt-2 text-sm text-red-600">{fileError}</p>
+                )}
+                
+                <p className="mt-2 text-xs text-gray-500">
+                  Supported formats: .pdf
+                </p>
+              </div>
 
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading || !selectedFile}
-                className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
-                  isLoading || !selectedFile ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {isLoading ? 'Importing...' : 'Import Transactions'}
-              </button>
-            </div>
-          </form>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading || !selectedFile}
+                  className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+                    isLoading || !selectedFile ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {isLoading ? 'Importing...' : 'Import Transactions'}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>

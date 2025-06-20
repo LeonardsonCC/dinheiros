@@ -69,7 +69,7 @@ func isPDF(fileHeader *multipart.FileHeader) (bool, error) {
 
 // ImportTransactions handles the import of transactions from a file
 func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
-	user, exists := c.Get("user")
+	_, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -142,30 +142,9 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 		return
 	}
 
-	// Create transactions
-	createdCount := 0
-	for _, tx := range transactions {
-		_, err := h.transactionService.CreateTransaction(
-			user.(uint),
-			tx.AccountID,
-			tx.Amount,
-			tx.Type,
-			tx.Description,
-			tx.ToAccountID,
-			nil, // No categories for now
-			tx.Date,
-		)
-		if err != nil {
-			// Log the error but continue with other transactions
-			fmt.Printf("Failed to create transaction: %v\n", err)
-			continue
-		}
-		createdCount++
-	}
-
+	// Return the parsed transactions for review/editing on the frontend
 	c.JSON(http.StatusOK, gin.H{
-		"message":               "File processed successfully",
-		"transactions_imported": createdCount,
+		"transactions": transactions,
 	})
 }
 
@@ -555,5 +534,77 @@ func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Transaction deleted successfully",
+	})
+}
+
+// BulkCreateTransactionsRequest is the request body for bulk transaction creation
+type BulkCreateTransactionsRequest struct {
+	Transactions []struct {
+		Date        string  `json:"date"`
+		Amount      float64 `json:"amount"`
+		Type        string  `json:"type"`
+		Description string  `json:"description"`
+		Category    string  `json:"category"`
+	} `json:"transactions"`
+}
+
+// BulkCreateTransactions handles saving multiple transactions at once
+func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	accountID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+		return
+	}
+	var req BulkCreateTransactionsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if len(req.Transactions) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No transactions provided"})
+		return
+	}
+	var created []models.Transaction
+	for _, t := range req.Transactions {
+		var parsedDate time.Time
+		var err error
+		if t.Date != "" {
+			parsedDate, err = time.Parse("2006-01-02", t.Date)
+			if err != nil {
+				// Try ISO 8601 (from JS Date input)
+				parsedDate, err = time.Parse(time.RFC3339, t.Date)
+				if err != nil {
+					parsedDate = time.Now() // fallback to today
+				}
+			}
+		} else {
+			parsedDate = time.Now()
+		}
+		txType := models.TransactionType(t.Type)
+		transaction, err := h.transactionService.CreateTransaction(
+			user.(uint),
+			uint(accountID),
+			t.Amount,
+			txType,
+			t.Description,
+			nil, // ToAccountID
+			nil, // CategoryIDs (optional, can be extended)
+			parsedDate,
+		)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		created = append(created, *transaction)
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"message":      "Transactions created successfully",
+		"count":        len(created),
+		"transactions": created,
 	})
 }

@@ -49,6 +49,7 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 						transactions.PUT("/:transactionId", container.TransactionHandler.UpdateTransaction)
 						transactions.DELETE("/:transactionId", container.TransactionHandler.DeleteTransaction)
 						transactions.POST("/import", container.TransactionHandler.ImportTransactions)
+						transactions.POST("/bulk", container.TransactionHandler.BulkCreateTransactions)
 					}
 				}
 			}
