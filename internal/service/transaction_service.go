@@ -31,6 +31,7 @@ type TransactionService interface {
 	DeleteTransaction(userID uint, transactionID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
 	ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error)
+	AssociateCategories(transactionID uint, categoryIDs []uint) error
 }
 
 type transactionService struct {
@@ -302,4 +303,9 @@ func (s *transactionService) ExtractTransactionsFromPDF(filePath string, account
 	}
 
 	return transactions, nil
+}
+
+// Implement AssociateCategories method in transactionService
+func (s *transactionService) AssociateCategories(transactionID uint, categoryIDs []uint) error {
+	return s.transactionRepo.AssociateCategories(transactionID, categoryIDs)
 }

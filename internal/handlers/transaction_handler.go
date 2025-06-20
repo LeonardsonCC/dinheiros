@@ -489,7 +489,7 @@ type BulkCreateTransactionsRequest struct {
 		Amount      float64 `json:"amount"`
 		Type        string  `json:"type"`
 		Description string  `json:"description"`
-		Category    string  `json:"category"`
+		CategoryIDs []uint  `json:"categoryIds"`
 	} `json:"transactions"`
 }
 
@@ -532,20 +532,6 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 		}
 		txType := models.TransactionType(t.Type)
 
-		// Look up category by name, type, and user using categoryService
-		var categoryIDs []uint
-		if t.Category != "" {
-			categories, err := h.categoryService.ListCategories(c.Request.Context(), user.(uint))
-			if err == nil {
-				for _, cat := range categories {
-					if cat.Name == t.Category && cat.Type == txType {
-						categoryIDs = []uint{cat.ID}
-						break
-					}
-				}
-			}
-		}
-
 		transaction, err := h.transactionService.CreateTransaction(
 			user.(uint),
 			uint(accountID),
@@ -553,7 +539,7 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 			txType,
 			t.Description,
 			nil, // ToAccountID
-			categoryIDs,
+			t.CategoryIDs,
 			parsedDate,
 		)
 		if err != nil {
@@ -562,6 +548,7 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 		}
 		created = append(created, *transaction)
 	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message":      "Transactions created successfully",
 		"count":        len(created),
