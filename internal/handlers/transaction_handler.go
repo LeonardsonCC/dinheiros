@@ -199,25 +199,23 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 }
 
 func (h *TransactionHandler) ListTransactions(c *gin.Context) {
-	user, exists := c.Get("user")
+	// Parse query parameters
+	var req dto.ListTransactionsRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+		return
+	}
+
+	// Get user ID from context
+	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
 
-	// Parse query parameters
-	var req dto.ListTransactionsRequest
-	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Get user ID from context
-	userID := user.(uint)
-
 	// Call service to get transactions
-	transactions, total, err := h.transactionService.ListTransactions(
-		userID,
+	transactions, totalItems, err := h.transactionService.ListTransactions(
+		userID.(uint),
 		req.Types,
 		req.AccountIDs,
 		req.CategoryIDs,
@@ -229,34 +227,24 @@ func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 		req.Page,
 		req.PageSize,
 	)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch transactions"})
 		return
 	}
 
 	// Convert transactions to response DTOs
-	transactionResponses := make([]dto.TransactionResponse, len(transactions))
-	for i, t := range transactions {
-		transactionResponses[i] = dto.ToTransactionResponse(&t)
-	}
-
-	// Calculate pagination metadata
-	totalPages := int((total + int64(req.PageSize) - 1) / int64(req.PageSize))
-	if req.PageSize == 0 {
-		totalPages = 1
-	}
-
-	// Return response
-	c.JSON(http.StatusOK, dto.ListTransactionsResponse{
-		Data: transactionResponses,
+	response := dto.ListTransactionsResponse{
+		Data: dto.ToTransactionResponseList(transactions),
 		Pagination: dto.PaginationMeta{
 			CurrentPage: req.Page,
 			PageSize:    req.PageSize,
-			TotalItems:  total,
-			TotalPages:  totalPages,
+			TotalItems:  totalItems,
+			TotalPages:  int((totalItems + int64(req.PageSize) - 1) / int64(req.PageSize)),
 		},
-	})
+	}
+
+	// Return response
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *TransactionHandler) GetTransactions(c *gin.Context) {
