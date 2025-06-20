@@ -2,16 +2,14 @@ package service
 
 import (
 	"fmt"
-	"os"
-
 	"strings"
 
-	"github.com/unidoc/unipdf/v3/extractor"
-	"github.com/unidoc/unipdf/v3/model"
+	"github.com/ledongthuc/pdf"
 )
 
 type PDFService interface {
 	ExtractText(filePath string) (string, error)
+	ExtractTransactions(filePath string) ([]string, error)
 }
 
 type pdfService struct{}
@@ -21,50 +19,63 @@ func NewPDFService() PDFService {
 }
 
 func (s *pdfService) ExtractText(filePath string) (string, error) {
-	// Open the PDF file
-	f, err := os.Open(filePath)
+	file, reader, err := pdf.Open(filePath)
 	if err != nil {
 		return "", fmt.Errorf("failed to open PDF file: %v", err)
 	}
-	defer f.Close()
+	defer file.Close()
 
-	// Create a PDF reader
-	pdfReader, err := model.NewPdfReader(f)
+	var textBuilder string
+	for pageIndex := 1; pageIndex <= reader.NumPage(); pageIndex++ {
+		page := reader.Page(pageIndex)
+		if page.V.IsNull() {
+			continue
+		}
+		content, err := page.GetPlainText(nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to extract text from page %d: %v", pageIndex, err)
+		}
+		textBuilder += content
+	}
+	return textBuilder, nil
+}
+
+func (s *pdfService) ExtractTransactions(filePath string) ([]string, error) {
+	text, err := s.ExtractText(filePath)
 	if err != nil {
-		return "", fmt.Errorf("failed to create PDF reader: %v", err)
+		return nil, err
 	}
 
-	// Get the number of pages
-	numPages, err := pdfReader.GetNumPages()
-	if err != nil {
-		return "", fmt.Errorf("failed to get number of pages: %v", err)
+	fields := splitLines(text)
+	var lines []string
+	const columnsPerRow = 5
+	for i := 0; i+columnsPerRow-1 < len(fields); i += columnsPerRow {
+		row := fields[i : i+columnsPerRow]
+		// Skip header or summary rows
+		if row[0] == "Data Mov." || row[0] == "SALDO DIA" || row[0] == "SALDO ANTERIOR" {
+			continue
+		}
+		lines = append(lines, strings.Join(row, " | "))
 	}
+	return lines, nil
+}
 
-	// Extract text from all pages
-	var textBuilder strings.Builder
-	for i := 1; i <= numPages; i++ {
-		// Get the page
-		page, err := pdfReader.GetPage(i)
-		if err != nil {
-			return "", fmt.Errorf("failed to get page %d: %v", i, err)
+// Helper functions
+func splitLines(s string) []string {
+	// Split on newlines and tabs
+	fields := strings.FieldsFunc(s, func(r rune) bool {
+		return r == '\n' || r == '\r' || r == '\t'
+	})
+	var lines []string
+	for _, f := range fields {
+		trimmed := strings.TrimSpace(f)
+		if trimmed != "" {
+			lines = append(lines, trimmed)
 		}
-
-		// Create an extractor for the page
-		ex, err := extractor.New(page)
-		if err != nil {
-			return "", fmt.Errorf("failed to create extractor for page %d: %v", i, err)
-		}
-
-		// Extract the text
-		pageText, _, _, err := ex.ExtractPageText()
-		if err != nil {
-			return "", fmt.Errorf("failed to extract text from page %d: %v", i, err)
-		}
-
-		// Add the text to our result
-		textBuilder.WriteString(pageText.Text())
-		textBuilder.WriteString("\n")
 	}
+	return lines
+}
 
-	return textBuilder.String(), nil
+func trim(s string) string {
+	return strings.TrimSpace(s)
 }

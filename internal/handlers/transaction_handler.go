@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -129,15 +128,15 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 	}
 	defer os.Remove(dst) // Clean up after processing
 
-	// Extract text from PDF
-	text, err := h.pdfService.ExtractText(dst)
+	// Extract transaction lines from PDF
+	lines, err := h.pdfService.ExtractTransactions(dst)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process PDF: " + err.Error()})
 		return
 	}
 
-	// Parse transactions from text
-	transactions, err := parseTransactionsFromText(text, uint(accountID))
+	// Parse transactions from lines
+	transactions, err := parseTransactionsFromLines(lines, uint(accountID))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse transactions: " + err.Error()})
 		return
@@ -170,80 +169,50 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 	})
 }
 
-// parseTransactionsFromText parses transactions from the extracted text
-// This is a basic implementation that can be customized based on the actual PDF format
-func parseTransactionsFromText(text string, accountID uint) ([]models.Transaction, error) {
-	// Split the text into lines
-	lines := strings.Split(text, "\n")
-
+// parseTransactionsFromLines parses transactions from the extracted lines
+func parseTransactionsFromLines(lines []string, accountID uint) ([]models.Transaction, error) {
 	var transactions []models.Transaction
-
-	// This is a very basic parser that looks for transaction-like patterns
-	// You'll need to customize this based on your actual PDF format
 	for _, line := range lines {
-		// Skip empty lines
-		line = strings.TrimSpace(line)
-		if line == "" {
+		fields := strings.Split(line, " | ")
+		if len(fields) < 5 {
+			continue // skip incomplete rows
+		}
+		dateStr := strings.TrimSpace(fields[0])
+		description := strings.TrimSpace(fields[2])
+		valor := strings.TrimSpace(fields[3])
+		valorParts := strings.Fields(valor)
+		if len(valorParts) < 2 {
 			continue
 		}
-
-		// Look for date-like patterns (e.g., 01/01/2023 or 2023-01-01)
-		// This is just an example - adjust the pattern based on your PDF format
-		datePattern := `(\d{2}[/-]\d{2}[/-]\d{2,4})`
-		re := regexp.MustCompile(datePattern)
-		matches := re.FindStringSubmatch(line)
-		if len(matches) == 0 {
-			continue
-		}
-
-		// Try to parse the date
-		date, err := time.Parse("02/01/2006", matches[1])
-		if err != nil {
-			// Try alternative format
-			date, err = time.Parse("02-01-2006", matches[1])
-			if err != nil {
-				continue
-			}
-		}
-
-		// Look for amount patterns (e.g., $100.00 or 100,00)
-		amountPattern := `[\$€]?\s*(\d+[\.,]\d{2})`
-		re = regexp.MustCompile(amountPattern)
-		amountMatches := re.FindStringSubmatch(line)
-		if len(amountMatches) == 0 {
-			continue
-		}
-
-		// Parse the amount
-		amountStr := strings.ReplaceAll(strings.ReplaceAll(amountMatches[1], ",", "."), " ", "")
+		amountStr := strings.ReplaceAll(valorParts[0], ".", "")
+		amountStr = strings.ReplaceAll(amountStr, ",", ".")
 		amount, err := strconv.ParseFloat(amountStr, 64)
 		if err != nil {
 			continue
 		}
-
-		// Determine if it's an expense or income based on the amount
-		// This is just an example - adjust based on your needs
-		transactionType := models.TransactionTypeExpense
-		if amount > 0 {
-			transactionType = models.TransactionTypeIncome
+		if amount == 0 {
+			continue // skip zero-amount transactions
 		}
-
-		// Create a description by taking the rest of the line
-		description := strings.TrimSpace(strings.ReplaceAll(line, matches[0], ""))
-		description = strings.TrimSpace(strings.ReplaceAll(description, amountMatches[0], ""))
-
-		// Create the transaction
+		var txType models.TransactionType = models.TransactionTypeExpense
+		if strings.ToUpper(valorParts[1]) == "C" {
+			txType = models.TransactionTypeIncome
+		}
+		date, err := time.Parse("02/01/2006", dateStr)
+		if err != nil {
+			date, err = time.Parse("02-01-2006", dateStr)
+			if err != nil {
+				continue
+			}
+		}
 		transaction := models.Transaction{
 			AccountID:   accountID,
 			Amount:      amount,
-			Type:        transactionType,
+			Type:        txType,
 			Description: description,
 			Date:        date,
 		}
-
 		transactions = append(transactions, transaction)
 	}
-
 	return transactions, nil
 }
 
