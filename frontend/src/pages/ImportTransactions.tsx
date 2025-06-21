@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
 import Loading from '../components/Loading';
 import DatePicker from '../components/DatePicker';
+import { useTranslation } from 'react-i18next';
 
 interface AxiosError {
   response?: {
@@ -27,6 +28,7 @@ interface TransactionDraft {
 }
 
 export default function ImportTransactions() {
+  const { t } = useTranslation();
   const { accountId: urlAccountId } = useParams<{ accountId: string }>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -216,18 +218,18 @@ export default function ImportTransactions() {
   };
 
   if (isLoading || accountsLoading) {
-    return <Loading message="Loading accounts..." />;
+    return <Loading message={t('importTransactions.loading')} />;
   }
 
   // Dedicated account selection page if no accountId in URL and none selected
   if (!urlAccountId && !selectedAccountId) {
     return (
       <div className="p-6 max-w-lg mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Select an Account</h1>
+        <h1 className="text-2xl font-bold mb-4">{t('importTransactions.selectAccount')}</h1>
         {accountsLoading ? (
-          <p>Loading accounts...</p>
+          <p>{t('importTransactions.loading')}</p>
         ) : accounts.length === 0 ? (
-          <p className="text-gray-500">No accounts found.</p>
+          <p className="text-gray-500">{t('importTransactions.noAccounts')}</p>
         ) : (
           <ul className="space-y-2">
             {accounts.map(acc => (
@@ -246,7 +248,7 @@ export default function ImportTransactions() {
           onClick={() => navigate(-1)}
           className="mt-6 text-sm text-gray-600 hover:text-gray-900 flex items-center"
         >
-          <ArrowLongLeftIcon className="w-4 h-4 mr-1" /> Back
+          <ArrowLongLeftIcon className="w-4 h-4 mr-1" /> {t('importTransactions.back')}
         </button>
       </div>
     );
@@ -407,7 +409,7 @@ export default function ImportTransactions() {
   };
 
   if (isLoading || accountsLoading) {
-    return <Loading message="Loading..." />;
+    return <Loading message={t('importTransactions.loading')} />;
   }
 
   return (
@@ -418,34 +420,33 @@ export default function ImportTransactions() {
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-          Back to Transactions
+          {t('importTransactions.back')} {t('transactions.transactions')}
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">Import Transactions</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('importTransactions.title')}</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Upload a PDF file containing transactions to import them into your account.
+          {t('importTransactions.uploadPdf')}
         </p>
       </div>
-
       <div className="bg-white shadow sm:rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           {transactions.length > 0 ? (
             <div>
-              <h2 className="text-lg font-bold mb-2">Review & Edit Transactions</h2>
+              <h2 className="text-lg font-bold mb-2">{t('importTransactions.reviewEdit')}</h2>
               <div className="overflow-x-auto">
                 <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                   <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                     <table className="min-w-full divide-y divide-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Type</th>
-                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
-                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Description</th>
-                          <th className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">Amount</th>
-                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Categories</th>
+                          <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">{t('importTransactions.type')}</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('importTransactions.date')}</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('importTransactions.description')}</th>
+                          <th className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">{t('importTransactions.amount')}</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('importTransactions.categories')}</th>
                           <th className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 cursor-pointer select-none" onClick={() => {
                             const allIgnored = transactions.length > 0 && transactions.every(t => t.ignored);
                             setTransactions(prev => prev.map(t => ({ ...t, ignored: !allIgnored })));
-                          }} title="Toggle all">Ignore</th>
+                          }} title="Toggle all">{t('importTransactions.ignore')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
@@ -458,9 +459,9 @@ export default function ImportTransactions() {
                                 onChange={e => handleTransactionChange(idx, 'type', e.target.value)}
                                 disabled={t.ignored}
                               >
-                                <option value="expense">Expense</option>
-                                <option value="income">Income</option>
-                                <option value="transfer">Transfer</option>
+                                <option value="expense">{t('importTransactions.expense')}</option>
+                                <option value="income">{t('importTransactions.income')}</option>
+                                <option value="transfer">{t('importTransactions.transfer')}</option>
                               </select>
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -529,7 +530,7 @@ export default function ImportTransactions() {
                   onClick={() => setTransactions([])}
                   className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Cancel
+                  {t('importTransactions.cancel')}
                 </button>
                 <button
                   type="button"
@@ -537,7 +538,7 @@ export default function ImportTransactions() {
                   disabled={saveLoading}
                   className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
-                  {saveLoading ? 'Saving...' : 'Save Transactions'}
+                  {saveLoading ? t('importTransactions.importing') : t('importTransactions.save')}
                 </button>
               </div>
             </div>
@@ -546,7 +547,7 @@ export default function ImportTransactions() {
               {!urlAccountId && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Select Account <span className="text-red-500">*</span>
+                    {t('importTransactions.selectAccount')} <span className="text-red-500">*</span>
                   </label>
                   <select
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
@@ -555,7 +556,7 @@ export default function ImportTransactions() {
                     disabled={accountsLoading}
                     required
                   >
-                    <option value="">-- Select an account --</option>
+                    <option value="">{t('importTransactions.selectAccountOption')}</option>
                     {accounts.map(acc => (
                       <option key={acc.id} value={acc.id}>{acc.name}</option>
                     ))}
@@ -564,7 +565,7 @@ export default function ImportTransactions() {
               )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PDF File
+                  {t('importTransactions.file')}
                   <span className="text-red-500">*</span>
                 </label>
                 
@@ -584,7 +585,7 @@ export default function ImportTransactions() {
                           htmlFor="file-upload"
                           className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none"
                         >
-                          <span>Upload a file</span>
+                          <span>{t('importTransactions.import')}</span>
                           <input
                             id="file-upload"
                             name="file-upload"
@@ -594,7 +595,7 @@ export default function ImportTransactions() {
                             onChange={handleFileChange}
                           />
                         </label>
-                        <p className="pl-1">or drag and drop</p>
+                        <p className="pl-1">{t('importTransactions.orDrag')}</p>
                       </div>
                       <p className="text-xs text-gray-500">PDF up to 10MB</p>
                     </div>
@@ -626,17 +627,16 @@ export default function ImportTransactions() {
                 )}
                 
                 <p className="mt-2 text-xs text-gray-500">
-                  Supported formats: .pdf
+                  {t('importTransactions.supported')}
                 </p>
               </div>
-
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
                   className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
-                  Cancel
+                  {t('importTransactions.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -645,7 +645,7 @@ export default function ImportTransactions() {
                     isLoading || !selectedFile ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
-                  {isLoading ? 'Importing...' : 'Import Transactions'}
+                  {isLoading ? t('importTransactions.importing') : t('importTransactions.import')}
                 </button>
               </div>
             </form>

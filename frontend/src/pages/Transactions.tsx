@@ -5,6 +5,7 @@ import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import TransactionsTable from '../components/TransactionsTable';
 import Loading from '../components/Loading';
+import { useTranslation } from 'react-i18next';
 
 interface Category {
   id: number;
@@ -31,6 +32,7 @@ interface AxiosError {
 }
 
 export default function Transactions() {
+  const { t } = useTranslation();
   const { accountId: accountIdParam } = useParams<{ accountId: string }>();
   // Ensure accountId is a number
   const accountId = accountIdParam ? Number(accountIdParam) : null;
@@ -114,7 +116,7 @@ export default function Transactions() {
   }, [transactions]);
 
   if (loading) {
-    return <Loading message="Loading transactions..." />;
+    return <Loading message={t('importTransactions.loading')} />;
   }
 
   const formatCurrency = (amount: number) => {
@@ -214,25 +216,24 @@ export default function Transactions() {
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
         >
           <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-          Back to Accounts
+          {t('transactions.backToAccounts')}
         </Link>
         <div className="flex items-center justify-between mt-2">
           <h2 className="text-2xl font-bold text-gray-900">
-            {account?.name} Transactions
+            {account?.name} {t('transactions.transactions')}
           </h2>
           <Link
             to={`/accounts/${accountId}/transactions/new`}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
           >
             <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
-            Add Transaction
+            {t('transactions.add')}
           </Link>
         </div>
         <div className="mt-2 text-xl font-semibold text-gray-900">
           {formatCurrency(account?.balance || 0)}
         </div>
       </div>
-
       <TransactionsTable
         transactions={paginatedSortedTransactions as any}
         loading={loading}
@@ -250,7 +251,7 @@ export default function Transactions() {
               to={`/accounts/${accountId}/transactions/${transaction.id}/edit`}
               className="text-primary-600 hover:text-primary-900 text-sm"
             >
-              Edit
+              {t('transactions.edit')}
             </Link>
             <span className="text-gray-300">|</span>
             <button
@@ -259,7 +260,7 @@ export default function Transactions() {
               disabled={deletingId === transaction.id}
               className="text-red-600 hover:text-red-900 disabled:opacity-50 text-sm"
             >
-              {deletingId === transaction.id ? 'Deleting...' : 'Delete'}
+              {deletingId === transaction.id ? t('transactions.deleting') : t('transactions.delete')}
             </button>
           </div>
         )}

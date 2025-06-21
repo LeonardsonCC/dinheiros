@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Account {
   id: number;
@@ -55,6 +56,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   formatDate,
   renderActions,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="mt-8 flex flex-col">
       <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -63,45 +65,45 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
             <table className="min-w-full divide-y divide-gray-300">
               <thead className="bg-gray-50">
                 <tr>
-                  <th 
-                    scope="col" 
+                  <th
+                    scope="col"
                     className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 cursor-pointer hover:bg-gray-100"
                     onClick={() => onSort('date')}
                   >
                     <div className="flex items-center">
-                      Date
+                      {t('transactionsTable.date')}
                       <span className="ml-1">{getSortIndicator('date')}</span>
                     </div>
                   </th>
-                  <th 
-                    scope="col" 
+                  <th
+                    scope="col"
                     className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
                     onClick={() => onSort('description')}
                   >
                     <div className="flex items-center">
-                      Description
+                      {t('transactionsTable.description')}
                       <span className="ml-1">{getSortIndicator('description')}</span>
                     </div>
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                    Account
+                    {t('transactionsTable.account')}
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                    Categories
+                    {t('transactionsTable.categories')}
                   </th>
-                  <th 
-                    scope="col" 
+                  <th
+                    scope="col"
                     className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
                     onClick={() => onSort('amount')}
                   >
                     <div className="flex justify-end items-center">
-                      Amount
+                      {t('transactionsTable.amount')}
                       <span className="ml-1">{getSortIndicator('amount')}</span>
                     </div>
                   </th>
                   {renderActions && (
                     <th className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">
-                      Actions
+                      {t('transactionsTable.actions')}
                     </th>
                   )}
                 </tr>
@@ -110,7 +112,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 {transactions.length === 0 ? (
                   <tr>
                     <td colSpan={renderActions ? 6 : 5} className="px-3 py-4 text-sm text-gray-500 text-center">
-                      {loading ? 'Loading transactions...' : 'No transactions found'}
+                      {loading ? t('transactionsTable.loading') : t('transactionsTable.noTransactions')}
                     </td>
                   </tr>
                 ) : (
@@ -120,11 +122,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                         {formatDate(transaction.date)}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm">
-                        <div className="font-medium text-gray-900">{transaction.description || 'No description'}</div>
-                        <div className="text-gray-500 capitalize">{transaction.type}</div>
+                        <div className="font-medium text-gray-900">{transaction.description || t('transactionsTable.noDescription')}</div>
+                        <div className="text-gray-500 capitalize">{t(`transactionsTable.type.${transaction.type}`)}</div>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {transaction.account?.name || 'N/A'}
+                        {transaction.account?.name || t('transactionsTable.na')}
                         {transaction.toAccount && (
                           <span className="text-gray-400"> → {transaction.toAccount.name}</span>
                         )}
@@ -142,16 +144,16 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                             ))
                           ) : (
                             <p className="mt-1 text-sm text-gray-500">
-                              N/A
+                              {t('transactionsTable.na')}
                             </p>
                           )}
                         </div>
                       </td>
                       <td className={`whitespace-nowrap px-3 py-4 text-sm font-medium text-right ${
-                        transaction.type === 'income' 
-                          ? 'text-green-600' 
-                          : transaction.type === 'expense' 
-                            ? 'text-red-600' 
+                        transaction.type === 'income'
+                          ? 'text-green-600'
+                          : transaction.type === 'expense'
+                            ? 'text-red-600'
                             : 'text-blue-600'
                       }`}>
                         {transaction.type === 'expense' ? '-' : ''}
@@ -176,30 +178,30 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                     disabled={pagination.currentPage === 1}
                     className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Previous
+                    {t('transactionsTable.previous')}
                   </button>
                   <button
                     onClick={() => onPageChange(pagination.currentPage + 1)}
                     disabled={pagination.currentPage === pagination.totalPages}
                     className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Next
+                    {t('transactionsTable.next')}
                   </button>
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{(pagination.currentPage - 1) * pagination.pageSize + 1}</span> to{' '}
-                      <span className="font-medium">
-                        {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)}
-                      </span>{' '}
-                      of <span className="font-medium">{pagination.totalItems}</span> results
+                      {t('transactionsTable.showing', {
+                        from: (pagination.currentPage - 1) * pagination.pageSize + 1,
+                        to: Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems),
+                        total: pagination.totalItems
+                      })}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="flex items-center">
                       <label htmlFor="per-page" className="mr-2 text-sm text-gray-700">
-                        Size:
+                        {t('transactionsTable.size')}
                       </label>
                       <select
                         id="per-page"
@@ -220,16 +222,16 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                         disabled={pagination.currentPage === 1}
                         className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <span className="sr-only">First</span>
-                        <span>«</span>
+                        <span className="sr-only">{t('transactionsTable.first')}</span>
+                        <span>&laquo;</span>
                       </button>
                       <button
                         onClick={() => onPageChange(pagination.currentPage - 1)}
                         disabled={pagination.currentPage === 1}
                         className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <span className="sr-only">Previous</span>
-                        <span>‹</span>
+                        <span className="sr-only">{t('transactionsTable.previous')}</span>
+                        <span>&lsaquo;</span>
                       </button>
                       {/* Page numbers */}
                       {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
@@ -262,16 +264,16 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                         disabled={pagination.currentPage === pagination.totalPages}
                         className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <span className="sr-only">Next</span>
-                        <span>›</span>
+                        <span className="sr-only">{t('transactionsTable.next')}</span>
+                        <span>&rsaquo;</span>
                       </button>
                       <button
                         onClick={() => onPageChange(pagination.totalPages)}
                         disabled={pagination.currentPage === pagination.totalPages}
                         className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <span className="sr-only">Last</span>
-                        <span>»</span>
+                        <span className="sr-only">{t('transactionsTable.last')}</span>
+                        <span>&raquo;</span>
                       </button>
                     </nav>
                   </div>

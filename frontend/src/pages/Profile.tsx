@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 // Schema for name update
 const nameSchema = z.object({
@@ -25,6 +26,7 @@ const passwordSchema = z.object({
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
 export default function Profile() {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   
   // Name form
@@ -50,10 +52,10 @@ export default function Profile() {
     try {
       setIsLoading(true);
       await api.patch('/api/users/me', { name: data.name });
-      toast.success('Name updated successfully!');
+      toast.success(t('profile.nameUpdated'));
     } catch (error) {
       console.error('Error updating name:', error);
-      toast.error('Failed to update name');
+      toast.error(t('profile.failedUpdateName'));
     } finally {
       setIsLoading(false);
     }
@@ -66,11 +68,11 @@ export default function Profile() {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
-      toast.success('Password updated successfully!');
+      toast.success(t('profile.passwordUpdated'));
       resetPasswordForm();
     } catch (error) {
       console.error('Error updating password:', error);
-      toast.error('Failed to update password');
+      toast.error(t('profile.failedUpdatePassword'));
     } finally {
       setIsLoading(false);
     }
@@ -78,15 +80,15 @@ export default function Profile() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Profile Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">{t('profile.title')}</h1>
       
       {/* Update Name Section */}
       <div className="bg-white shadow rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Update Your Name</h2>
+        <h2 className="text-lg font-medium text-gray-900 mb-4">{t('profile.updateName')}</h2>
         <form onSubmit={handleNameSubmit(onNameSubmit)} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Name
+              {t('profile.name')}
             </label>
             <input
               type="text"
@@ -94,6 +96,7 @@ export default function Profile() {
               {...registerName('name')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               disabled={isLoading}
+              placeholder={t('profile.namePlaceholder')}
             />
             {nameErrors.name && (
               <p className="mt-1 text-sm text-red-600">{nameErrors.name.message}</p>
@@ -105,7 +108,7 @@ export default function Profile() {
               disabled={isLoading}
               className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
             >
-              {isLoading ? 'Updating...' : 'Update Name'}
+              {isLoading ? t('profile.updating') : t('profile.updateNameBtn')}
             </button>
           </div>
         </form>
@@ -113,11 +116,11 @@ export default function Profile() {
 
       {/* Update Password Section */}
       <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Change Password</h2>
+        <h2 className="text-lg font-medium text-gray-900 mb-4">{t('profile.changePassword')}</h2>
         <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
           <div>
             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
-              Current Password
+              {t('profile.currentPassword')}
             </label>
             <input
               type="password"
@@ -125,6 +128,7 @@ export default function Profile() {
               {...registerPassword('currentPassword')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               disabled={isLoading}
+              placeholder={t('profile.currentPasswordPlaceholder')}
             />
             {passwordErrors.currentPassword && (
               <p className="mt-1 text-sm text-red-600">{passwordErrors.currentPassword.message}</p>
@@ -133,7 +137,7 @@ export default function Profile() {
           
           <div>
             <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
-              New Password
+              {t('profile.newPassword')}
             </label>
             <input
               type="password"
@@ -141,6 +145,7 @@ export default function Profile() {
               {...registerPassword('newPassword')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               disabled={isLoading}
+              placeholder={t('profile.newPasswordPlaceholder')}
             />
             {passwordErrors.newPassword && (
               <p className="mt-1 text-sm text-red-600">{passwordErrors.newPassword.message}</p>
@@ -149,7 +154,7 @@ export default function Profile() {
           
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-              Confirm New Password
+              {t('profile.confirmPassword')}
             </label>
             <input
               type="password"
@@ -157,6 +162,7 @@ export default function Profile() {
               {...registerPassword('confirmPassword')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               disabled={isLoading}
+              placeholder={t('profile.confirmPasswordPlaceholder')}
             />
             {passwordErrors.confirmPassword && (
               <p className="mt-1 text-sm text-red-600">{passwordErrors.confirmPassword.message}</p>
@@ -169,7 +175,7 @@ export default function Profile() {
               disabled={isLoading}
               className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
             >
-              {isLoading ? 'Updating...' : 'Update Password'}
+              {isLoading ? t('profile.updating') : t('profile.updatePasswordBtn')}
             </button>
           </div>
         </form>

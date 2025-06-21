@@ -1,7 +1,10 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { HomeIcon, BanknotesIcon, ArrowLeftOnRectangleIcon, CurrencyDollarIcon, UserCircleIcon, DocumentTextIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Layout = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -18,6 +21,7 @@ const Layout = () => {
             <div className="flex items-center flex-shrink-0 px-4">
               <h1 className="text-2xl font-bold text-primary-600">Dinheiros</h1>
             </div>
+            <LanguageSwitcher />
             <nav className="flex-1 mt-5 space-y-1 bg-white px-2">
               <NavLink
                 to="/"
@@ -31,7 +35,7 @@ const Layout = () => {
                 {({ isActive }) => (
                   <>
                     <HomeIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    Dashboard
+                    {t('sidebar.dashboard')}
                   </>
                 )}
               </NavLink>
@@ -48,7 +52,7 @@ const Layout = () => {
                 {({ isActive }) => (
                   <>
                     <BanknotesIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    Accounts
+                    {t('sidebar.accounts')}
                   </>
                 )}
               </NavLink>
@@ -65,7 +69,7 @@ const Layout = () => {
                 {({ isActive }) => (
                   <>
                     <CurrencyDollarIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    All Transactions
+                    {t('sidebar.allTransactions')}
                   </>
                 )}
               </NavLink>
@@ -81,7 +85,7 @@ const Layout = () => {
                 {({ isActive }) => (
                   <>
                     <DocumentTextIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    Import Transactions
+                    {t('sidebar.importTransactions')}
                   </>
                 )}
               </NavLink>
@@ -97,11 +101,10 @@ const Layout = () => {
                 {({ isActive }) => (
                   <>
                     <ChartBarIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    Statistics
+                    {t('sidebar.statistics')}
                   </>
                 )}
               </NavLink>
-
               <NavLink
                 to="/profile"
                 className={({ isActive }) => `
@@ -114,17 +117,16 @@ const Layout = () => {
                 {({ isActive }) => (
                   <>
                     <UserCircleIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    Profile
+                    {t('sidebar.profile')}
                   </>
                 )}
               </NavLink>
-
               <button
                 onClick={handleLogout}
                 className="flex items-center w-full px-4 py-2 text-sm font-medium text-left text-gray-700 rounded-md hover:bg-gray-100 group"
               >
                 <ArrowLeftOnRectangleIcon className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" />
-                Logout
+                {t('sidebar.logout')}
               </button>
             </nav>
           </div>

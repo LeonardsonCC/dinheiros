@@ -3,6 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
@@ -29,6 +30,7 @@ interface AxiosError {
 }
 
 export default function CategoryManager({ initialType = 'expense', onCategoryAdded, buttonVariant = 'default', buttonClassName }: CategoryManagerProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -40,7 +42,7 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
     e.stopPropagation(); // Prevent event from bubbling up to parent forms
     
     if (!name.trim()) {
-      toast.error('Category name is required');
+      toast.error(t('categoryManager.nameRequired'));
       return;
     }
 
@@ -53,10 +55,10 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
       });
       
       onCategoryAdded(response.data);
-      toast.success('Category added successfully');
+      toast.success(t('categoryManager.added'));
       closeModal();
     } catch (error: unknown) {
-      let errorMessage = 'Failed to add category';
+      let errorMessage = t('categoryManager.failed');
       if (typeof error === 'object' && error !== null && 'response' in error) {
         const err = error as AxiosError;
         if (typeof err.response?.data?.message === 'string') {
@@ -89,14 +91,14 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
             type="button"
             onClick={openModal}
             className={`p-1 rounded-full bg-primary-100 hover:bg-primary-200 text-primary-700 ${buttonClassName || ''}`}
-            title="Add Category"
+            title={t('categoryManager.addCategory')}
           >
             <PlusIcon className="h-4 w-4" />
           </button>
         ) : (
           <>
             <span className="block text-sm font-medium text-gray-700">
-              Categories
+              {t('categoryManager.categories')}
             </span>
             <button
               type="button"
@@ -104,7 +106,7 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
               className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-primary-700 bg-primary-100 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <PlusIcon className="h-3.5 w-3.5 mr-1" />
-              Add Category
+              {t('categoryManager.addCategory')}
             </button>
           </>
         )}
@@ -140,14 +142,13 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900"
                   >
-                    Add New Category
+                    {t('categoryManager.addNew')}
                   </Dialog.Title>
-                  
                   <div className="mt-4">
                     <form onSubmit={handleSubmit}>
                       <div className="mb-4">
                         <label htmlFor="category-name" className="block text-sm font-medium text-gray-700">
-                          Name *
+                          {t('categoryManager.name')} *
                         </label>
                         <input
                           type="text"
@@ -155,12 +156,12 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                          placeholder="e.g., Groceries, Rent, Salary"
+                          placeholder={t('categoryManager.namePlaceholder')}
                         />
                       </div>
                       <div className="mb-4">
                         <label htmlFor="category-description" className="block text-sm font-medium text-gray-700">
-                          Description
+                          {t('categoryManager.description')}
                         </label>
                         <textarea
                           id="category-description"
@@ -168,12 +169,12 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                          placeholder="Optional description"
+                          placeholder={t('categoryManager.descriptionPlaceholder')}
                         />
                       </div>
                       <div className="mb-4">
                         <label htmlFor="category-type" className="block text-sm font-medium text-gray-700">
-                          Type *
+                          {t('categoryManager.type')} *
                         </label>
                         <select
                           id="category-type"
@@ -181,26 +182,25 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
                           onChange={(e) => setType(e.target.value as TransactionType)}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                         >
-                          <option value="expense">Expense</option>
-                          <option value="income">Income</option>
-                          <option value="transfer">Transfer</option>
+                          <option value="expense">{t('dashboard.expenses')}</option>
+                          <option value="income">{t('dashboard.income')}</option>
+                          <option value="transfer">{t('categoryManager.transfer')}</option>
                         </select>
                       </div>
-                      
                       <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                         <button
                           type="submit"
                           disabled={isSubmitting}
                           className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:col-start-2 sm:text-sm disabled:opacity-50"
                         >
-                          {isSubmitting ? 'Adding...' : 'Add Category'}
+                          {isSubmitting ? t('categoryManager.adding') : t('categoryManager.addCategory')}
                         </button>
                         <button
                           type="button"
                           className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                           onClick={closeModal}
                         >
-                          Cancel
+                          {t('categoryManager.cancel')}
                         </button>
                       </div>
                     </form>

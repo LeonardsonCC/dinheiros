@@ -4,6 +4,7 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
+import { useTranslation } from 'react-i18next';
 
 interface Account {
   id: number | string;
@@ -31,6 +32,7 @@ interface AxiosError {
 }
 
 export default function Accounts() {
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<ProcessedAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
@@ -97,9 +99,8 @@ export default function Accounts() {
   }, []);
 
   const handleDelete = async (accountId: string | number) => {
-    if (!window.confirm('Are you sure you want to delete this account? This action cannot be undone.')) {
+    if (!window.confirm(t('accounts.confirmDelete')))
       return;
-    }
 
     try {
       setDeletingId(accountId);
@@ -107,9 +108,9 @@ export default function Accounts() {
       
       // Remove the deleted account from the state
       setAccounts(accounts.filter(account => account.id !== accountId));
-      toast.success('Account deleted successfully');
+      toast.success(t('accounts.deleted'));
     } catch (error: unknown) {
-      let errorMessage = 'Failed to delete account';
+      let errorMessage = t('accounts.failedDelete');
       if (typeof error === 'object' && error !== null && 'response' in error) {
         const err = error as AxiosError;
         if (typeof err.response?.data?.message === 'string') {
@@ -124,25 +125,25 @@ export default function Accounts() {
   };
 
   if (loading) {
-    return <Loading message="Loading accounts..." />;
+    return <Loading message={t('accounts.loading')} />;
   }
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Accounts</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t('accounts.title')}</h2>
         <Link
           to="/accounts/new"
           className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
           <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
-          Add Account
+          {t('accounts.addAccount')}
         </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {accounts.length === 0 ? (
-          <div className="col-span-full p-8 text-center text-gray-500">No accounts found. Add an account to get started.</div>
+          <div className="col-span-full p-8 text-center text-gray-500">{t('accounts.noAccounts')}</div>
         ) : (
           accounts.map((account) => (
             <div key={account.id} className="relative p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
@@ -154,7 +155,7 @@ export default function Accounts() {
                 }}
                 disabled={deletingId === account.id}
                 className="absolute top-2 right-2 p-1 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity duration-200 disabled:opacity-50"
-                title="Delete account"
+                title={t('accounts.deleteAccount')}
               >
                 {deletingId === account.id ? (
                   <svg className="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -174,7 +175,7 @@ export default function Accounts() {
                   }).format(account.balance || 0)}
                 </p>
                 <div className="mt-4 text-sm text-primary-600 hover:text-primary-800">
-                  View transactions →
+                  {t('accounts.viewTransactions')} &rarr;
                 </div>
               </Link>
             </div>

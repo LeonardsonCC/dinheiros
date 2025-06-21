@@ -5,6 +5,7 @@ import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
 import DatePicker from '../components/DatePicker';
+import { useTranslation } from 'react-i18next';
 
 interface Account {
   id: number;
@@ -25,6 +26,7 @@ interface AxiosError {
 }
 
 export default function NewTransaction() {
+  const { t } = useTranslation();
   const { accountId: accountIdParam } = useParams<{ accountId: string }>();
   const accountId = accountIdParam ? Number(accountIdParam) : null;
   const navigate = useNavigate();
@@ -195,7 +197,6 @@ export default function NewTransaction() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -203,13 +204,13 @@ export default function NewTransaction() {
           <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
             <div className="text-center">
               <div className="text-red-500 text-5xl mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Data</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('importTransactions.loading')}</h2>
               <p className="text-gray-600 mb-6">{error}</p>
               <button
                 onClick={() => window.location.reload()}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
-                Try Again
+                {t('importTransactions.import')}
               </button>
             </div>
           </div>
@@ -217,7 +218,6 @@ export default function NewTransaction() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -227,11 +227,10 @@ export default function NewTransaction() {
             className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
           >
             <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-            Back to Transactions
+            {t('newTransaction.back')}
           </button>
-          <h1 className="mt-2 text-2xl font-bold text-gray-900">Add New Transaction</h1>
+          <h1 className="mt-2 text-2xl font-bold text-gray-900">{t('newTransaction.addNew')}</h1>
         </div>
-
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -239,7 +238,7 @@ export default function NewTransaction() {
               {!accountId && (
                 <div className="sm:col-span-2">
                   <label htmlFor="accountId" className="block text-sm font-medium text-gray-700">
-                    Account
+                    {t('newTransaction.account')}
                   </label>
                   <select
                     id="accountId"
@@ -249,20 +248,19 @@ export default function NewTransaction() {
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                     required
                   >
-                    <option value="">Select an account</option>
+                    <option value="">{t('newTransaction.account')}</option>
                     {accounts.length > 0 ? accounts.map(account => (
                       <option key={account.id} value={account.id.toString()}>
                         {account.name}
                       </option>
-                    )) : <option value="">No accounts available</option>}
+                    )) : <option value="">{t('importTransactions.noAccounts')}</option>}
                   </select>
                 </div>
               )}
-
               {/* Transaction Type */}
               <div className="sm:col-span-2">
                 <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-                  Transaction Type
+                  {t('newTransaction.transactionType')}
                 </label>
                 <select
                   id="type"
@@ -272,16 +270,15 @@ export default function NewTransaction() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                   required
                 >
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
+                  <option value="expense">{t('dashboard.expenses')}</option>
+                  <option value="income">{t('dashboard.income')}</option>
                   <option value="transfer">Transfer</option>
                 </select>
               </div>
-
               {/* Amount */}
               <div className="sm:col-span-2">
                 <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                  Amount
+                  {t('newTransaction.amount')}
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <input
@@ -298,11 +295,10 @@ export default function NewTransaction() {
                   />
                 </div>
               </div>
-
               {/* Description */}
               <div className="sm:col-span-2">
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                  Description
+                  {t('newTransaction.description')}
                 </label>
                 <input
                   type="text"
@@ -313,15 +309,12 @@ export default function NewTransaction() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 />
               </div>
-
               {/* Categories */}
               <div className="sm:col-span-2">
                 <CategoryManager 
                   initialType={formData.type}
                   onCategoryAdded={(newCategory) => {
                     setAllCategories(prev => [...prev, newCategory]);
-                    
-                    // Only auto-select if the new category matches the current transaction type
                     if (newCategory.type === formData.type) {
                       setFilteredCategories(prev => [...prev, newCategory]);
                       setFormData(prev => ({
@@ -331,7 +324,6 @@ export default function NewTransaction() {
                     }
                   }} 
                 />
-                
                 {filteredCategories.length > 0 ? (
                   <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
                     {filteredCategories.map(category => (
@@ -355,15 +347,14 @@ export default function NewTransaction() {
                   </div>
                 ) : (
                   <p className="mt-1 text-sm text-gray-500">
-                    No categories yet. Click &apos;Add Category&apos; to create one.
+                    {t('newTransaction.categories')}
                   </p>
                 )}
               </div>
-
               {/* Date & Time */}
               <div className="sm:col-span-2">
                 <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-                  Date & Time
+                  {t('newTransaction.dateTime')}
                 </label>
                 <DatePicker
                   label=""
@@ -372,12 +363,11 @@ export default function NewTransaction() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 />
               </div>
-
               {/* To Account (only for transfers) */}
               {formData.type === 'transfer' && (
                 <div className="sm:col-span-2">
                   <label htmlFor="toAccountId" className="block text-sm font-medium text-gray-700">
-                    To Account
+                    {t('newTransaction.toAccount')}
                   </label>
                   <select
                     id="toAccountId"
@@ -387,33 +377,32 @@ export default function NewTransaction() {
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                     required={formData.type === 'transfer'}
                   >
-                    <option value="">Select an account</option>
+                    <option value="">{t('newTransaction.toAccount')}</option>
                     {accounts.length > 0 ? accounts
                       .filter(account => account.id !== accountId)
                       .map(account => (
                         <option key={account.id} value={account.id}>
                           {account.name}
                         </option>
-                      )): <option value="">No accounts available</option>}
+                      )): <option value="">{t('importTransactions.noAccounts')}</option>}
                   </select>
                 </div>
               )}
             </div>
-
             <div className="flex justify-end pt-4">
               <button
                 type="button"
                 onClick={() => navigate(`/accounts/${accountId}/transactions`)}
                 className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 mr-3"
               >
-                Cancel
+                {t('newTransaction.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Saving...' : 'Save Transaction'}
+                {submitting ? t('newTransaction.saving') : t('newTransaction.save')}
               </button>
             </div>
           </form>
