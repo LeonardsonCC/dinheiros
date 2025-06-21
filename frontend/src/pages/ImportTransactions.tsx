@@ -450,14 +450,14 @@ export default function ImportTransactions() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
-                        {transactions.map((t, idx) => (
-                          <tr key={idx} className={`hover:bg-gray-50 ${t.ignored ? 'opacity-40 line-through bg-gray-100' : ''}`}> 
+                        {transactions.map((tx, idx) => (
+                          <tr key={idx} className={`hover:bg-gray-50 ${tx.ignored ? 'opacity-40 line-through bg-gray-100' : ''}`}> 
                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                               <select
                                 className="border rounded px-1 py-0.5 w-full"
-                                value={t.type || 'expense'}
+                                value={tx.type || 'expense'}
                                 onChange={e => handleTransactionChange(idx, 'type', e.target.value)}
-                                disabled={t.ignored}
+                                disabled={tx.ignored}
                               >
                                 <option value="expense">{t('importTransactions.expense')}</option>
                                 <option value="income">{t('importTransactions.income')}</option>
@@ -467,7 +467,7 @@ export default function ImportTransactions() {
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                               <DatePicker
                                 label=""
-                                value={t.date}
+                                value={tx.date}
                                 onChange={value => handleTransactionChange(idx, 'date', value)}
                                 className="border rounded px-1 py-0.5 w-full"
                               />
@@ -476,31 +476,31 @@ export default function ImportTransactions() {
                               <input
                                 type="text"
                                 className="border rounded px-1 py-0.5 w-full"
-                                value={t.description}
+                                value={tx.description}
                                 onChange={e => handleTransactionChange(idx, 'description', e.target.value)}
-                                disabled={t.ignored}
+                                disabled={tx.ignored}
                               />
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 text-right">
                               <input
                                 type="number"
                                 className="border rounded px-1 py-0.5 w-full text-right"
-                                value={t.amount}
+                                value={tx.amount}
                                 onChange={e => handleTransactionChange(idx, 'amount', parseFloat(e.target.value))}
-                                disabled={t.ignored}
+                                disabled={tx.ignored}
                               />
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                               <div className="flex items-center gap-2">
                                 <CategoryMultiSelectDropdown
-                                  options={getFilteredCategories(t.type || 'expense')}
-                                  selected={Array.isArray(t.categoryIds) ? t.categoryIds : []}
+                                  options={getFilteredCategories(tx.type || 'expense')}
+                                  selected={Array.isArray(tx.categoryIds) ? tx.categoryIds : []}
                                   onChange={catIds => handleTransactionChange(idx, 'categoryIds', catIds)}
-                                  disabled={t.ignored}
-                                  onAddCategory={name => handleAddCategory(name, t.type || 'expense')}
+                                  disabled={tx.ignored}
+                                  onAddCategory={name => handleAddCategory(name, tx.type || 'expense')}
                                 />
                                 <CategoryManager
-                                  initialType={t.type || 'expense'}
+                                  initialType={tx.type || 'expense'}
                                   onCategoryAdded={cat => handleCategoryAdded(cat, idx)}
                                   buttonVariant="icon"
                                   buttonClassName="ml-1"
@@ -511,8 +511,8 @@ export default function ImportTransactions() {
                               <button
                                 type="button"
                                 onClick={() => toggleIgnoreTransaction(idx)}
-                                className={`text-gray-400 hover:text-red-500 transition ${t.ignored ? 'opacity-100' : ''}`}
-                                title={t.ignored ? 'Restore transaction' : 'Ignore transaction'}
+                                className={`text-gray-400 hover:text-red-500 transition ${tx.ignored ? 'opacity-100' : ''}`}
+                                title={tx.ignored ? 'Restore transaction' : 'Ignore transaction'}
                               >
                                 <XMarkIcon className="h-5 w-5 inline" />
                               </button>

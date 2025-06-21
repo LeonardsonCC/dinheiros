@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import TransactionsTable from '../components/TransactionsTable';
 import Loading from '../components/Loading';
 import DatePicker from '../components/DatePicker';
+import { useTranslation } from 'react-i18next';
 
 // Type definitions
 interface Account {
@@ -72,6 +73,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<number[]>(selected);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -178,7 +180,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     <input
                       type="text"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      placeholder="Search..."
+                      placeholder={t('allTransactions.search')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onClick={(e) => e.stopPropagation()}
@@ -199,7 +201,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 </div>
                 {filteredOptions.length === 0 ? (
                   <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
-                    No items found.
+                    {t('allTransactions.noItems')}
                   </div>
                 ) : (
                   filteredOptions.map((option: SelectOption) => (
@@ -220,7 +222,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                       {({ selected }) => (
                         <>
                           <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                            {option.name}
+                            {option?.name}
                           </span>
                           {selected ? (
                             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
@@ -242,7 +244,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                         clearAll(e);
                       }}
                     >
-                      Clear all
+                      {t('allTransactions.clearAll')}
                     </button>
                   </div>
                 )}
@@ -256,6 +258,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 };
 
 export default function AllTransactions() {
+  const { t } = useTranslation();
+
   // Router hooks
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -309,7 +313,7 @@ export default function AllTransactions() {
         setCategories(categoriesRes.data);
       } catch (error) {
         console.error('Error fetching initial data:', error);
-        toast.error('Failed to load accounts and categories');
+        toast.error(t('allTransactions.failedLoadAccounts'));
       }
     };
     
@@ -350,7 +354,7 @@ export default function AllTransactions() {
       }));
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      toast.error('Failed to load transactions');
+      toast.error(t('allTransactions.failedLoadTransactions'));
       setTransactions([]);
       setPagination(prev => ({
         ...prev,
@@ -499,12 +503,12 @@ export default function AllTransactions() {
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">All Transactions</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">{t('allTransactions.title')}</h1>
           <p className="mt-2 text-sm text-gray-700">
-            View and manage all your transactions in one place.
+            {t('allTransactions.subtitle')}
             {pagination.totalItems > 0 && (
               <span className="ml-2 text-gray-500">
-                (Showing {(pagination.currentPage - 1) * pagination.pageSize + 1} to{' '}
+                t(Showing {(pagination.currentPage - 1) * pagination.pageSize + 1} to{' '}
                 {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} of {pagination.totalItems} transactions)
               </span>
             )}
@@ -517,14 +521,14 @@ export default function AllTransactions() {
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <FunnelIcon className="-ml-1 mr-2 h-5 w-5 text-gray-400" />
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
+            {showFilters ? t('allTransactions.hideFilters') : t('allTransactions.showFilters')}
           </button>
           <Link
             to="/accounts/transactions/new"
             className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-            Add Transaction
+            {t('allTransactions.addTransaction')}
           </Link>
         </div>
       </div>
@@ -532,12 +536,12 @@ export default function AllTransactions() {
       {/* Filters */}
       {showFilters && (
         <div className="mt-6 bg-white shadow rounded-lg p-6 relative" style={{ overflow: 'visible' }}>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Filters</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">{t('allTransactions.filters')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Description filter */}
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Description
+                {t('allTransactions.description')}
               </label>
               <input
                 type="text"
@@ -545,13 +549,13 @@ export default function AllTransactions() {
                 value={filters.description}
                 onChange={(e) => handleFilterChange('description', e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Search transactions..."
+                placeholder={t('allTransactions.searchTransactions')}
               />
             </div>
 
             {/* Type filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('allTransactions.type')}</label>
               <div className="space-x-4 flex">
                 {['income', 'expense', 'transfer'].map((type) => (
                   <div key={type} className="flex items-center">
@@ -578,7 +582,7 @@ export default function AllTransactions() {
 
             {/* Account filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Accounts</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('allTransactions.accounts')}</label>
               <MultiSelectDropdown
                 options={accounts.map(account => ({
                   id: account.id,
@@ -586,13 +590,13 @@ export default function AllTransactions() {
                 }))}
                 selected={filters.accountIds}
                 onChange={(selected) => handleFilterChange('accountIds', selected)}
-                placeholder="Select accounts..."
+                placeholder={t('allTransactions.selectAccounts')}
               />
             </div>
 
             {/* Category filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('allTransactions.categories')}</label>
               <MultiSelectDropdown
                 options={categories.map(category => ({
                   id: category.id,
@@ -600,7 +604,7 @@ export default function AllTransactions() {
                 }))}
                 selected={filters.categoryIds}
                 onChange={(selected) => handleFilterChange('categoryIds', selected)}
-                placeholder="Select categories..."
+                placeholder={t('allTransactions.selectCategories')}
               />
             </div>
 
@@ -608,7 +612,7 @@ export default function AllTransactions() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="min-amount" className="block text-sm font-medium text-gray-700">
-                  Min Amount
+                  {t('allTransactions.minAmount')}
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <input
@@ -624,7 +628,7 @@ export default function AllTransactions() {
               </div>
               <div>
                 <label htmlFor="max-amount" className="block text-sm font-medium text-gray-700">
-                  Max Amount
+                  {t('allTransactions.maxAmount')}
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <input
@@ -643,13 +647,13 @@ export default function AllTransactions() {
             {/* Date range */}
             <div className="grid grid-cols-2 gap-4">
               <DatePicker
-                label="Start Date"
+                label={t('allTransactions.startDate')}
                 value={filters.startDate}
                 onChange={value => handleFilterChange('startDate', value ? value.slice(0, 10) : "")}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
               <DatePicker
-                label="End Date"
+                label={t('allTransactions.endDate')}
                 value={filters.endDate}
                 onChange={value => handleFilterChange('endDate', value ? value.slice(0, 10) : "")}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -664,7 +668,7 @@ export default function AllTransactions() {
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               >
                 <XMarkIcon className="-ml-1 mr-2 h-5 w-5" />
-                Reset All Filters
+                {t('allTransactions.resetAllFilters')}
               </button>
             </div>
           </div>
@@ -689,7 +693,7 @@ export default function AllTransactions() {
               to={`/accounts/${transaction.account.id}/transactions/${transaction.id}/edit`}
               className="text-primary-600 hover:text-primary-900 text-sm"
             >
-              Edit
+              {t('allTransactions.edit')}
             </Link>
             <span className="text-gray-300">|</span>
             <button
@@ -698,7 +702,7 @@ export default function AllTransactions() {
               disabled={deletingId === transaction.id}
               className="text-red-600 hover:text-red-900 disabled:opacity-50 text-sm"
             >
-              {deletingId === transaction.id ? 'Deleting...' : 'Delete'}
+              {deletingId === transaction.id ? t('allTransactions.deleting') : t('allTransactions.delete')}
             </button>
           </div>
         )}

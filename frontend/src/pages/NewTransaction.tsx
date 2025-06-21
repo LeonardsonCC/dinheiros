@@ -71,14 +71,13 @@ export default function NewTransaction() {
         const filtered = categoriesRes.data.filter((cat: Category) => cat.type === 'expense');
         setFilteredCategories(filtered);
       } catch (error: unknown) {
-        let errorMessage = 'Failed to load data';
+        let errorMessage = t('newTransaction.failedLoad');
         if (typeof error === 'object' && error !== null && 'response' in error) {
           const err = error as AxiosError;
           if (typeof err.response?.data?.error === 'string') {
             errorMessage = err.response.data.error;
           }
         }
-        console.error('Error fetching data:', error);
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -155,7 +154,7 @@ export default function NewTransaction() {
     
     const selectedAccountId = accountId || formData.accountId;
     if (!selectedAccountId) {
-      toast.error('Please select an account');
+      toast.error(t('newTransaction.selectAccountError'));
       return;
     }
 
@@ -173,10 +172,10 @@ export default function NewTransaction() {
 
       await api.post(`/api/accounts/${selectedAccountId}/transactions`, payload);
       
-      toast.success('Transaction added successfully');
+      toast.success(t('newTransaction.added'));
       navigate(`/accounts/${selectedAccountId}/transactions`);
     } catch (error: unknown) {
-      let errorMessage = 'Failed to add transaction';
+      let errorMessage = t('newTransaction.failedAdd');
       if (typeof error === 'object' && error !== null && 'response' in error) {
         const err = error as AxiosError;
         if (typeof err.response?.data?.message === 'string') {
@@ -194,6 +193,7 @@ export default function NewTransaction() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+        <span className="ml-4 text-gray-500">{t('newTransaction.loading')}</span>
       </div>
     );
   }
@@ -204,13 +204,13 @@ export default function NewTransaction() {
           <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
             <div className="text-center">
               <div className="text-red-500 text-5xl mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('importTransactions.loading')}</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('newTransaction.errorTitle')}</h2>
               <p className="text-gray-600 mb-6">{error}</p>
               <button
                 onClick={() => window.location.reload()}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
-                {t('importTransactions.import')}
+                {t('newTransaction.tryAgain')}
               </button>
             </div>
           </div>
@@ -272,7 +272,7 @@ export default function NewTransaction() {
                 >
                   <option value="expense">{t('dashboard.expenses')}</option>
                   <option value="income">{t('dashboard.income')}</option>
-                  <option value="transfer">Transfer</option>
+                  <option value="transfer">{t('categoryManager.transfer')}</option>
                 </select>
               </div>
               {/* Amount */}
@@ -311,7 +311,7 @@ export default function NewTransaction() {
               </div>
               {/* Categories */}
               <div className="sm:col-span-2">
-                <CategoryManager 
+                <CategoryManager
                   initialType={formData.type}
                   onCategoryAdded={(newCategory) => {
                     setAllCategories(prev => [...prev, newCategory]);
@@ -322,7 +322,7 @@ export default function NewTransaction() {
                         categoryIds: [...prev.categoryIds, newCategory.id]
                       }));
                     }
-                  }} 
+                  }}
                 />
                 {filteredCategories.length > 0 ? (
                   <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -335,8 +335,8 @@ export default function NewTransaction() {
                           onChange={() => handleCategoryChange(category.id)}
                           className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                         />
-                        <label 
-                          htmlFor={`category-${category.id}`} 
+                        <label
+                          htmlFor={`category-${category.id}`}
                           className="ml-2 block text-sm text-gray-700 truncate"
                           title={category.description}
                         >

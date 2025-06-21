@@ -5,6 +5,7 @@ import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
 import { Category } from '../components/CategoryManager';
+import { useTranslation } from 'react-i18next';
 
 type TransactionType = 'income' | 'expense' | 'transfer';
 
@@ -33,6 +34,7 @@ interface AxiosError {
 }
 
 export default function EditTransaction() {
+  const { t } = useTranslation();
   const { accountId: accountIdParam, transactionId } = useParams<{ accountId: string; transactionId: string }>();
   const accountId = accountIdParam ? Number(accountIdParam) : null;
   const transactionIdNum = transactionId ? Number(transactionId) : null;
@@ -97,7 +99,7 @@ export default function EditTransaction() {
         setDateInput(formatDateForInput(transaction.date));
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
-        let errorMessage = 'Failed to load transaction data';
+        let errorMessage = t('editTransaction.failedLoad');
         if (typeof error === 'object' && error !== null && 'response' in error) {
           const err = error as AxiosError;
           if (typeof err.response?.data?.error === 'string') {
@@ -176,7 +178,7 @@ export default function EditTransaction() {
     e.preventDefault();
     
     if (!accountId || !transactionIdNum) {
-      toast.error('Missing account or transaction ID');
+      toast.error(t('editTransaction.missingId'));
       return;
     }
 
@@ -194,11 +196,11 @@ export default function EditTransaction() {
 
       await api.put(`/api/accounts/${accountId}/transactions/${transactionIdNum}`, payload);
       
-      toast.success('Transaction updated successfully');
+      toast.success(t('editTransaction.updated'));
       navigate(`/accounts/${accountId}/transactions`);
     } catch (error: unknown) {
       console.error('Error updating transaction:', error);
-      let errorMessage = 'Failed to update transaction';
+      let errorMessage = t('editTransaction.failedUpdate');
       if (typeof error === 'object' && error !== null && 'response' in error) {
         const err = error as AxiosError;
         if (typeof err.response?.data?.message === 'string') {
@@ -215,6 +217,7 @@ export default function EditTransaction() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+        <span className="ml-4 text-gray-500">{t('editTransaction.loading')}</span>
       </div>
     );
   }
@@ -226,13 +229,13 @@ export default function EditTransaction() {
           <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
             <div className="text-center">
               <div className="text-red-500 text-5xl mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Transaction</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('editTransaction.errorTitle')}</h2>
               <p className="text-gray-600 mb-6">{error}</p>
               <button
                 onClick={() => window.location.reload()}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
-                Try Again
+                {t('editTransaction.tryAgain')}
               </button>
             </div>
           </div>
@@ -250,9 +253,9 @@ export default function EditTransaction() {
             className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
           >
             <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-            Back to Transactions
+            {t('editTransaction.back')}
           </button>
-          <h1 className="mt-2 text-2xl font-bold text-gray-900">Edit Transaction</h1>
+          <h1 className="mt-2 text-2xl font-bold text-gray-900">{t('editTransaction.title')}</h1>
         </div>
 
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -261,7 +264,7 @@ export default function EditTransaction() {
               {/* Transaction Type */}
               <div className="sm:col-span-2">
                 <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-                  Transaction Type
+                  {t('editTransaction.type')}
                 </label>
                 <select
                   id="type"
@@ -271,16 +274,16 @@ export default function EditTransaction() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                   required
                 >
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
-                  <option value="transfer">Transfer</option>
+                  <option value="expense">{t('dashboard.expenses')}</option>
+                  <option value="income">{t('dashboard.income')}</option>
+                  <option value="transfer">{t('categoryManager.transfer')}</option>
                 </select>
               </div>
 
               {/* Amount */}
               <div className="sm:col-span-2">
                 <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                  Amount
+                  {t('editTransaction.amount')}
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <input
@@ -301,7 +304,7 @@ export default function EditTransaction() {
               {/* Description */}
               <div className="sm:col-span-2">
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                  Description
+                  {t('editTransaction.description')}
                 </label>
                 <input
                   type="text"
@@ -354,7 +357,7 @@ export default function EditTransaction() {
                   </div>
                 ) : (
                   <p className="mt-1 text-sm text-gray-500">
-                    No categories yet. Click &apos;Add Category&apos; to create one.
+                    {t('editTransaction.noCategories')}
                   </p>
                 )}
               </div>
@@ -362,7 +365,7 @@ export default function EditTransaction() {
               {/* Date & Time */}
               <div className="sm:col-span-2">
                 <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-                  Date & Time
+                  {t('editTransaction.dateTime')}
                 </label>
                 <input
                   type="datetime-local"
@@ -379,7 +382,7 @@ export default function EditTransaction() {
               {formData.type === 'transfer' && (
                 <div className="sm:col-span-2">
                   <label htmlFor="toAccountId" className="block text-sm font-medium text-gray-700">
-                    Transfer To Account
+                    {t('editTransaction.transferToAccount')}
                   </label>
                   <select
                     id="toAccountId"
@@ -389,7 +392,7 @@ export default function EditTransaction() {
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                     required={formData.type === 'transfer'}
                   >
-                    <option value="">Select an account</option>
+                    <option value="">{t('editTransaction.selectAccount')}</option>
                     {accounts
                       .filter(account => account.id !== accountId)
                       .map(account => (
@@ -408,14 +411,14 @@ export default function EditTransaction() {
                 onClick={() => navigate(`/accounts/${accountId}/transactions`)}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
-                Cancel
+                {t('editTransaction.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
               >
-                {submitting ? 'Saving...' : 'Save Changes'}
+                {submitting ? t('editTransaction.saving') : t('editTransaction.saveChanges')}
               </button>
             </div>
           </form>
