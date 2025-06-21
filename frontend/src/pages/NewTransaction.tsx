@@ -4,6 +4,7 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
+import DatePicker from '../components/DatePicker';
 
 interface Account {
   id: number;
@@ -364,14 +365,11 @@ export default function NewTransaction() {
                 <label htmlFor="date" className="block text-sm font-medium text-gray-700">
                   Date & Time
                 </label>
-                <input
-                  type="datetime-local"
-                  name="date"
-                  id="date"
+                <DatePicker
+                  label=""
                   value={dateInput}
-                  onChange={handleChange}
+                  onChange={setDateInput}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  required
                 />
               </div>
 

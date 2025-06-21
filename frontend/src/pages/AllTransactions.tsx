@@ -6,6 +6,7 @@ import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import TransactionsTable from '../components/TransactionsTable';
 import Loading from '../components/Loading';
+import DatePicker from '../components/DatePicker';
 
 // Type definitions
 interface Account {
@@ -641,30 +642,18 @@ export default function AllTransactions() {
 
             {/* Date range */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  id="start-date"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={filters.startDate}
-                  onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  id="end-date"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={filters.endDate}
-                  onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                />
-              </div>
+              <DatePicker
+                label="Start Date"
+                value={filters.startDate}
+                onChange={value => handleFilterChange('startDate', value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+              <DatePicker
+                label="End Date"
+                value={filters.endDate}
+                onChange={value => handleFilterChange('endDate', value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
             </div>
 
             {/* Reset filters button */}

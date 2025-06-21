@@ -6,6 +6,7 @@ import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
 import Loading from '../components/Loading';
+import DatePicker from '../components/DatePicker';
 
 interface AxiosError {
   response?: {
@@ -463,12 +464,11 @@ export default function ImportTransactions() {
                               </select>
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                              <input
-                                type="date"
-                                className="border rounded px-1 py-0.5 w-full"
+                              <DatePicker
+                                label=""
                                 value={t.date}
-                                onChange={e => handleTransactionChange(idx, 'date', e.target.value)}
-                                disabled={t.ignored}
+                                onChange={value => handleTransactionChange(idx, 'date', value)}
+                                className="border rounded px-1 py-0.5 w-full"
                               />
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

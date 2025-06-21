@@ -3,6 +3,7 @@ import { Bar, Line, Pie, Doughnut } from 'react-chartjs-2';
 import { Chart, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Tooltip, Legend } from 'chart.js';
 import api from '../services/api';
 import Loading from '../components/Loading';
+import DatePicker from '../components/DatePicker';
 
 Chart.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Tooltip, Legend);
 
@@ -58,14 +59,8 @@ export default function Statistics() {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Statistics & Analytics</h2>
       <div className="flex flex-wrap gap-4 mb-6 items-end">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="border rounded px-2 py-1" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="border rounded px-2 py-1" />
-        </div>
+        <DatePicker label="Start Date" value={startDate} onChange={setStartDate} />
+        <DatePicker label="End Date" value={endDate} onChange={setEndDate} />
         <button onClick={() => { setStartDate(""); setEndDate(""); }} className="ml-2 px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">Clear</button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
