@@ -34,9 +34,13 @@ type TransactionService interface {
 	ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error)
 	AssociateCategories(transactionID uint, categoryIDs []uint) error
 	GetTransactionsPerDay(userID uint) (*TransactionsPerDayData, error)
-	GetAmountByMonth(userID uint) (*AmountByMonthData, error)
-	GetAmountByAccount(userID uint) (*AmountByAccountData, error)
-	GetAmountByCategory(userID uint) (*AmountByCategoryData, error)
+	GetAmountByMonth(userID uint, startDate, endDate *time.Time) (*AmountByMonthData, error)
+	GetAmountByAccount(userID uint, startDate, endDate *time.Time) (*AmountByAccountData, error)
+	GetAmountByCategory(userID uint, startDate, endDate *time.Time) (*AmountByCategoryData, error)
+	GetAmountSpentByDay(userID uint) (*AmountByMonthData, error)
+	GetAmountSpentAndGainedByDay(userID uint) (map[string][]float64, []string)
+	GetTransactionsPerDayWithRange(userID uint, startDate, endDate *time.Time) (*TransactionsPerDayData, error)
+	GetAmountSpentAndGainedByDayWithRange(userID uint, startDate, endDate *time.Time) (map[string][]float64, []string)
 }
 
 type transactionService struct {
@@ -359,8 +363,8 @@ func (s *transactionService) GetTransactionsPerDay(userID uint) (*TransactionsPe
 	return &TransactionsPerDayData{Labels: labels, Data: data}, nil
 }
 
-func (s *transactionService) GetAmountByMonth(userID uint) (*AmountByMonthData, error) {
-	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, nil, nil, 0, 0)
+func (s *transactionService) GetAmountByMonth(userID uint, startDate, endDate *time.Time) (*AmountByMonthData, error) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, startDate, endDate, 0, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -381,8 +385,8 @@ func (s *transactionService) GetAmountByMonth(userID uint) (*AmountByMonthData, 
 	return &AmountByMonthData{Labels: labels, Data: data}, nil
 }
 
-func (s *transactionService) GetAmountByAccount(userID uint) (*AmountByAccountData, error) {
-	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, nil, nil, 0, 0)
+func (s *transactionService) GetAmountByAccount(userID uint, startDate, endDate *time.Time) (*AmountByAccountData, error) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, startDate, endDate, 0, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -402,8 +406,8 @@ func (s *transactionService) GetAmountByAccount(userID uint) (*AmountByAccountDa
 	return &AmountByAccountData{Labels: labels, Data: data}, nil
 }
 
-func (s *transactionService) GetAmountByCategory(userID uint) (*AmountByCategoryData, error) {
-	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, nil, nil, 0, 0)
+func (s *transactionService) GetAmountByCategory(userID uint, startDate, endDate *time.Time) (*AmountByCategoryData, error) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, startDate, endDate, 0, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -423,4 +427,124 @@ func (s *transactionService) GetAmountByCategory(userID uint) (*AmountByCategory
 		data[i] = byCategory[cat]
 	}
 	return &AmountByCategoryData{Labels: labels, Data: data}, nil
+}
+
+// AmountSpentByDayData for chartjs
+func (s *transactionService) GetAmountSpentByDay(userID uint) (*AmountByMonthData, error) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, nil, nil, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	byDay := make(map[string]float64)
+	for _, tx := range transactions {
+		if tx.Type == models.TransactionTypeExpense {
+			date := tx.Date.Format("2006-01-02")
+			byDay[date] += tx.Amount
+		}
+	}
+	labels := make([]string, 0, len(byDay))
+	for day := range byDay {
+		labels = append(labels, day)
+	}
+	sort.Strings(labels)
+	data := make([]float64, len(labels))
+	for i, day := range labels {
+		data[i] = byDay[day]
+	}
+	return &AmountByMonthData{Labels: labels, Data: data}, nil
+}
+
+// AmountSpentAndGainedByDayData for chartjs
+func (s *transactionService) GetAmountSpentAndGainedByDay(userID uint) (map[string][]float64, []string) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, nil, nil, 0, 0)
+	if err != nil {
+		return map[string][]float64{"spent": {}, "gained": {}}, []string{}
+	}
+	spentByDay := make(map[string]float64)
+	gainedByDay := make(map[string]float64)
+	for _, tx := range transactions {
+		date := tx.Date.Format("2006-01-02")
+		if tx.Type == models.TransactionTypeExpense {
+			spentByDay[date] += tx.Amount
+		} else if tx.Type == models.TransactionTypeIncome {
+			gainedByDay[date] += tx.Amount
+		}
+	}
+	labelSet := make(map[string]struct{})
+	for d := range spentByDay {
+		labelSet[d] = struct{}{}
+	}
+	for d := range gainedByDay {
+		labelSet[d] = struct{}{}
+	}
+	labels := make([]string, 0, len(labelSet))
+	for d := range labelSet {
+		labels = append(labels, d)
+	}
+	sort.Strings(labels)
+	spent := make([]float64, len(labels))
+	gained := make([]float64, len(labels))
+	for i, d := range labels {
+		spent[i] = spentByDay[d]
+		gained[i] = gainedByDay[d]
+	}
+	return map[string][]float64{"spent": spent, "gained": gained}, labels
+}
+
+func (s *transactionService) GetTransactionsPerDayWithRange(userID uint, startDate, endDate *time.Time) (*TransactionsPerDayData, error) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, startDate, endDate, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	perDay := make(map[string]int)
+	for _, tx := range transactions {
+		date := tx.Date.Format("2006-01-02")
+		perDay[date]++
+	}
+	labels := make([]string, 0, len(perDay))
+	for date := range perDay {
+		labels = append(labels, date)
+	}
+	sort.Strings(labels)
+	data := make([]int, len(labels))
+	for i, date := range labels {
+		data[i] = perDay[date]
+	}
+	return &TransactionsPerDayData{Labels: labels, Data: data}, nil
+}
+
+func (s *transactionService) GetAmountSpentAndGainedByDayWithRange(userID uint, startDate, endDate *time.Time) (map[string][]float64, []string) {
+	transactions, _, err := s.transactionRepo.FindByUserID(userID, nil, nil, nil, "", nil, nil, startDate, endDate, 0, 0)
+	if err != nil {
+		return map[string][]float64{"spent": {}, "gained": {}}, []string{}
+	}
+	spentByDay := make(map[string]float64)
+	gainedByDay := make(map[string]float64)
+	for _, tx := range transactions {
+		date := tx.Date.Format("2006-01-02")
+		if tx.Type == models.TransactionTypeExpense {
+			spentByDay[date] += tx.Amount
+		} else if tx.Type == models.TransactionTypeIncome {
+			gainedByDay[date] += tx.Amount
+		}
+	}
+	labelSet := make(map[string]struct{})
+	for d := range spentByDay {
+		labelSet[d] = struct{}{}
+	}
+	for d := range gainedByDay {
+		labelSet[d] = struct{}{}
+	}
+	labels := make([]string, 0, len(labelSet))
+	for d := range labelSet {
+		labels = append(labels, d)
+	}
+	sort.Strings(labels)
+	spent := make([]float64, len(labels))
+	gained := make([]float64, len(labels))
+	for i, d := range labels {
+		spent[i] = spentByDay[d]
+		gained[i] = gainedByDay[d]
+	}
+	return map[string][]float64{"spent": spent, "gained": gained}, labels
 }

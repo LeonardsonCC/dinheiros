@@ -81,6 +81,8 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 				statistics.GET("/amount-by-month", container.TransactionHandler.GetStatisticsAmountByMonth)
 				statistics.GET("/amount-by-account", container.TransactionHandler.GetStatisticsAmountByAccount)
 				statistics.GET("/amount-by-category", container.TransactionHandler.GetStatisticsAmountByCategory)
+				statistics.GET("/amount-spent-by-day", container.TransactionHandler.GetStatisticsAmountSpentByDay)
+				statistics.GET("/amount-spent-and-gained-by-day", container.TransactionHandler.GetStatisticsAmountSpentAndGainedByDay)
 			}
 		}
 	}

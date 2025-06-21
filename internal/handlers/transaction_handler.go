@@ -207,7 +207,7 @@ func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 	}
 
 	// Get user ID from context
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -587,7 +587,22 @@ func (h *TransactionHandler) GetStatisticsTransactionsPerDay(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	data, err := h.transactionService.GetTransactionsPerDay(user.(uint))
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
+	var startDate, endDate *time.Time
+	if startDateStr != "" {
+		t, err := time.Parse("2006-01-02", startDateStr)
+		if err == nil {
+			startDate = &t
+		}
+	}
+	if endDateStr != "" {
+		t, err := time.Parse("2006-01-02", endDateStr)
+		if err == nil {
+			endDate = &t
+		}
+	}
+	data, err := h.transactionService.GetTransactionsPerDayWithRange(user.(uint), startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
 		return
@@ -601,7 +616,22 @@ func (h *TransactionHandler) GetStatisticsAmountByMonth(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	data, err := h.transactionService.GetAmountByMonth(user.(uint))
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
+	var startDate, endDate *time.Time
+	if startDateStr != "" {
+		t, err := time.Parse("2006-01-02", startDateStr)
+		if err == nil {
+			startDate = &t
+		}
+	}
+	if endDateStr != "" {
+		t, err := time.Parse("2006-01-02", endDateStr)
+		if err == nil {
+			endDate = &t
+		}
+	}
+	data, err := h.transactionService.GetAmountByMonth(user.(uint), startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
 		return
@@ -615,7 +645,22 @@ func (h *TransactionHandler) GetStatisticsAmountByAccount(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	data, err := h.transactionService.GetAmountByAccount(user.(uint))
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
+	var startDate, endDate *time.Time
+	if startDateStr != "" {
+		t, err := time.Parse("2006-01-02", startDateStr)
+		if err == nil {
+			startDate = &t
+		}
+	}
+	if endDateStr != "" {
+		t, err := time.Parse("2006-01-02", endDateStr)
+		if err == nil {
+			endDate = &t
+		}
+	}
+	data, err := h.transactionService.GetAmountByAccount(user.(uint), startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
 		return
@@ -629,10 +674,78 @@ func (h *TransactionHandler) GetStatisticsAmountByCategory(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	data, err := h.transactionService.GetAmountByCategory(user.(uint))
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
+	var startDate, endDate *time.Time
+	if startDateStr != "" {
+		t, err := time.Parse("2006-01-02", startDateStr)
+		if err == nil {
+			startDate = &t
+		}
+	}
+	if endDateStr != "" {
+		t, err := time.Parse("2006-01-02", endDateStr)
+		if err == nil {
+			endDate = &t
+		}
+	}
+	data, err := h.transactionService.GetAmountByCategory(user.(uint), startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
 		return
 	}
 	c.JSON(http.StatusOK, ensureChartJsFormat(data.Labels, data.Data))
+}
+
+func (h *TransactionHandler) GetStatisticsAmountSpentByDay(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	data, err := h.transactionService.GetAmountSpentByDay(user.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
+		return
+	}
+	c.JSON(http.StatusOK, ensureChartJsFormat(data.Labels, data.Data))
+}
+
+func (h *TransactionHandler) GetStatisticsAmountSpentAndGainedByDay(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
+	var startDate, endDate *time.Time
+	if startDateStr != "" {
+		t, err := time.Parse("2006-01-02", startDateStr)
+		if err == nil {
+			startDate = &t
+		}
+	}
+	if endDateStr != "" {
+		t, err := time.Parse("2006-01-02", endDateStr)
+		if err == nil {
+			endDate = &t
+		}
+	}
+	data, labels := h.transactionService.GetAmountSpentAndGainedByDayWithRange(user.(uint), startDate, endDate)
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"labels": labels,
+		"datasets": []map[string]interface{}{
+			{
+				"label":           "Spent",
+				"data":            data["spent"],
+				"backgroundColor": "#ef4444",
+			},
+			{
+				"label":           "Gained",
+				"data":            data["gained"],
+				"backgroundColor": "#10b981",
+			},
+		},
+	})
 }
