@@ -20,7 +20,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   onChange,
   className,
   showTimeSelect = false,
-  dateFormat = showTimeSelect ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd",
+  dateFormat = showTimeSelect ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy",
   minDate,
   maxDate,
   disabled = false,
