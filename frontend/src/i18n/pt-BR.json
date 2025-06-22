@@ -25,7 +25,8 @@
     "file": "Arquivo PDF",
     "orDrag": "ou arraste e solte",
     "supported": "Formatos suportados: .pdf",
-    "loading": "Carregando..."
+    "loading": "Carregando...",
+    "selectAccountOption": "Selecione uma conta para importar transações"
   },
   "transactions": {
     "add": "Adicionar Transação",
