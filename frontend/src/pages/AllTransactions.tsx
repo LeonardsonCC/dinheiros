@@ -505,13 +505,11 @@ export default function AllTransactions() {
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold text-gray-900">{t('allTransactions.title')}</h1>
           <p className="mt-2 text-sm text-gray-700">
-            {t('allTransactions.subtitle')}
-            {pagination.totalItems > 0 && (
-              <span className="ml-2 text-gray-500">
-                t(Showing {(pagination.currentPage - 1) * pagination.pageSize + 1} to{' '}
-                {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} of {pagination.totalItems} transactions)
-              </span>
-            )}
+            {t('allTransactions.subtitle', {
+              from: pagination.currentPage * pagination.pageSize - pagination.pageSize + 1,
+              to: pagination.currentPage * pagination.pageSize,
+              total: pagination.totalItems,
+            })}
           </p>
         </div>
         <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none space-x-3">
