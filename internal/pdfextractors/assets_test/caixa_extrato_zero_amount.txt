@@ -1,0 +1,52 @@
+
+
+
+Extrato por período
+Cliente:
+LEONARDSON CABRAL DE CARVALHO
+Conta:
+00111 | 1111 | 000111111111-1
+Data:
+Mês:
+Período:
+
+Junho/2025
+1 - 24
+24/06/2025 - 19:17
+Data Mov.
+Nr. Doc.
+Histórico
+Valor
+Saldo
+000000
+SALDO ANTERIOR
+1.623,62 C
+0,00 C
+Data Mov.
+Nr. Doc.
+Histórico
+Valor
+Saldo
+02/06/2025
+021844
+CRED PIX
+0,00 C
+7.623,62 C
+02/06/2025
+021845
+ENVIO PIX
+1.864,37 D
+5.759,25 C
+Extrato
+
+
+Data Mov.
+Nr. Doc.
+Histórico
+Valor
+Saldo
+Lançamentos do Dia
+Ouvidoria: 0800 725 7474
+Pessoas com deficiência auditiva: 0800 726 2492
+SAC CAIXA: 0800 726 0101
+Alô CAIXA: 0800 104 0 104
