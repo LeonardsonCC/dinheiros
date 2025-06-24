@@ -488,10 +488,16 @@ export default function AllTransactions() {
       toast.success('Transaction deleted successfully');
       // Refresh transactions
       fetchTransactions();
-    } catch (err: any) {
+    } catch (err: unknown) {
       let errorMessage = 'Failed to delete transaction';
-      if (err?.response?.data?.message) {
-        errorMessage = err.response.data.message;
+      // Type guard for AxiosError
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'response' in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      ) {
+        errorMessage = (err as { response?: { data?: { message?: string } } }).response!.data!.message!;
       }
       toast.error(errorMessage);
     } finally {
@@ -680,7 +686,6 @@ export default function AllTransactions() {
         pagination={pagination}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
-        sortConfig={sortConfig}
         onSort={handleSort}
         getSortIndicator={getSortIndicator}
         formatCurrency={formatCurrency}

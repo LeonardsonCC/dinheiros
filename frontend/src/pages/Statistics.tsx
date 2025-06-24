@@ -4,20 +4,27 @@ import { Chart, CategoryScale, LinearScale, BarElement, PointElement, LineElemen
 import api from '../services/api';
 import Loading from '../components/Loading';
 import DatePicker from '../components/DatePicker';
+import type { ChartData as ChartJSData } from 'chart.js';
 
 Chart.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Tooltip, Legend);
 
-// Default empty chart data
-const emptyChartData = { labels: [], datasets: [] };
+type ChartDataLine = ChartJSData<"line", (number | null)[], string>;
+type ChartDataBar = ChartJSData<"bar", (number | [number, number] | null)[], string>;
+type ChartDataDoughnut = ChartJSData<"doughnut", number[], string>;
+type ChartDataPie = ChartJSData<"pie", number[], string>;
+
+const emptyChartDataLine: ChartDataLine = { labels: [], datasets: [] };
+const emptyChartDataBar: ChartDataBar = { labels: [], datasets: [] };
+const emptyChartDataDoughnut: ChartDataDoughnut = { labels: [], datasets: [] };
+const emptyChartDataPie: ChartDataPie = { labels: [], datasets: [] };
 
 export default function Statistics() {
   const [loading, setLoading] = useState(true);
-  const [perDay, setPerDay] = useState<any>(emptyChartData);
-  const [spentByDay, setSpentByDay] = useState<any>(emptyChartData);
-  const [byMonth, setByMonth] = useState<any>(emptyChartData);
-  const [byAccount, setByAccount] = useState<any>(emptyChartData);
-  const [byCategory, setByCategory] = useState<any>(emptyChartData);
-  const [spentAndGainedByDay, setSpentAndGainedByDay] = useState<any>(emptyChartData);
+  const [perDay, setPerDay] = useState<ChartDataLine>(emptyChartDataLine);
+  const [byMonth, setByMonth] = useState<ChartDataBar>(emptyChartDataBar);
+  const [byAccount, setByAccount] = useState<ChartDataDoughnut>(emptyChartDataDoughnut);
+  const [byCategory, setByCategory] = useState<ChartDataPie>(emptyChartDataPie);
+  const [spentAndGainedByDay, setSpentAndGainedByDay] = useState<ChartDataBar>(emptyChartDataBar);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
@@ -25,7 +32,7 @@ export default function Statistics() {
     async function fetchStats() {
       setLoading(true);
       try {
-        const params: any = {};
+        const params: Record<string, string> = {};
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
         const [perDayRes, spentAndGainedByDayRes, byMonthRes, byAccountRes, byCategoryRes] = await Promise.all([
@@ -35,17 +42,17 @@ export default function Statistics() {
           api.get('/api/statistics/amount-by-account', { params }),
           api.get('/api/statistics/amount-by-category', { params }),
         ]);
-        setPerDay(perDayRes.data || emptyChartData);
-        setSpentAndGainedByDay(spentAndGainedByDayRes.data || emptyChartData);
-        setByMonth(byMonthRes.data || emptyChartData);
-        setByAccount(byAccountRes.data || emptyChartData);
-        setByCategory(byCategoryRes.data || emptyChartData);
+        setPerDay(perDayRes.data || emptyChartDataLine);
+        setSpentAndGainedByDay(spentAndGainedByDayRes.data || emptyChartDataBar);
+        setByMonth(byMonthRes.data || emptyChartDataBar);
+        setByAccount(byAccountRes.data || emptyChartDataDoughnut);
+        setByCategory(byCategoryRes.data || emptyChartDataPie);
       } catch (e) {
-        setPerDay(emptyChartData);
-        setSpentAndGainedByDay(emptyChartData);
-        setByMonth(emptyChartData);
-        setByAccount(emptyChartData);
-        setByCategory(emptyChartData);
+        setPerDay(emptyChartDataLine);
+        setSpentAndGainedByDay(emptyChartDataBar);
+        setByMonth(emptyChartDataBar);
+        setByAccount(emptyChartDataDoughnut);
+        setByCategory(emptyChartDataPie);
       } finally {
         setLoading(false);
       }

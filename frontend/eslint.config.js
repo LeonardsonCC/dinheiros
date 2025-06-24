@@ -18,5 +18,10 @@ export default defineConfig([
     }
   },
 ], {
-  ignores: ["tailwind.config.cjs"]
+  ignores: [
+    'dist/**',
+    'build/**',
+    'node_modules/**',
+    "tailwind.config.cjs"
+  ]
 });

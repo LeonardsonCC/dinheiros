@@ -3,33 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { PlusIcon, ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
-import TransactionsTable from '../components/TransactionsTable';
+import TransactionsTable, { Transaction as TableTransaction } from '../components/TransactionsTable';
 import Loading from '../components/Loading';
 import { useTranslation } from 'react-i18next';
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Transaction {
-  id: number;
-  amount: number;
-  type: 'income' | 'expense' | 'transfer';
-  description: string;
-  date: string;
-  categories: Category[];
-  toAccountId?: number;
-  account?: { id: number; name: string }; // Added account field
-}
-
-interface AxiosError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-}
+import type { AxiosError } from 'axios';
 
 export default function Transactions() {
   const { t } = useTranslation();
@@ -37,7 +14,8 @@ export default function Transactions() {
   // Ensure accountId is a number
   const accountId = accountIdParam ? Number(accountIdParam) : null;
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  // Use TableTransaction type everywhere instead of local Transaction
+  const [transactions, setTransactions] = useState<TableTransaction[]>([]);
   const [account, setAccount] = useState<{ name: string; balance: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -50,7 +28,7 @@ export default function Transactions() {
     totalPages: Math.max(1, Math.ceil(transactions.length / 10)),
   });
   // Fix sortConfig typing for TransactionsTable
-  type TransactionTableKey = keyof Transaction;
+  type TransactionTableKey = 'date' | 'description' | 'amount';
   const [sortConfig, setSortConfig] = useState<{ key: TransactionTableKey; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
 
   useEffect(() => {
@@ -92,8 +70,9 @@ export default function Transactions() {
         let errorMessage = 'Failed to load data';
         if (typeof err === 'object' && err !== null && 'response' in err) {
           const error = err as AxiosError;
-          if (typeof error.response?.data?.message === 'string') {
-            errorMessage = error.response.data.message;
+          const data = error.response?.data;
+          if (data && typeof data === 'object' && 'message' in data && typeof (data as { message?: unknown }).message === 'string') {
+            errorMessage = (data as { message: string }).message;
           }
         }
         console.error('Error fetching data:', err);
@@ -159,8 +138,9 @@ export default function Transactions() {
       let errorMessage = 'Failed to delete transaction';
       if (typeof err === 'object' && err !== null && 'response' in err) {
         const error = err as AxiosError;
-        if (typeof error.response?.data?.message === 'string') {
-          errorMessage = error.response.data.message;
+        const data = error.response?.data;
+        if (data && typeof data === 'object' && 'message' in data && typeof (data as { message?: unknown }).message === 'string') {
+          errorMessage = (data as { message: string }).message;
         }
       }
       console.error('Error deleting transaction:', err);
@@ -176,35 +156,45 @@ export default function Transactions() {
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setPagination(prev => ({ ...prev, pageSize: Number(e.target.value), currentPage: 1 }));
   };
-  const handleSort = (key: TransactionTableKey) => {
-    setSortConfig(prev => ({
-      key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
-    }));
+  // Accept all keys but only handle allowed ones
+  const handleSort = (key: keyof TableTransaction) => {
+    if (key === 'date' || key === 'description' || key === 'amount') {
+      setSortConfig(prev => ({
+        key,
+        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
+      }));
+    }
   };
-  const getSortIndicator = (key: TransactionTableKey) => {
-    if (sortConfig.key !== key) return null;
+  const getSortIndicator = (key: keyof TableTransaction) => {
+    if (key !== sortConfig.key) return null;
     return sortConfig.direction === 'asc' ? '↑' : '↓';
   };
 
   // Adapt transactions for TransactionsTable (add dummy account field)
   const paginatedSortedTransactions = [...transactions]
     .sort((a, b) => {
-      let aValue: any = a[sortConfig.key as keyof Transaction];
-      let bValue: any = b[sortConfig.key as keyof Transaction];
+      let aValue: string | number | undefined;
+      let bValue: string | number | undefined;
       if (sortConfig.key === 'date') {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
+        aValue = new Date(a.date).getTime();
+        bValue = new Date(b.date).getTime();
+      } else if (sortConfig.key === 'description') {
+        aValue = a.description || '';
+        bValue = b.description || '';
+      } else if (sortConfig.key === 'amount') {
+        aValue = a.amount;
+        bValue = b.amount;
       }
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      if (aValue! < bValue!) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue! > bValue!) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     })
     .slice((pagination.currentPage - 1) * pagination.pageSize, pagination.currentPage * pagination.pageSize)
     .map(tx => ({
       ...tx,
       account: { id: accountId || 0, name: account?.name || 'Account' },
-      toAccount: tx.toAccountId ? { id: tx.toAccountId, name: '' } : undefined,
+      // Fix: use toAccount if present, otherwise undefined
+      toAccount: tx.toAccount ? { id: tx.toAccount.id, name: tx.toAccount.name ?? '' } : undefined,
     }));
 
   // Use TransactionsTable for displaying transactions
@@ -235,14 +225,13 @@ export default function Transactions() {
         </div>
       </div>
       <TransactionsTable
-        transactions={paginatedSortedTransactions as any}
+        transactions={paginatedSortedTransactions}
         loading={loading}
         pagination={pagination}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
-        sortConfig={sortConfig as any}
-        onSort={handleSort as any}
-        getSortIndicator={getSortIndicator as any}
+        onSort={handleSort}
+        getSortIndicator={getSortIndicator}
         formatCurrency={formatCurrency}
         formatDate={(dateString: string) => new Date(dateString).toLocaleDateString()}
         renderActions={(transaction) => (

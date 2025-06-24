@@ -18,13 +18,7 @@ interface AxiosError {
 }
 
 interface TransactionDraft {
-  id?: number;
-  date: string;
-  description: string;
-  amount: number;
-  category: string;
-  ignored?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export default function ImportTransactions() {
@@ -170,9 +164,9 @@ export default function ImportTransactions() {
         },
       });
       // Instead of redirecting, show transactions for review
-      const txs = (response.data.transactions || []).map((t: any) => ({
+      const txs = (response.data.transactions || []).map((t: Record<string, unknown>) => ({
         ...t,
-        date: t.date ? new Date(t.date).toISOString().slice(0, 10) : '',
+        date: t.date ? new Date(t.date as string).toISOString().slice(0, 10) : '',
       }));
       setTransactions(txs);
       toast.success(`Parsed ${txs.length} transactions. Review and save.`);
@@ -192,7 +186,7 @@ export default function ImportTransactions() {
     }
   };
 
-  const handleTransactionChange = (idx: number, field: string, value: any) => {
+  const handleTransactionChange = (idx: number, field: string, value: unknown) => {
     setTransactions(prev => prev.map((t, i) => i === idx ? { ...t, [field]: value } : t));
   };
 
@@ -358,7 +352,7 @@ export default function ImportTransactions() {
             </div>
             {filteredOptions.length === 0 && searchTerm.trim() ? (
               <div className="px-3 py-2 text-gray-500 flex items-center justify-between">
-                <span>No match. Add "{searchTerm}"?</span>
+                <span>No match. Add &quot;{searchTerm}&quot;?</span>
                 {onAddCategory && (
                   <button
                     type="button"
@@ -399,11 +393,11 @@ export default function ImportTransactions() {
     }
   };
 
-  const handleCategoryAdded = (cat: any, idx: number) => {
+  const handleCategoryAdded = (cat: { id: number; name: string; type: string }, idx: number) => {
     setCategories(prev => [...prev, cat]);
     setTransactions(prev => prev.map((t, i) =>
       i === idx
-        ? { ...t, categoryIds: [...(t.categoryIds || []), cat.id] }
+        ? { ...t, categoryIds: [...(Array.isArray(t.categoryIds) ? t.categoryIds : []), cat.id] }
         : t
     ));
   };
@@ -455,9 +449,9 @@ export default function ImportTransactions() {
                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                               <select
                                 className="border rounded px-1 py-0.5 w-full"
-                                value={tx.type || 'expense'}
+                                value={typeof tx.type === 'string' ? tx.type : 'expense'}
                                 onChange={e => handleTransactionChange(idx, 'type', e.target.value)}
-                                disabled={tx.ignored}
+                                disabled={!!tx.ignored}
                               >
                                 <option value="expense">{t('importTransactions.expense')}</option>
                                 <option value="income">{t('importTransactions.income')}</option>
@@ -467,7 +461,7 @@ export default function ImportTransactions() {
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                               <DatePicker
                                 label=""
-                                value={tx.date}
+                                value={typeof tx.date === 'string' ? tx.date : ''}
                                 onChange={value => handleTransactionChange(idx, 'date', value)}
                                 className="border rounded px-1 py-0.5 w-full"
                               />
@@ -476,31 +470,35 @@ export default function ImportTransactions() {
                               <input
                                 type="text"
                                 className="border rounded px-1 py-0.5 w-full"
-                                value={tx.description}
+                                value={typeof tx.description === 'string' ? tx.description : ''}
                                 onChange={e => handleTransactionChange(idx, 'description', e.target.value)}
-                                disabled={tx.ignored}
+                                disabled={!!tx.ignored}
                               />
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 text-right">
                               <input
                                 type="number"
                                 className="border rounded px-1 py-0.5 w-full text-right"
-                                value={tx.amount}
+                                value={typeof tx.amount === 'number' ? tx.amount : ''}
                                 onChange={e => handleTransactionChange(idx, 'amount', parseFloat(e.target.value))}
-                                disabled={tx.ignored}
+                                disabled={!!tx.ignored}
                               />
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                               <div className="flex items-center gap-2">
                                 <CategoryMultiSelectDropdown
-                                  options={getFilteredCategories(tx.type || 'expense')}
+                                  options={getFilteredCategories(typeof tx.type === 'string' ? tx.type : 'expense')}
                                   selected={Array.isArray(tx.categoryIds) ? tx.categoryIds : []}
                                   onChange={catIds => handleTransactionChange(idx, 'categoryIds', catIds)}
-                                  disabled={tx.ignored}
-                                  onAddCategory={name => handleAddCategory(name, tx.type || 'expense')}
+                                  disabled={!!tx.ignored}
+                                  onAddCategory={name => handleAddCategory(name, typeof tx.type === 'string' ? tx.type : 'expense')}
                                 />
                                 <CategoryManager
-                                  initialType={tx.type || 'expense'}
+                                  initialType={
+                                    typeof tx.type === 'string' && (tx.type === 'expense' || tx.type === 'income' || tx.type === 'transfer')
+                                      ? tx.type
+                                      : 'expense'
+                                  }
                                   onCategoryAdded={cat => handleCategoryAdded(cat, idx)}
                                   buttonVariant="icon"
                                   buttonClassName="ml-1"

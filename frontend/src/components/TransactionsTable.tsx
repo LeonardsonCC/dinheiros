@@ -11,7 +11,7 @@ interface Category {
   name: string;
 }
 
-interface Transaction {
+export interface Transaction {
   id: number;
   amount: number;
   type: 'income' | 'expense' | 'transfer';
@@ -35,7 +35,6 @@ interface TransactionsTableProps {
   pagination: PaginationState;
   onPageChange: (newPage: number) => void;
   onPageSizeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  sortConfig: { key: keyof Transaction; direction: 'asc' | 'desc' };
   onSort: (key: keyof Transaction) => void;
   getSortIndicator: (key: keyof Transaction) => React.ReactNode;
   formatCurrency: (amount: number) => string;
@@ -49,7 +48,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   pagination,
   onPageChange,
   onPageSizeChange,
-  sortConfig,
   onSort,
   getSortIndicator,
   formatCurrency,
