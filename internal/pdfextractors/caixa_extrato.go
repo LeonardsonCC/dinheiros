@@ -10,13 +10,13 @@ import (
 	"github.com/ledongthuc/pdf"
 )
 
-type caixaExtractor struct{}
+type caixaExtratoExtractor struct{}
 
-func NewCaixaExtractor() *caixaExtractor {
-	return &caixaExtractor{}
+func NewCaixaExtratoExtractor() *caixaExtratoExtractor {
+	return &caixaExtratoExtractor{}
 }
 
-func (s *caixaExtractor) extractText(filePath string) (string, error) {
+func (s *caixaExtratoExtractor) ExtractText(filePath string) (string, error) {
 	file, reader, err := pdf.Open(filePath)
 	if err != nil {
 		return "", fmt.Errorf("failed to open PDF file: %v", err)
@@ -37,13 +37,21 @@ func (s *caixaExtractor) extractText(filePath string) (string, error) {
 	}
 	return textBuilder, nil
 }
-
-func (e *caixaExtractor) ExtractTransactions(filePath string, accountID uint) ([]models.Transaction, error) {
-	text, err := e.extractText(filePath)
+func (e *caixaExtratoExtractor) Extract(filePath string, accountID uint) ([]models.Transaction, error) {
+	text, err := e.ExtractText(filePath)
 	if err != nil {
 		return nil, err
 	}
 
+	transactions, err := e.ExtractTransactions(text, accountID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract transactions: %v", err)
+	}
+
+	return transactions, nil
+}
+
+func (e *caixaExtratoExtractor) ExtractTransactions(text string, accountID uint) ([]models.Transaction, error) {
 	fields := splitLines(text)
 	var lines []string
 	const columnsPerRow = 5
