@@ -115,21 +115,22 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Router /users/me [get]
 func (h *UserHandler) GetCurrentUser(c *gin.Context) {
 	// Get user ID from context (set by auth middleware)
-	userID, exists := c.Get("userID")
+	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
+	userID := user.(uint)
 
 	// Get user from service
-	user, err := h.userService.FindByID(userID.(uint))
+	userObj, err := h.userService.FindByID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving user"})
 		return
 	}
 
 	// Convert to response DTO
-	response := dto.ToUserResponse(user)
+	response := dto.ToUserResponse(userObj)
 	c.JSON(http.StatusOK, response)
 }
 

@@ -33,6 +33,7 @@ type UpdateTransactionRequest struct {
 type TransactionHandler struct {
 	transactionService service.TransactionService
 	categoryService    service.CategoryService
+	categorizationRuleService service.CategorizationRuleService
 }
 
 type ImportTransactionsRequest struct {
@@ -40,10 +41,11 @@ type ImportTransactionsRequest struct {
 	File      *multipart.FileHeader `form:"file" binding:"required"`
 }
 
-func NewTransactionHandler(transactionService service.TransactionService, categoryService service.CategoryService) *TransactionHandler {
+func NewTransactionHandler(transactionService service.TransactionService, categoryService service.CategoryService, categorizationRuleService service.CategorizationRuleService) *TransactionHandler {
 	return &TransactionHandler{
 		transactionService: transactionService,
 		categoryService:    categoryService,
+		categorizationRuleService: categorizationRuleService,
 	}
 }
 
@@ -73,7 +75,7 @@ func isPDF(fileHeader *multipart.FileHeader) (bool, error) {
 
 // ImportTransactions handles the import of transactions from a file
 func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
-	_, exists := c.Get("user")
+	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -136,8 +138,8 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 
 	// Get extractor from form (optional, fallback to default)
 	extractor := c.PostForm("extractor")
-	// Extract transaction lines from PDF using the selected extractor
-	transactions, err := h.transactionService.ExtractTransactionsFromPDFWithExtractor(dst, uint(accountID), extractor)
+	// Extract transaction lines from PDF using the selected extractor and apply categorization rules
+	transactions, err := h.transactionService.ExtractTransactionsFromPDFWithExtractorAndRules(dst, uint(accountID), user.(uint), extractor, h.categorizationRuleService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process PDF: " + err.Error()})
 		return

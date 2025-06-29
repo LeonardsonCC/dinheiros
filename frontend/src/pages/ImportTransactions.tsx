@@ -179,6 +179,12 @@ export default function ImportTransactions() {
       const txs = (response.data.transactions || []).map((t: Record<string, unknown>) => ({
         ...t,
         date: t.date ? new Date(t.date as string).toISOString().slice(0, 10) : '',
+        // Convert categories array to categoryIds array for frontend compatibility
+        categoryIds: Array.isArray(t.categories) 
+          ? (t.categories as Array<{ ID: number }>).map(cat => cat.ID)
+          : [],
+        // Remove the categories array since we're using categoryIds
+        categories: undefined,
       }));
       setTransactions(txs);
       toast.success(`Parsed ${txs.length} transactions. Review and save.`);
@@ -276,10 +282,13 @@ export default function ImportTransactions() {
     placeholder?: string;
     onAddCategory?: (name: string) => void;
   }) {
-    const [searchTerm, setSearchTerm] = useState('');
     const [isOpen, setIsOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const [newCategory, setNewCategory] = useState('');
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Debug logging
+    console.log('CategoryMultiSelectDropdown props:', { options, selected });
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -325,9 +334,10 @@ export default function ImportTransactions() {
             ) : (
               selected.map(id => {
                 const option = options.find(opt => opt.id === id);
+                console.log(`Mapping category ID ${id} to option:`, option);
                 return (
                   <span key={id} className="inline-flex items-center rounded bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800">
-                    {option?.name}
+                    {option?.name || `Unknown (${id})`}
                     <XMarkIcon
                       className="ml-1 h-3 w-3 text-indigo-500 hover:text-indigo-700 cursor-pointer"
                       onClick={e => {

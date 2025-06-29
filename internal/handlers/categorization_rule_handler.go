@@ -19,7 +19,12 @@ func NewCategorizationRuleHandler(s service.CategorizationRuleService) *Categori
 }
 
 func (h *CategorizationRuleHandler) ListRules(c *gin.Context) {
-	userID := c.GetUint("userID")
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	userID := user.(uint)
 	rules, err := h.Service.ListRules(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -33,7 +38,12 @@ func (h *CategorizationRuleHandler) ListRules(c *gin.Context) {
 }
 
 func (h *CategorizationRuleHandler) GetRule(c *gin.Context) {
-	userID := c.GetUint("userID")
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	userID := user.(uint)
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
@@ -48,7 +58,12 @@ func (h *CategorizationRuleHandler) GetRule(c *gin.Context) {
 }
 
 func (h *CategorizationRuleHandler) CreateRule(c *gin.Context) {
-	userID := c.GetUint("userID")
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	userID := user.(uint)
 	var req dto.CreateCategorizationRuleDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -70,7 +85,12 @@ func (h *CategorizationRuleHandler) CreateRule(c *gin.Context) {
 }
 
 func (h *CategorizationRuleHandler) UpdateRule(c *gin.Context) {
-	userID := c.GetUint("userID")
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	userID := user.(uint)
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
@@ -109,7 +129,12 @@ func (h *CategorizationRuleHandler) UpdateRule(c *gin.Context) {
 }
 
 func (h *CategorizationRuleHandler) DeleteRule(c *gin.Context) {
-	userID := c.GetUint("userID")
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	userID := user.(uint)
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})

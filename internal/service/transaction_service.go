@@ -1,7 +1,10 @@
 package service
 
 import (
+	"context"
+	"regexp"
 	"sort"
+	"strconv"
 	"time"
 
 	stdErrors "errors"
@@ -35,6 +38,7 @@ type TransactionService interface {
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
 	ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error)
 	ExtractTransactionsFromPDFWithExtractor(filePath string, accountID uint, extractor string) ([]models.Transaction, error)
+	ExtractTransactionsFromPDFWithExtractorAndRules(filePath string, accountID uint, userID uint, extractor string, categorizationRuleService CategorizationRuleService) ([]models.Transaction, error)
 	AssociateCategories(transactionID uint, categoryIDs []uint) error
 	GetTransactionsPerDay(userID uint) (*TransactionsPerDayData, error)
 	GetAmountByMonth(userID uint, startDate, endDate *time.Time) (*AmountByMonthData, error)
@@ -44,20 +48,24 @@ type TransactionService interface {
 	GetAmountSpentAndGainedByDay(userID uint) (map[string][]float64, []string)
 	GetTransactionsPerDayWithRange(userID uint, startDate, endDate *time.Time) (*TransactionsPerDayData, error)
 	GetAmountSpentAndGainedByDayWithRange(userID uint, startDate, endDate *time.Time) (map[string][]float64, []string)
+	ApplyCategorizationRules(transactions []models.Transaction, userID uint, categorizationRuleService CategorizationRuleService) ([]models.Transaction, error)
 }
 
 type transactionService struct {
 	transactionRepo repo.TransactionRepository
 	accountRepo     repo.AccountRepository
+	categoryService CategoryService
 }
 
 func NewTransactionService(
 	transactionRepo repo.TransactionRepository,
 	accountRepo repo.AccountRepository,
+	categoryService CategoryService,
 ) TransactionService {
 	return &transactionService{
 		transactionRepo: transactionRepo,
 		accountRepo:     accountRepo,
+		categoryService: categoryService,
 	}
 }
 
@@ -556,4 +564,104 @@ func (s *transactionService) GetAmountSpentAndGainedByDayWithRange(userID uint, 
 		gained[i] = gainedByDay[d]
 	}
 	return map[string][]float64{"spent": spent, "gained": gained}, labels
+}
+
+func (s *transactionService) ExtractTransactionsFromPDFWithExtractorAndRules(filePath string, accountID uint, userID uint, extractor string, categorizationRuleService CategorizationRuleService) ([]models.Transaction, error) {
+	var ext pdfextractors.PDFExtractor
+	if extractor != "" {
+		ext = pdfextractors.GetExtractorByName(extractor)
+	} else {
+		ext = pdfextractors.NewCaixaExtratoExtractor() // fallback default
+	}
+	if ext == nil {
+		return nil, stdErrors.New("invalid extractor")
+	}
+	textContent, err := ext.ExtractText(filePath)
+	if err != nil {
+		return nil, err
+	}
+	transactions, err := ext.ExtractTransactions(textContent, accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Apply categorization rules
+	transactions, err = s.ApplyCategorizationRules(transactions, userID, categorizationRuleService)
+	if err != nil {
+		return nil, err
+	}
+
+	return transactions, nil
+}
+
+func (s *transactionService) ApplyCategorizationRules(transactions []models.Transaction, userID uint, categorizationRuleService CategorizationRuleService) ([]models.Transaction, error) {
+	// Get active categorization rules for the user
+	rules, err := categorizationRuleService.ListRules(context.Background(), userID)
+	if err != nil {
+		return transactions, err
+	}
+
+	// Filter only active rules
+	var activeRules []models.CategorizationRule
+	for _, rule := range rules {
+		if rule.Active {
+			activeRules = append(activeRules, rule)
+		}
+	}
+
+	// Create a map to cache categories by ID to avoid multiple database queries
+	categoryCache := make(map[uint]*models.Category)
+
+	// Apply rules to each transaction
+	for i := range transactions {
+		transaction := &transactions[i]
+
+		// Try to match each rule against the transaction description
+		for _, rule := range activeRules {
+			// Compile the regex pattern
+			pattern, err := regexp.Compile(rule.Value)
+			if err != nil {
+				// Skip invalid regex patterns
+				continue
+			}
+
+			// Check if the description matches the regex pattern
+			if pattern.MatchString(transaction.Description) {
+				// Get the full category information
+				category, exists := categoryCache[rule.CategoryDst]
+				if !exists {
+					// Fetch category from database
+					category, err = s.categoryService.GetCategoryByID(context.Background(), strconv.FormatUint(uint64(rule.CategoryDst), 10), userID)
+					if err != nil {
+						// Skip if category not found
+						continue
+					}
+					categoryCache[rule.CategoryDst] = category
+				}
+
+				// Apply the category to the transaction
+				// First, clear existing categories if this is a new categorization
+				if len(transaction.Categories) == 0 {
+					transaction.Categories = []*models.Category{category}
+				} else {
+					// Add the new category if it's not already present
+					categoryExists := false
+					for _, existingCat := range transaction.Categories {
+						if existingCat.ID == rule.CategoryDst {
+							categoryExists = true
+							break
+						}
+					}
+					if !categoryExists {
+						transaction.Categories = append(transaction.Categories, category)
+					}
+				}
+
+				// Break after first match to avoid multiple categorizations
+				break
+			}
+		}
+	}
+
+	return transactions, nil
 }

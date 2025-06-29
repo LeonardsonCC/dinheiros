@@ -71,14 +71,14 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 
 	// Initialize services
 	accountService := service.NewAccountService(accountRepo)
-	transactionService := service.NewTransactionService(transactionRepo, accountRepo)
+	categoryService := service.NewCategoryService(db)
+	transactionService := service.NewTransactionService(transactionRepo, accountRepo, categoryService)
 	userService := service.NewUserService(userRepo, jwtManager)
-	categoryService := service.NewCategoryService(db) // Using db directly as per the service implementation
 	categorizationRuleService := service.NewCategorizationRuleService(categorizationRuleRepo)
 
 	// Initialize handlers
 	accountHandler := handlers.NewAccountHandler(accountService)
-	transactionHandler := handlers.NewTransactionHandler(transactionService, categoryService)
+	transactionHandler := handlers.NewTransactionHandler(transactionService, categoryService, categorizationRuleService)
 	userHandler := handlers.NewUserHandler(userService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 	categorizationRuleHandler := handlers.NewCategorizationRuleHandler(categorizationRuleService)
