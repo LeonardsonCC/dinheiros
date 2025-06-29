@@ -2,7 +2,9 @@ package pdfextractors
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/ledongthuc/pdf"
@@ -55,21 +57,107 @@ func (e *caixaCCFaturaExtractor) Extract(filePath string, accountID uint) ([]mod
 }
 
 func (e *caixaCCFaturaExtractor) ExtractTransactions(text string, accountID uint) ([]models.Transaction, error) {
-	fields := e.splitLines(text)
+	var transactions []models.Transaction
+	lines := strings.Split(text, "\n")
+	var currentYear = 2025 // fallback to current year, could be dynamic
 
-	var lines []string
-	columnsPerRow := 5
-	for i := 0; i+columnsPerRow-1 < len(fields); {
-		row := fields[i : i+columnsPerRow]
-		// Skip header or summary rows
-		if !e.isTransactionRow(row) {
+	for i := 0; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i])
+		// Detect start of a transaction table
+		if strings.HasPrefix(line, "COMPRAS (Cartão") || strings.HasPrefix(line, "COMPRAS PARCELADAS (Cartão") {
+			// Find the column header
+			headersFound := false
+			for j := i + 1; j < len(lines); j++ {
+				h := strings.TrimSpace(lines[j])
+				if strings.HasPrefix(h, "Data") {
+					i = j + 1 // move to first data row
+					headersFound = true
+					break
+				}
+			}
+			if !headersFound {
+				continue
+			}
+
+			// Collect transactions until next blank or 'Total' line
+			for i < len(lines) {
+				// Skip empty lines
+				if strings.TrimSpace(lines[i]) == "" {
+					i++
+					continue
+				}
+				if strings.HasPrefix(strings.TrimSpace(lines[i]), "Total") {
+					break
+				}
+				// Try to parse 4 lines (date, desc, city, amount)
+				if i+3 < len(lines) {
+					dateStr := strings.TrimSpace(lines[i])
+					desc := strings.TrimSpace(lines[i+1])
+					cityOrAmount := strings.TrimSpace(lines[i+2])
+					amountStr := strings.TrimSpace(lines[i+3])
+					if isValidDate(dateStr) && isValidAmount(amountStr) {
+						parsedDate, _ := parseDayMonth(dateStr, currentYear)
+						amount := parseAmountType(amountStr)
+						transactions = append(transactions, models.Transaction{
+							Date:        parsedDate,
+							Amount:      amount,
+							Type:        models.TransactionTypeExpense,
+							Description: desc,
+							AccountID:   accountID,
+						})
+						i += 4
+						continue
+					}
+					// Sometimes city is missing, try 3-line parse
+					if isValidDate(dateStr) && isValidAmount(cityOrAmount) {
+						parsedDate, _ := parseDayMonth(dateStr, currentYear)
+						amount := parseAmountType(cityOrAmount)
+						transactions = append(transactions, models.Transaction{
+							Date:        parsedDate,
+							Amount:      amount,
+							Type:        models.TransactionTypeExpense,
+							Description: desc,
+							AccountID:   accountID,
+						})
+						i += 3
+						continue
+					}
+				}
+				i++ // fallback: move to next line
+			}
 		}
-
-		lines = append(lines, strings.Join(row, " | "))
-		i += columnsPerRow
 	}
+	return transactions, nil
+}
 
-	return []models.Transaction{}, nil
+// Helper: check if string is a valid date in DD/MM format
+func isValidDate(s string) bool {
+	if len(s) != 5 || s[2] != '/' {
+		return false
+	}
+	return true
+}
+
+// Helper: check if string is a valid amount (e.g., 27,40D)
+func isValidAmount(s string) bool {
+	if len(s) < 2 {
+		return false
+	}
+	last := s[len(s)-1]
+	return last == 'D' || last == 'C'
+}
+
+// Helper: parse DD/MM to time.Time
+func parseDayMonth(s string, year int) (time.Time, error) {
+	return time.Parse("02/01/2006", s+"/"+fmt.Sprint(year))
+}
+
+// Helper: parse amount string and return value and type
+func parseAmountType(s string) float64 {
+	amountStr := strings.ReplaceAll(s[:len(s)-1], ".", "")
+	amountStr = strings.ReplaceAll(amountStr, ",", ".")
+	amount, _ := strconv.ParseFloat(amountStr, 64)
+	return amount
 }
 
 func (e *caixaCCFaturaExtractor) isTransactionRow(row []string) bool {
