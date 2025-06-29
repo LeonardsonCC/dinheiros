@@ -266,7 +266,7 @@ export default function ImportTransactions() {
     selected,
     onChange,
     disabled,
-    placeholder = 'Select categories...',
+    placeholder = t('importTransactions.selectCategories'),
     onAddCategory,
   }: {
     options: { id: number; name: string }[];
@@ -356,7 +356,7 @@ export default function ImportTransactions() {
               <input
                 type="text"
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
-                placeholder="Search or add category..."
+                placeholder={t('importTransactions.searchOrAddCategory')}
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 onClick={e => e.stopPropagation()}
@@ -364,14 +364,14 @@ export default function ImportTransactions() {
             </div>
             {filteredOptions.length === 0 && searchTerm.trim() ? (
               <div className="px-3 py-2 text-gray-500 flex items-center justify-between">
-                <span>No match. Add &quot;{searchTerm}&quot;?</span>
+                <span>{t('importTransactions.noMatchAdd', { name: searchTerm })}</span>
                 {onAddCategory && (
                   <button
                     type="button"
                     className="ml-2 inline-flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 text-xs"
                     onClick={() => { setNewCategory(searchTerm); handleAddCategory(); setIsOpen(false); }}
                   >
-                    <PlusIcon className="h-4 w-4 mr-1" /> Add
+                    <PlusIcon className="h-4 w-4 mr-1" /> {t('importTransactions.add')}
                   </button>
                 )}
               </div>
@@ -444,15 +444,15 @@ export default function ImportTransactions() {
                     <table className="min-w-full divide-y divide-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">{t('importTransactions.type')}</th>
-                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('importTransactions.date')}</th>
-                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('importTransactions.description')}</th>
-                          <th className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">{t('importTransactions.amount')}</th>
-                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('importTransactions.categories')}</th>
+                          <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">{t('transactionsTable.type.expense')}</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('transactionsTable.date')}</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('transactionsTable.description')}</th>
+                          <th className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">{t('transactionsTable.amount')}</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('transactionsTable.categories')}</th>
                           <th className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 cursor-pointer select-none" onClick={() => {
                             const allIgnored = transactions.length > 0 && transactions.every(t => t.ignored);
                             setTransactions(prev => prev.map(t => ({ ...t, ignored: !allIgnored })));
-                          }} title="Toggle all">{t('importTransactions.ignore')}</th>
+                          }} title={t('importTransactions.toggleAll')}>{t('importTransactions.ignoreTransaction')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
@@ -465,9 +465,9 @@ export default function ImportTransactions() {
                                 onChange={e => handleTransactionChange(idx, 'type', e.target.value)}
                                 disabled={!!tx.ignored}
                               >
-                                <option value="expense">{t('importTransactions.expense')}</option>
-                                <option value="income">{t('importTransactions.income')}</option>
-                                <option value="transfer">{t('importTransactions.transfer')}</option>
+                                <option value="expense">{t('transactionsTable.type.expense')}</option>
+                                <option value="income">{t('transactionsTable.type.income')}</option>
+                                <option value="transfer">{t('transactionsTable.type.transfer')}</option>
                               </select>
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -522,7 +522,7 @@ export default function ImportTransactions() {
                                 type="button"
                                 onClick={() => toggleIgnoreTransaction(idx)}
                                 className={`text-gray-400 hover:text-red-500 transition ${tx.ignored ? 'opacity-100' : ''}`}
-                                title={tx.ignored ? 'Restore transaction' : 'Ignore transaction'}
+                                title={tx.ignored ? t('importTransactions.restoreTransaction') : t('importTransactions.ignoreTransaction')}
                               >
                                 <XMarkIcon className="h-5 w-5 inline" />
                               </button>
@@ -557,7 +557,7 @@ export default function ImportTransactions() {
               {/* Extractor selection */}
               <div className="mb-4">
                 <label htmlFor="extractor-select" className="block text-sm font-medium text-gray-700">
-                  {t('importTransactions.extractor') || 'Extractor'}
+                  {t('importTransactions.extractor')}
                 </label>
                 <select
                   id="extractor-select"
@@ -566,7 +566,7 @@ export default function ImportTransactions() {
                   onChange={e => setSelectedExtractor(e.target.value)}
                   disabled={extractors.length === 0}
                 >
-                  <option value="">{t('importTransactions.selectExtractor') || 'Select extractor...'}</option>
+                  <option value="">{t('importTransactions.selectExtractor')}</option>
                   {extractors.map(ext => (
                     <option key={ext.name} value={ext.name}>{ext.displayName}</option>
                   ))}
@@ -625,7 +625,7 @@ export default function ImportTransactions() {
                         </label>
                         <p className="pl-1">{t('importTransactions.orDrag')}</p>
                       </div>
-                      <p className="text-xs text-gray-500">PDF up to 10MB</p>
+                      <p className="text-xs text-gray-500">{t('importTransactions.pdfLimit')}</p>
                     </div>
                   </div>
                 ) : (
@@ -645,7 +645,7 @@ export default function ImportTransactions() {
                       className="text-gray-400 hover:text-gray-500"
                     >
                       <XMarkIcon className="h-5 w-5" />
-                      <span className="sr-only">Remove file</span>
+                      <span className="sr-only">{t('importTransactions.removeFile')}</span>
                     </button>
                   </div>
                 )}

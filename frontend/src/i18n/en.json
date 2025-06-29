@@ -26,7 +26,18 @@
     "orDrag": "or drag and drop",
     "supported": "Supported formats: .pdf",
     "loading": "Loading...",
-    "selectAccountOption": "Selecione uma conta para importar transações"
+    "selectAccountOption": "Selecione uma conta para importar transações",
+    "selectCategories": "Select categories...",
+    "searchOrAddCategory": "Search or add category...",
+    "noMatchAdd": "No match. Add \"{{name}}\"?",
+    "add": "Add",
+    "toggleAll": "Toggle all",
+    "restoreTransaction": "Restore transaction",
+    "ignoreTransaction": "Ignore transaction",
+    "pdfLimit": "PDF up to 10MB",
+    "removeFile": "Remove file",
+    "extractor": "Extractor",
+    "selectExtractor": "Select an extractor"
   },
   "transactions": {
     "add": "Add Transaction",
