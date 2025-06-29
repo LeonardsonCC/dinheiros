@@ -53,18 +53,45 @@ func (e *caixaExtratoExtractor) Extract(filePath string, accountID uint) ([]mode
 
 func (e *caixaExtratoExtractor) ExtractTransactions(text string, accountID uint) ([]models.Transaction, error) {
 	fields := splitLines(text)
+
 	var lines []string
-	const columnsPerRow = 5
-	for i := 0; i+columnsPerRow-1 < len(fields); i += columnsPerRow {
+	columnsPerRow := 5
+	for i := 0; i+columnsPerRow-1 < len(fields); {
 		row := fields[i : i+columnsPerRow]
 		// Skip header or summary rows
-		if row[0] == "Data Mov." || row[0] == "SALDO DIA" || row[0] == "SALDO ANTERIOR" {
+		if !e.isTransactionRow(row) {
+			i++
 			continue
 		}
+
 		lines = append(lines, strings.Join(row, " | "))
+		i += columnsPerRow
 	}
 
 	return parseTransactionsFromLines(lines, accountID)
+}
+
+func (e *caixaExtratoExtractor) isTransactionRow(row []string) bool {
+	if len(row) < 5 {
+		return false
+	}
+	if row[0] == "Data Mov." || row[0] == "SALDO DIA" || row[0] == "SALDO ANTERIOR" {
+		return false
+	}
+
+	// transaction basic rules
+	t, _ := time.Parse("02/01/2006", row[0])
+	if t.IsZero() {
+		return false
+	}
+	if row[3][len(row[3])-1] != 'C' && row[3][len(row[3])-1] != 'D' {
+		return false
+	}
+	if row[4][len(row[4])-1] != 'C' && row[4][len(row[4])-1] != 'D' {
+		return false
+	}
+
+	return true
 }
 
 // parseTransactionsFromLines parses transactions from the extracted lines

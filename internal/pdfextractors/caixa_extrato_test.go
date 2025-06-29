@@ -13,139 +13,28 @@ import (
 func TestCaixaExtratoExtractor_ExtractTransactions(t *testing.T) {
 	accountID := uint(42)
 	fullTransactions := []models.Transaction{
-		{
-			AccountID:   accountID,
-			Amount:      6000.00,
-			Type:        models.TransactionTypeIncome,
-			Description: "CRED PIX",
-			Date:        mustParseDate("02/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      1864.37,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("02/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      112.07,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("02/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      350.00,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("02/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      64.00,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("02/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      107.78,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("02/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      259.14,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("02/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      2500.00,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("02/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      8.34,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("05/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      277.43,
-			Type:        models.TransactionTypeExpense,
-			Description: "PAG BOLETO",
-			Date:        mustParseDate("05/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      884.65,
-			Type:        models.TransactionTypeExpense,
-			Description: "PREST HAB",
-			Date:        mustParseDate("06/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      63.84,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("09/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      59.69,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("09/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      100.00,
-			Type:        models.TransactionTypeExpense,
-			Description: "DB CX CAP",
-			Date:        mustParseDate("10/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      30.00,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("11/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      88.89,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("11/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      16.67,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("11/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      42.96,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("12/06/2025"),
-		},
-		{
-			AccountID:   accountID,
-			Amount:      21.70,
-			Type:        models.TransactionTypeExpense,
-			Description: "ENVIO PIX",
-			Date:        mustParseDate("18/06/2025"),
-		},
+		{AccountID: 42, Amount: 5112.83, Type: "income", Description: "TEDSALARIO", Date: mustParseDate("01/08/2024")},
+		{AccountID: 42, Amount: 300, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("01/08/2024")},
+		{AccountID: 42, Amount: 1692.32, Type: "expense", Description: "PAG BOLETO", Date: mustParseDate("01/08/2024")},
+		{AccountID: 42, Amount: 106.9, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("01/08/2024")},
+		{AccountID: 42, Amount: 55, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("01/08/2024")},
+		{AccountID: 42, Amount: 68.8, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("01/08/2024")},
+		{AccountID: 42, Amount: 265.83, Type: "expense", Description: "PAG BOLETO", Date: mustParseDate("06/08/2024")},
+		{AccountID: 42, Amount: 300, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("07/08/2024")},
+		{AccountID: 42, Amount: 133.53, Type: "expense", Description: "PAG BOLETO", Date: mustParseDate("09/08/2024")},
+		{AccountID: 42, Amount: 20, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("12/08/2024")},
+		{AccountID: 42, Amount: 227.62, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("12/08/2024")},
+		// missing
+		{AccountID: 42, Amount: 59.9, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("29/08/2024")},
+		{AccountID: 42, Amount: 6486.29, Type: "income", Description: "TEDSALARIO", Date: mustParseDate("30/08/2024")},
+		{AccountID: 42, Amount: 14.9, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("30/08/2024")},
+		{AccountID: 42, Amount: 74.77, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("30/08/2024")},
+		{AccountID: 42, Amount: 5105.57, Type: "income", Description: "TEDSALARIO", Date: mustParseDate("02/09/2024")},
+		{AccountID: 42, Amount: 106.9, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("02/09/2024")},
+		{AccountID: 42, Amount: 1715.94, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("02/09/2024")},
+		{AccountID: 42, Amount: 55, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("02/09/2024")},
+		{AccountID: 42, Amount: 350, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("02/09/2024")},
+		{AccountID: 42, Amount: 227.62, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("02/09/2024")},
 	}
 
 	extractor := pdfextractors.NewCaixaExtratoExtractor()
@@ -189,6 +78,7 @@ func TestCaixaExtratoExtractor_ExtractTransactions(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			assertTransactionsEqual(t, got, tt.expected)
 		})
 	}
