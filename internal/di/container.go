@@ -17,12 +17,14 @@ type Container struct {
 	TransactionRepository repository.TransactionRepository
 	UserRepository        repository.UserRepository
 	CategoryRepository    repository.CategoryRepository
+	CategorizationRuleRepository repository.CategorizationRuleRepository
 
 	// Services
 	AccountService     service.AccountService
 	TransactionService service.TransactionService
 	UserService        service.UserService
 	CategoryService    service.CategoryService
+	CategorizationRuleService    service.CategorizationRuleService
 
 	// Auth
 	JWTManager *auth.JWTManager
@@ -32,6 +34,7 @@ type Container struct {
 	TransactionHandler *handlers.TransactionHandler
 	UserHandler        *handlers.UserHandler
 	CategoryHandler    *handlers.CategoryHandler
+	CategorizationRuleHandler    *handlers.CategorizationRuleHandler
 }
 
 func NewContainer(db *gorm.DB) (*Container, error) {
@@ -64,32 +67,38 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 	transactionRepo := repository.NewTransactionRepository(db)
 	userRepo := repository.NewUserRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
+	categorizationRuleRepo := repository.NewCategorizationRuleRepository(db)
 
 	// Initialize services
 	accountService := service.NewAccountService(accountRepo)
 	transactionService := service.NewTransactionService(transactionRepo, accountRepo)
 	userService := service.NewUserService(userRepo, jwtManager)
 	categoryService := service.NewCategoryService(db) // Using db directly as per the service implementation
+	categorizationRuleService := service.NewCategorizationRuleService(categorizationRuleRepo)
 
 	// Initialize handlers
 	accountHandler := handlers.NewAccountHandler(accountService)
 	transactionHandler := handlers.NewTransactionHandler(transactionService, categoryService)
 	userHandler := handlers.NewUserHandler(userService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
+	categorizationRuleHandler := handlers.NewCategorizationRuleHandler(categorizationRuleService)
 
 	return &Container{
 		AccountRepository:     accountRepo,
 		TransactionRepository: transactionRepo,
 		UserRepository:        userRepo,
 		CategoryRepository:    categoryRepo,
+		CategorizationRuleRepository: categorizationRuleRepo,
 		AccountService:        accountService,
 		TransactionService:    transactionService,
 		UserService:           userService,
 		CategoryService:       categoryService,
+		CategorizationRuleService:    categorizationRuleService,
 		JWTManager:            jwtManager,
 		AccountHandler:        accountHandler,
 		TransactionHandler:    transactionHandler,
 		UserHandler:           userHandler,
 		CategoryHandler:       categoryHandler,
+		CategorizationRuleHandler:    categorizationRuleHandler,
 	}, nil
 }

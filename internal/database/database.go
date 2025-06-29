@@ -42,6 +42,7 @@ func InitDB(cfg *config.Config) error {
 	// 	&models.Account{},
 	// 	&models.Transaction{},
 	// 	&models.Category{},
+	// 	&models.CategorizationRule{},
 	// )
 	// if err != nil {
 	// 	return fmt.Errorf("failed to migrate database: %v", err)

@@ -98,7 +98,8 @@
     "profile": "Perfil",
     "logout": "Sair",
     "language": "Idioma",
-    "categories": "Categorias"
+    "categories": "Categorias",
+    "categorizationRules": "Regras de Categorização"
   },
   "transactionsTable": {
     "date": "Data",

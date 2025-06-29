@@ -98,7 +98,8 @@
     "profile": "Profile",
     "logout": "Logout",
     "language": "Language",
-    "categories": "Categories"
+    "categories": "Categories",
+    "categorizationRules": "Categorization Rules"
   },
   "transactionsTable": {
     "date": "Date",

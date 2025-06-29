@@ -14,6 +14,7 @@ import ImportTransactions from './pages/ImportTransactions';
 import Profile from './pages/Profile';
 import Statistics from './pages/Statistics';
 import CategoryManager from './pages/CategoryManager';
+import CategorizationRules from './pages/CategorizationRules';
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -43,6 +44,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="statistics" element={<Statistics />} />
           <Route path="categories" element={<CategoryManager />} />
+          <Route path="categorization-rules" element={<CategorizationRules />} />
         </Route>
       </Routes>
     </div>

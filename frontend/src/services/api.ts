@@ -40,3 +40,22 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+// Categorization Rules API
+export const categorizationRulesApi = {
+  list: () => api.get('/api/categorization-rules'),
+  get: (id: number) => api.get(`/api/categorization-rules/${id}`),
+  create: (data: { name: string; type: string; value: string; category_dst: number; active?: boolean }) => 
+    api.post('/api/categorization-rules', data),
+  update: (id: number, data: { name?: string; type?: string; value?: string; category_dst?: number; active?: boolean }) => 
+    api.put(`/api/categorization-rules/${id}`, data),
+  delete: (id: number) => api.delete(`/api/categorization-rules/${id}`),
+};
+
+// Categories API
+export const categoriesApi = {
+  list: () => api.get('/api/categories'),
+  create: (data: { name: string; type: string }) => api.post('/api/categories', data),
+  update: (id: string, data: { name: string; type: string }) => api.put(`/api/categories/${id}`, data),
+  delete: (id: string) => api.delete(`/api/categories/${id}`),
+};

@@ -91,6 +91,16 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 				statistics.GET("/amount-spent-by-day", container.TransactionHandler.GetStatisticsAmountSpentByDay)
 				statistics.GET("/amount-spent-and-gained-by-day", container.TransactionHandler.GetStatisticsAmountSpentAndGainedByDay)
 			}
+
+			// Categorization rule routes
+			categorizationRules := protected.Group("/categorization-rules")
+			{
+				categorizationRules.GET("", container.CategorizationRuleHandler.ListRules)
+				categorizationRules.POST("", container.CategorizationRuleHandler.CreateRule)
+				categorizationRules.GET(":id", container.CategorizationRuleHandler.GetRule)
+				categorizationRules.PUT(":id", container.CategorizationRuleHandler.UpdateRule)
+				categorizationRules.DELETE(":id", container.CategorizationRuleHandler.DeleteRule)
+			}
 		}
 	}
 
