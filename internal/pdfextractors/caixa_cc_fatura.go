@@ -25,7 +25,9 @@ func (s *caixaCCFaturaExtractor) ExtractText(filePath string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to open PDF file: %v", err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	var textBuilder string
 	for pageIndex := 1; pageIndex <= reader.NumPage(); pageIndex++ {

@@ -43,9 +43,9 @@ func (h *UserHandler) Register(c *gin.Context) {
 	token, user, err := h.userService.Register(req.Name, req.Email, req.Password)
 	if err != nil {
 		status := http.StatusInternalServerError
-		errMsg := err.Error()
+		var errMsg string
 
-		switch errMsg := err.Error(); errMsg {
+		switch errMsg = err.Error(); errMsg {
 		case "email already registered":
 			status = http.StatusConflict
 		case "error hashing password", "error creating user", "error generating token":

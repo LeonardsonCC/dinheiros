@@ -131,7 +131,7 @@ func (s *transactionService) CreateTransaction(
 		// Add to destination account
 		if err := s.accountRepo.UpdateBalance(*toAccountID, amount); err != nil {
 			// Compensate the source account
-			s.accountRepo.UpdateBalance(accountID, amount)
+			err = s.accountRepo.UpdateBalance(accountID, amount)
 			return nil, err
 		}
 	}
@@ -286,7 +286,7 @@ func (s *transactionService) DeleteTransaction(userID uint, transactionID uint) 
 		if transaction.ToAccountID != nil {
 			if err := s.accountRepo.UpdateBalance(*transaction.ToAccountID, -transaction.Amount); err != nil {
 				// Compensate the source account
-				s.accountRepo.UpdateBalance(transaction.AccountID, -transaction.Amount)
+				err = s.accountRepo.UpdateBalance(transaction.AccountID, -transaction.Amount)
 				return err
 			}
 		}
@@ -471,9 +471,10 @@ func (s *transactionService) GetAmountSpentAndGainedByDay(userID uint) (map[stri
 	gainedByDay := make(map[string]float64)
 	for _, tx := range transactions {
 		date := tx.Date.Format("2006-01-02")
-		if tx.Type == models.TransactionTypeExpense {
+		switch tx.Type {
+		case models.TransactionTypeExpense:
 			spentByDay[date] += tx.Amount
-		} else if tx.Type == models.TransactionTypeIncome {
+		case models.TransactionTypeIncome:
 			gainedByDay[date] += tx.Amount
 		}
 	}
@@ -529,9 +530,10 @@ func (s *transactionService) GetAmountSpentAndGainedByDayWithRange(userID uint, 
 	gainedByDay := make(map[string]float64)
 	for _, tx := range transactions {
 		date := tx.Date.Format("2006-01-02")
-		if tx.Type == models.TransactionTypeExpense {
+		switch tx.Type {
+		case models.TransactionTypeExpense:
 			spentByDay[date] += tx.Amount
-		} else if tx.Type == models.TransactionTypeIncome {
+		case models.TransactionTypeIncome:
 			gainedByDay[date] += tx.Amount
 		}
 	}

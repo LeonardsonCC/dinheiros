@@ -57,7 +57,9 @@ func isPDF(fileHeader *multipart.FileHeader) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer src.Close()
+	defer func() {
+		_ = src.Close()
+	}()
 
 	// Read the first 4 bytes to check the PDF magic number
 	buf := make([]byte, 4)
@@ -128,7 +130,9 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
 		return
 	}
-	defer os.Remove(dst) // Clean up after processing
+	defer func() {
+		_ = os.Remove(dst) // Clean up after processing
+	}()
 
 	// Get extractor from form (optional, fallback to default)
 	extractor := c.PostForm("extractor")
