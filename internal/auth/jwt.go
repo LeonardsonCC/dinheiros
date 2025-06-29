@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/LeonardsonCC/dinheiros/internal/models"
-	"github.com/golang-jwt/jwt/v5"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 var (
