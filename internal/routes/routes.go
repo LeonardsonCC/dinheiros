@@ -69,6 +69,8 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 			{
 				categories.GET("", container.CategoryHandler.ListCategories)
 				categories.POST("", container.CategoryHandler.CreateCategory)
+				categories.PUT(":id", container.CategoryHandler.UpdateCategory)
+				categories.DELETE(":id", container.CategoryHandler.DeleteCategory)
 			}
 
 			// User profile routes

@@ -2,6 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { HomeIcon, BanknotesIcon, ArrowLeftOnRectangleIcon, CurrencyDollarIcon, UserCircleIcon, DocumentTextIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
+import CategoryIcon from './CategoryIcon';
 
 const Layout = () => {
   const { t } = useTranslation();
@@ -118,6 +119,22 @@ const Layout = () => {
                   <>
                     <UserCircleIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
                     {t('sidebar.profile')}
+                  </>
+                )}
+              </NavLink>
+              <NavLink
+                to="/categories"
+                className={({ isActive }) => `
+                  flex items-center px-4 py-2 text-sm font-medium rounded-md group
+                  ${isActive 
+                    ? 'bg-primary-50 text-primary-700' 
+                    : 'text-gray-700 hover:bg-gray-100'}
+                `}
+              >
+                {({ isActive }) => (
+                  <>
+                    <CategoryIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    {t('sidebar.categories')}
                   </>
                 )}
               </NavLink>

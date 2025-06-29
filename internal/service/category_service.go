@@ -11,6 +11,9 @@ import (
 type CategoryService interface {
 	ListCategories(ctx context.Context, userID uint) ([]models.Category, error)
 	CreateCategory(ctx context.Context, category *models.Category) error
+	GetCategoryByID(ctx context.Context, id string, userID uint) (*models.Category, error)
+	UpdateCategory(ctx context.Context, category *models.Category) error
+	DeleteCategory(ctx context.Context, id string, userID uint) error
 }
 
 type categoryService struct {
@@ -44,4 +47,20 @@ func (s *categoryService) CreateCategory(ctx context.Context, category *models.C
 	}
 
 	return s.db.WithContext(ctx).Create(category).Error
+}
+
+func (s *categoryService) GetCategoryByID(ctx context.Context, id string, userID uint) (*models.Category, error) {
+	var category models.Category
+	if err := s.db.WithContext(ctx).Where("id = ? AND user_id = ?", id, userID).First(&category).Error; err != nil {
+		return nil, err
+	}
+	return &category, nil
+}
+
+func (s *categoryService) UpdateCategory(ctx context.Context, category *models.Category) error {
+	return s.db.WithContext(ctx).Save(category).Error
+}
+
+func (s *categoryService) DeleteCategory(ctx context.Context, id string, userID uint) error {
+	return s.db.WithContext(ctx).Where("id = ? AND user_id = ?", id, userID).Delete(&models.Category{}).Error
 }

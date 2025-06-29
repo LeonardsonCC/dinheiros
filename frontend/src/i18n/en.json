@@ -97,7 +97,8 @@
     "statistics": "Statistics",
     "profile": "Profile",
     "logout": "Logout",
-    "language": "Language"
+    "language": "Language",
+    "categories": "Categories"
   },
   "transactionsTable": {
     "date": "Date",

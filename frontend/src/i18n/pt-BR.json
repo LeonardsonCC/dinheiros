@@ -97,7 +97,8 @@
     "statistics": "Estatísticas",
     "profile": "Perfil",
     "logout": "Sair",
-    "language": "Idioma"
+    "language": "Idioma",
+    "categories": "Categorias"
   },
   "transactionsTable": {
     "date": "Data",

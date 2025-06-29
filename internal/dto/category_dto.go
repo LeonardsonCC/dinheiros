@@ -45,3 +45,18 @@ func (r *CreateCategoryRequest) ToModel(userID uint) models.Category {
 		UserID:      userID,
 	}
 }
+
+// UpdateCategoryRequest represents the request body for updating a category
+// Similar to CreateCategoryRequest but all fields required for now
+// You can make fields optional if needed
+//
+type UpdateCategoryRequest struct {
+	Name string                 `json:"name" binding:"required"`
+	Type models.TransactionType `json:"type" binding:"required,oneof=income expense transfer"`
+}
+
+// ToModel updates an existing category with the request data
+func (r *UpdateCategoryRequest) ApplyToModel(category *models.Category) {
+	category.Name = r.Name
+	category.Type = r.Type
+}

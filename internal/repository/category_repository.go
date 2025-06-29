@@ -10,6 +10,9 @@ import (
 type CategoryRepository interface {
 	FindByUserID(ctx context.Context, userID uint) ([]models.Category, error)
 	Create(ctx context.Context, category *models.Category) error
+	FindByIDAndUserID(ctx context.Context, id string, userID uint) (*models.Category, error)
+	Update(ctx context.Context, category *models.Category) error
+	Delete(ctx context.Context, id string, userID uint) error
 }
 
 type categoryRepository struct {
@@ -30,4 +33,20 @@ func (r *categoryRepository) FindByUserID(ctx context.Context, userID uint) ([]m
 
 func (r *categoryRepository) Create(ctx context.Context, category *models.Category) error {
 	return r.db.WithContext(ctx).Create(category).Error
+}
+
+func (r *categoryRepository) FindByIDAndUserID(ctx context.Context, id string, userID uint) (*models.Category, error) {
+	var category models.Category
+	if err := r.db.WithContext(ctx).Where("id = ? AND user_id = ?", id, userID).First(&category).Error; err != nil {
+		return nil, err
+	}
+	return &category, nil
+}
+
+func (r *categoryRepository) Update(ctx context.Context, category *models.Category) error {
+	return r.db.WithContext(ctx).Save(category).Error
+}
+
+func (r *categoryRepository) Delete(ctx context.Context, id string, userID uint) error {
+	return r.db.WithContext(ctx).Where("id = ? AND user_id = ?", id, userID).Delete(&models.Category{}).Error
 }
