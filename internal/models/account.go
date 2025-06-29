@@ -7,7 +7,7 @@ type AccountType string
 const (
 	AccountTypeChecking AccountType = "checking"
 	AccountTypeSavings  AccountType = "savings"
-	AccountTypeCredit   AccountType = "credit"
+	AccountTypeCredit   AccountType = "credit_card"
 	AccountTypeCash     AccountType = "cash"
 )
 

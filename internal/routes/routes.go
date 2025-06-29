@@ -36,6 +36,9 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 				accounts.GET("", container.AccountHandler.GetAccounts)
 				accounts.POST("", container.AccountHandler.CreateAccount)
 
+				// List extractors for all accounts (not per account)
+				accounts.GET("/transactions/extractors", container.TransactionHandler.ListExtractors)
+
 				// Single account operations
 				account := accounts.Group("/:id")
 				{

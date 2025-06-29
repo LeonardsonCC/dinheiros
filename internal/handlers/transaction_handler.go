@@ -14,6 +14,7 @@ import (
 	"github.com/LeonardsonCC/dinheiros/internal/dto"
 	"github.com/LeonardsonCC/dinheiros/internal/errors"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
+	"github.com/LeonardsonCC/dinheiros/internal/pdfextractors"
 	"github.com/LeonardsonCC/dinheiros/internal/service"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
@@ -129,8 +130,10 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 	}
 	defer os.Remove(dst) // Clean up after processing
 
-	// Extract transaction lines from PDF
-	transactions, err := h.transactionService.ExtractTransactionsFromPDF(dst, uint(accountID))
+	// Get extractor from form (optional, fallback to default)
+	extractor := c.PostForm("extractor")
+	// Extract transaction lines from PDF using the selected extractor
+	transactions, err := h.transactionService.ExtractTransactionsFromPDFWithExtractor(dst, uint(accountID), extractor)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process PDF: " + err.Error()})
 		return
@@ -748,4 +751,10 @@ func (h *TransactionHandler) GetStatisticsAmountSpentAndGainedByDay(c *gin.Conte
 			},
 		},
 	})
+}
+
+// ListExtractors returns a list of available extractors for transactions import
+func (h *TransactionHandler) ListExtractors(c *gin.Context) {
+	extractors := pdfextractors.ListExtractors()
+	c.JSON(http.StatusOK, gin.H{"extractors": extractors})
 }

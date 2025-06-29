@@ -36,6 +36,8 @@ export default function ImportTransactions() {
   const [transactions, setTransactions] = useState<TransactionDraft[]>([]);
   const [saveLoading, setSaveLoading] = useState(false);
   const [categories, setCategories] = useState<Array<{ id: number; name: string; type: string }>>([]);
+  const [extractors, setExtractors] = useState<Array<{ name: string; displayName: string }>>([]);
+  const [selectedExtractor, setSelectedExtractor] = useState<string>('');
 
   // Fetch accounts if accountId is not in URL
   useEffect(() => {
@@ -57,6 +59,13 @@ export default function ImportTransactions() {
     api.get('/api/categories')
       .then((res) => setCategories(res.data.categories || res.data))
       .catch(() => toast.error('Failed to load categories'));
+  }, []);
+
+  // Fetch extractors on mount or when account changes
+  useEffect(() => {
+    api.get(`/api/accounts/transactions/extractors`)
+      .then((res) => setExtractors(res.data.extractors || []))
+      .catch(() => toast.error('Failed to load extractors'));
   }, []);
 
   // Helper to get filtered categories by type
@@ -150,6 +159,9 @@ export default function ImportTransactions() {
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('accountId', accountId);
+    if (selectedExtractor) {
+      formData.append('extractor', selectedExtractor);
+    }
 
     try {
       setIsLoading(true);
@@ -542,6 +554,24 @@ export default function ImportTransactions() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Extractor selection */}
+              <div className="mb-4">
+                <label htmlFor="extractor-select" className="block text-sm font-medium text-gray-700">
+                  {t('importTransactions.extractor') || 'Extractor'}
+                </label>
+                <select
+                  id="extractor-select"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  value={selectedExtractor}
+                  onChange={e => setSelectedExtractor(e.target.value)}
+                  disabled={extractors.length === 0}
+                >
+                  <option value="">{t('importTransactions.selectExtractor') || 'Select extractor...'}</option>
+                  {extractors.map(ext => (
+                    <option key={ext.name} value={ext.name}>{ext.displayName}</option>
+                  ))}
+                </select>
+              </div>
               {!urlAccountId && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

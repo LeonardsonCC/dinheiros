@@ -4,6 +4,8 @@ import (
 	"sort"
 	"time"
 
+	stdErrors "errors"
+
 	"github.com/LeonardsonCC/dinheiros/internal/errors"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/LeonardsonCC/dinheiros/internal/pdfextractors"
@@ -32,6 +34,7 @@ type TransactionService interface {
 	DeleteTransaction(userID uint, transactionID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
 	ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error)
+	ExtractTransactionsFromPDFWithExtractor(filePath string, accountID uint, extractor string) ([]models.Transaction, error)
 	AssociateCategories(transactionID uint, categoryIDs []uint) error
 	GetTransactionsPerDay(userID uint) (*TransactionsPerDayData, error)
 	GetAmountByMonth(userID uint, startDate, endDate *time.Time) (*AmountByMonthData, error)
@@ -69,7 +72,7 @@ func (s *transactionService) CreateTransaction(
 	date time.Time,
 ) (*models.Transaction, error) {
 	// Verify account exists and belongs to user
-	account, err := s.accountRepo.FindByID(accountID, userID)
+	_, err := s.accountRepo.FindByID(accountID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -116,17 +119,11 @@ func (s *transactionService) CreateTransaction(
 		}
 
 	case models.TransactionTypeExpense:
-		if account.Balance < amount {
-			return nil, errors.ErrInsufficientFunds
-		}
 		if err := s.accountRepo.UpdateBalance(accountID, -amount); err != nil {
 			return nil, err
 		}
 
 	case models.TransactionTypeTransfer:
-		if account.Balance < amount {
-			return nil, errors.ErrInsufficientFunds
-		}
 		// Deduct from source account
 		if err := s.accountRepo.UpdateBalance(accountID, -amount); err != nil {
 			return nil, err
@@ -304,14 +301,24 @@ func (s *transactionService) GetDashboardSummary(userID uint) (float64, float64,
 }
 
 func (s *transactionService) ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error) {
-	extractor := pdfextractors.GetExtractorByName("caixa")
+	return s.ExtractTransactionsFromPDFWithExtractor(filePath, accountID, "")
+}
 
-	transactions, err := extractor.ExtractTransactions(filePath, accountID)
+func (s *transactionService) ExtractTransactionsFromPDFWithExtractor(filePath string, accountID uint, extractor string) ([]models.Transaction, error) {
+	var ext pdfextractors.PDFExtractor
+	if extractor != "" {
+		ext = pdfextractors.GetExtractorByName(extractor)
+	} else {
+		ext = pdfextractors.NewCaixaExtratoExtractor() // fallback default
+	}
+	if ext == nil {
+		return nil, stdErrors.New("invalid extractor")
+	}
+	textContent, err := ext.ExtractText(filePath)
 	if err != nil {
 		return nil, err
 	}
-
-	return transactions, nil
+	return ext.ExtractTransactions(textContent, accountID)
 }
 
 // Implement AssociateCategories method in transactionService
