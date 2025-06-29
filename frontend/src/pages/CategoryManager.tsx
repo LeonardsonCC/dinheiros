@@ -86,82 +86,124 @@ export default function CategoryManager() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">Manage Categories</h2>
-      <form onSubmit={handleAdd} className="flex gap-2 mb-6">
-        <input
-          type="text"
-          placeholder="Category name"
-          value={newName}
-          onChange={e => setNewName(e.target.value)}
-          required
-          className="border rounded px-2 py-1"
-        />
-        <select
-          value={newType}
-          onChange={e => setNewType(e.target.value as 'income' | 'expense')}
-          className="border rounded px-2 py-1"
-        >
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-        <button type="submit" disabled={isLoading} className="bg-primary-600 text-white px-4 py-1 rounded">
-          Add
-        </button>
+      
+      {/* Add new category form */}
+      <form onSubmit={handleAdd} className="bg-gray-50 p-4 rounded-lg mb-6">
+        <h3 className="text-lg font-semibold mb-4">Add New Category</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <input
+            type="text"
+            placeholder="Category name"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            required
+            className="border rounded px-3 py-2"
+          />
+          <select
+            value={newType}
+            onChange={e => setNewType(e.target.value as 'income' | 'expense')}
+            className="border rounded px-3 py-2"
+          >
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <button 
+            type="submit" 
+            disabled={isLoading} 
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            Add Category
+          </button>
+        </div>
       </form>
-      <table className="min-w-full bg-white rounded shadow">
-        <thead>
-          <tr>
-            <th className="px-4 py-2 text-left">Name</th>
-            <th className="px-4 py-2 text-left">Type</th>
-            <th className="px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map(cat => (
-            <tr key={cat.id} className="border-t">
-              <td className="px-4 py-2">
-                {editId === cat.id ? (
-                  <input
-                    value={editName}
-                    onChange={e => setEditName(e.target.value)}
-                    className="border rounded px-2 py-1"
-                  />
-                ) : (
-                  cat.name
-                )}
-              </td>
-              <td className="px-4 py-2">
-                {editId === cat.id ? (
-                  <select
-                    value={editType}
-                    onChange={e => setEditType(e.target.value as 'income' | 'expense')}
-                    className="border rounded px-2 py-1"
-                  >
-                    <option value="income">Income</option>
-                    <option value="expense">Expense</option>
-                  </select>
-                ) : (
-                  cat.type.charAt(0).toUpperCase() + cat.type.slice(1)
-                )}
-              </td>
-              <td className="px-4 py-2 flex gap-2">
-                {editId === cat.id ? (
-                  <>
-                    <button onClick={handleEdit} className="text-green-600">Save</button>
-                    <button onClick={() => setEditId(null)} className="text-gray-500">Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => startEdit(cat)} className="text-blue-600">Edit</button>
-                    <button onClick={() => handleDelete(cat.id)} className="text-red-600">Delete</button>
-                  </>
-                )}
-              </td>
+
+      {/* Categories table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {categories.map(cat => (
+              <tr key={cat.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editId === cat.id ? (
+                    <input
+                      value={editName}
+                      onChange={e => setEditName(e.target.value)}
+                      className="border rounded px-2 py-1 w-full"
+                    />
+                  ) : (
+                    <div className="text-sm font-medium text-gray-900">{cat.name}</div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editId === cat.id ? (
+                    <select
+                      value={editType}
+                      onChange={e => setEditType(e.target.value as 'income' | 'expense')}
+                      className="border rounded px-2 py-1"
+                    >
+                      <option value="income">Income</option>
+                      <option value="expense">Expense</option>
+                    </select>
+                  ) : (
+                    <div className="text-sm text-gray-900">{cat.type.charAt(0).toUpperCase() + cat.type.slice(1)}</div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editId === cat.id ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleEdit}
+                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                        disabled={isLoading}
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditId(null)}
+                        className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400"
+                        disabled={isLoading}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startEdit(cat)}
+                        className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500"
+                        disabled={isLoading}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(cat.id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                        disabled={isLoading}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {categories.length === 0 && !isLoading && (
+          <div className="text-center py-8 text-gray-500">
+            No categories found. Add your first category above.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
