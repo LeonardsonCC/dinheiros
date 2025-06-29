@@ -14,6 +14,7 @@ interface Account {
   accountName?: string;
   balance: number;
   currentBalance?: number;
+  color?: string;
 }
 
 // Internal type for the processed account data
@@ -21,6 +22,7 @@ interface ProcessedAccount {
   id: number | string;
   name: string;
   balance: number;
+  color: string;
 }
 
 interface AxiosError {
@@ -66,7 +68,7 @@ export default function Accounts() {
         }
         
         // Process the accounts data to ensure consistent structure
-        const processedAccounts = accountsData.map(account => {
+        const processedAccounts: ProcessedAccount[] = accountsData.map(account => {
           // Handle different ID field names
           const accountId = account.id || account._id || account.ID;
           if (!accountId) return null;
@@ -74,7 +76,8 @@ export default function Accounts() {
           return {
             id: accountId,
             name: account.name || account.accountName || 'Unnamed Account',
-            balance: account.balance || account.currentBalance || 0
+            balance: account.balance || account.currentBalance || 0,
+            color: account.color || '#cccccc',
           };
         }).filter((account): account is ProcessedAccount => account !== null);
         
@@ -167,7 +170,14 @@ export default function Accounts() {
                 )}
               </button>
               <Link to={`/accounts/${account.id}/transactions`}>
-                <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="inline-block w-4 h-4 rounded-full border border-gray-300"
+                    style={{ backgroundColor: account.color || '#cccccc' }}
+                    title={account.color || '#cccccc'}
+                  ></span>
+                  <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
+                </div>
                 <p className="mt-2 text-2xl font-semibold text-gray-900">
                   {new Intl.NumberFormat('en-US', {
                     style: 'currency',

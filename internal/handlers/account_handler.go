@@ -36,6 +36,11 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		Type:           req.Type,
 		InitialBalance: req.InitialBalance,
 		UserID:         user.(uint),
+		Color:          req.Color,
+	}
+
+	if account.Color == "" {
+		account.Color = "#cccccc"
 	}
 
 	if err := h.accountService.CreateAccount(&account); err != nil {

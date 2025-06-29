@@ -20,4 +20,5 @@ type Account struct {
 	UserID         uint          `json:"user_id" gorm:"not null"`
 	User           User          `json:"-" gorm:"foreignKey:UserID"`
 	Transactions   []Transaction `json:"transactions,omitempty" gorm:"foreignKey:AccountID"`
+	Color          string        `json:"color" gorm:"type:varchar(7);default:'#cccccc';not null"`
 }

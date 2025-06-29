@@ -45,6 +45,7 @@ func (s *accountService) UpdateAccount(account *models.Account, userID uint) err
 	// Update only allowed fields
 	existing.Name = account.Name
 	existing.Type = account.Type
+	existing.Color = account.Color
 
 	return s.repo.Update(existing)
 }

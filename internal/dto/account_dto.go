@@ -6,6 +6,7 @@ type CreateAccountRequest struct {
 	Name           string             `json:"name" binding:"required"`
 	Type           models.AccountType `json:"type" binding:"required,oneof=checking savings credit_card cash"`
 	InitialBalance float64            `json:"initial_balance" binding:""`
+	Color          string             `json:"color" binding:"omitempty,hexcolor"`
 }
 
 type AccountResponse struct {
@@ -14,6 +15,7 @@ type AccountResponse struct {
 	Type           models.AccountType `json:"type"`
 	InitialBalance float64            `json:"initial_balance"`
 	Balance        float64            `json:"balance"`
+	Color          string             `json:"color"`
 }
 
 func ToAccountResponse(account *models.Account) AccountResponse {
@@ -23,6 +25,7 @@ func ToAccountResponse(account *models.Account) AccountResponse {
 		Type:           account.Type,
 		InitialBalance: account.InitialBalance,
 		Balance:        account.Balance,
+		Color:          account.Color,
 	}
 }
 

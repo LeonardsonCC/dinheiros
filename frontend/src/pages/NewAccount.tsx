@@ -11,18 +11,31 @@ interface AxiosError {
   };
 }
 
+function isValidHexColor(color: string) {
+  return /^#[0-9A-Fa-f]{6}$/.test(color);
+}
+
 export default function NewAccount() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [color, setColor] = useState('#cccccc');
+  const [colorError, setColorError] = useState('');
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const colorValue = formData.get('color') as string;
+    if (!isValidHexColor(colorValue)) {
+      setColorError('Please enter a valid hex color (e.g. #AABBCC)');
+      return;
+    }
+    setColorError('');
     const data = {
       name: formData.get('name') as string,
       type: formData.get('type') as string,
-      initial_balance: Number(formData.get('initial_balance'))
+      initial_balance: Number(formData.get('initial_balance')),
+      color: colorValue
     };
     try {
       setIsLoading(true);
@@ -57,9 +70,9 @@ export default function NewAccount() {
               <input
                 id="name"
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 name="name"
                 required
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               />
             </div>
 
@@ -93,7 +106,35 @@ export default function NewAccount() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               name="initial_balance"
             />
+          </div>
 
+          <div>
+            <label htmlFor="color" className="block text-sm font-medium text-gray-700">
+              Account Color
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                id="color"
+                name="color"
+                type="text"
+                value={color}
+                onChange={e => setColor(e.target.value)}
+                className="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="#cccccc"
+                maxLength={7}
+                pattern="#?[0-9A-Fa-f]{6}"
+                required
+              />
+              <input
+                type="color"
+                value={color}
+                onChange={e => setColor(e.target.value)}
+                className="w-8 h-8 border-0 p-0 bg-transparent"
+                style={{ cursor: 'pointer' }}
+                tabIndex={-1}
+              />
+            </div>
+            {colorError && <div className="text-red-500 text-xs mt-1">{colorError}</div>}
           </div>
 
           <div className="flex justify-end space-x-3">
