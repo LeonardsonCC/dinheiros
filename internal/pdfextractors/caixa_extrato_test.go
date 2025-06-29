@@ -24,7 +24,6 @@ func TestCaixaExtratoExtractor_ExtractTransactions(t *testing.T) {
 		{AccountID: 42, Amount: 133.53, Type: "expense", Description: "PAG BOLETO", Date: mustParseDate("09/08/2024")},
 		{AccountID: 42, Amount: 20, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("12/08/2024")},
 		{AccountID: 42, Amount: 227.62, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("12/08/2024")},
-		// missing
 		{AccountID: 42, Amount: 59.9, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("29/08/2024")},
 		{AccountID: 42, Amount: 6486.29, Type: "income", Description: "TEDSALARIO", Date: mustParseDate("30/08/2024")},
 		{AccountID: 42, Amount: 14.9, Type: "expense", Description: "ENVIO PIX", Date: mustParseDate("30/08/2024")},
@@ -110,18 +109,3 @@ func assertTransactionsEqual(t *testing.T, a, b []models.Transaction) {
 	assert.EqualValues(t, len(b), len(a), "Transaction slice lengths do not match")
 	assert.EqualValues(t, a, b, "Transaction slices do not match")
 }
-
-// func TestA(t *testing.T) {
-// 	t.Log("This is a placeholder test function.")
-// 	// This is just a placeholder to ensure the package compiles.
-// 	// Actual tests are in TestCaixaExtratoExtractor_ExtractTransactions.
-// 	extractor := pdfextractors.NewCaixaExtratoExtractor()
-// 	content, err := extractor.ExtractText("./assets_test/CAIXA.pdf")
-// 	if err != nil {
-// 		t.Fatalf("failed to extract text: %v", err)
-// 	}
-// 	err = os.WriteFile("./assets_test/caixa_extrato_pdf.txt", []byte(content), 0644)
-// 	if err != nil {
-// 		t.Fatalf("failed to write file: %v", err)
-// 	}
-// }

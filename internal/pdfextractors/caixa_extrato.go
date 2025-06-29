@@ -16,6 +16,10 @@ func NewCaixaExtratoExtractor() *caixaExtratoExtractor {
 	return &caixaExtratoExtractor{}
 }
 
+func (s *caixaExtratoExtractor) Name() string {
+	return "Caixa - Extrato"
+}
+
 func (s *caixaExtratoExtractor) ExtractText(filePath string) (string, error) {
 	file, reader, err := pdf.Open(filePath)
 	if err != nil {
@@ -37,6 +41,7 @@ func (s *caixaExtratoExtractor) ExtractText(filePath string) (string, error) {
 	}
 	return textBuilder, nil
 }
+
 func (e *caixaExtratoExtractor) Extract(filePath string, accountID uint) ([]models.Transaction, error) {
 	text, err := e.ExtractText(filePath)
 	if err != nil {
@@ -52,7 +57,7 @@ func (e *caixaExtratoExtractor) Extract(filePath string, accountID uint) ([]mode
 }
 
 func (e *caixaExtratoExtractor) ExtractTransactions(text string, accountID uint) ([]models.Transaction, error) {
-	fields := splitLines(text)
+	fields := e.splitLines(text)
 
 	var lines []string
 	columnsPerRow := 5
@@ -68,7 +73,7 @@ func (e *caixaExtratoExtractor) ExtractTransactions(text string, accountID uint)
 		i += columnsPerRow
 	}
 
-	return parseTransactionsFromLines(lines, accountID)
+	return e.parseTransactionsFromLines(lines, accountID)
 }
 
 func (e *caixaExtratoExtractor) isTransactionRow(row []string) bool {
@@ -95,7 +100,7 @@ func (e *caixaExtratoExtractor) isTransactionRow(row []string) bool {
 }
 
 // parseTransactionsFromLines parses transactions from the extracted lines
-func parseTransactionsFromLines(lines []string, accountID uint) ([]models.Transaction, error) {
+func (e *caixaExtratoExtractor) parseTransactionsFromLines(lines []string, accountID uint) ([]models.Transaction, error) {
 	var transactions []models.Transaction
 	for _, line := range lines {
 		fields := strings.Split(line, " | ")
@@ -141,8 +146,7 @@ func parseTransactionsFromLines(lines []string, accountID uint) ([]models.Transa
 	return transactions, nil
 }
 
-// Helper functions
-func splitLines(s string) []string {
+func (e *caixaExtratoExtractor) splitLines(s string) []string {
 	// Split on newlines and tabs
 	fields := strings.FieldsFunc(s, func(r rune) bool {
 		return r == '\n' || r == '\r' || r == '\t'
