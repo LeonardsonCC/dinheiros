@@ -70,12 +70,13 @@ func (h *CategorizationRuleHandler) CreateRule(c *gin.Context) {
 		return
 	}
 	rule := models.CategorizationRule{
-		UserID:      userID,
-		Name:        req.Name,
-		Type:        req.Type,
-		Value:       req.Value,
-		CategoryDst: req.CategoryDst,
-		Active:      req.Active == nil || *req.Active,
+		UserID:          userID,
+		Name:            req.Name,
+		Type:            req.Type,
+		Value:           req.Value,
+		TransactionType: req.TransactionType,
+		CategoryDst:     req.CategoryDst,
+		Active:          req.Active == nil || *req.Active,
 	}
 	if err := h.Service.CreateRule(c.Request.Context(), &rule); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -115,6 +116,9 @@ func (h *CategorizationRuleHandler) UpdateRule(c *gin.Context) {
 	if req.Value != nil {
 		rule.Value = *req.Value
 	}
+	if req.TransactionType != nil {
+		rule.TransactionType = *req.TransactionType
+	}
 	if req.CategoryDst != nil {
 		rule.CategoryDst = *req.CategoryDst
 	}
@@ -149,14 +153,15 @@ func (h *CategorizationRuleHandler) DeleteRule(c *gin.Context) {
 
 func toCategorizationRuleDTO(rule models.CategorizationRule) dto.CategorizationRuleDTO {
 	return dto.CategorizationRuleDTO{
-		ID:          rule.ID,
-		UserID:      rule.UserID,
-		Name:        rule.Name,
-		Type:        rule.Type,
-		Value:       rule.Value,
-		CategoryDst: rule.CategoryDst,
-		Active:      rule.Active,
-		CreatedAt:   rule.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-		UpdatedAt:   rule.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		ID:              rule.ID,
+		UserID:          rule.UserID,
+		Name:            rule.Name,
+		Type:            rule.Type,
+		Value:           rule.Value,
+		TransactionType: rule.TransactionType,
+		CategoryDst:     rule.CategoryDst,
+		Active:          rule.Active,
+		CreatedAt:       rule.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		UpdatedAt:       rule.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
 }

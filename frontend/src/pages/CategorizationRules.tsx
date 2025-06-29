@@ -13,6 +13,7 @@ interface CategorizationRule {
   name: string;
   type: string;
   value: string;
+  transaction_type?: string;
   category_dst: number;
   active: boolean;
   created_at: string;
@@ -25,6 +26,7 @@ export default function CategorizationRules() {
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState('regex');
   const [newValue, setNewValue] = useState('');
+  const [newTransactionType, setNewTransactionType] = useState('expense');
   const [newCategoryDst, setNewCategoryDst] = useState<number>(0);
   const [newActive, setNewActive] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +34,7 @@ export default function CategorizationRules() {
   const [editName, setEditName] = useState('');
   const [editType, setEditType] = useState('regex');
   const [editValue, setEditValue] = useState('');
+  const [editTransactionType, setEditTransactionType] = useState('expense');
   const [editCategoryDst, setEditCategoryDst] = useState<number>(0);
   const [editActive, setEditActive] = useState(true);
 
@@ -65,8 +68,28 @@ export default function CategorizationRules() {
     fetchRules();
   }, []);
 
+  // Helper to get categories by type
+  const getCategoriesByType = (type: string) => categories.filter(c => c.type === type);
+
+  // When transaction type changes, update category selection
+  useEffect(() => {
+    const filtered = getCategoriesByType(newTransactionType);
+    setNewCategoryDst(filtered.length > 0 ? filtered[0].id : 0);
+  }, [newTransactionType, categories]);
+
+  useEffect(() => {
+    if (editId !== null) {
+      const filtered = getCategoriesByType(editTransactionType);
+      setEditCategoryDst(filtered.length > 0 ? filtered[0].id : 0);
+    }
+  }, [editTransactionType, categories, editId]);
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (getCategoriesByType(newTransactionType).length === 0) {
+      toast.error('No categories available for this transaction type');
+      return;
+    }
     if (newCategoryDst === 0) {
       toast.error('Please select a category');
       return;
@@ -77,6 +100,7 @@ export default function CategorizationRules() {
         name: newName,
         type: newType,
         value: newValue,
+        transaction_type: newTransactionType,
         category_dst: newCategoryDst,
         active: newActive,
       });
@@ -84,6 +108,7 @@ export default function CategorizationRules() {
       setNewName('');
       setNewType('regex');
       setNewValue('');
+      setNewTransactionType('expense');
       setNewCategoryDst(categories.length > 0 ? categories[0].id : 0);
       setNewActive(true);
       toast.success('Categorization rule added');
@@ -113,12 +138,17 @@ export default function CategorizationRules() {
     setEditName(rule.name);
     setEditType(rule.type);
     setEditValue(rule.value);
+    setEditTransactionType(rule.transaction_type || 'expense');
     setEditCategoryDst(rule.category_dst);
     setEditActive(rule.active);
   };
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (getCategoriesByType(editTransactionType).length === 0) {
+      toast.error('No categories available for this transaction type');
+      return;
+    }
     if (editId === null) return;
     if (editCategoryDst === 0) {
       toast.error('Please select a category');
@@ -130,6 +160,7 @@ export default function CategorizationRules() {
         name: editName,
         type: editType,
         value: editValue,
+        transaction_type: editTransactionType,
         category_dst: editCategoryDst,
         active: editActive,
       });
@@ -170,7 +201,7 @@ export default function CategorizationRules() {
       {/* Add new rule form */}
       <form onSubmit={handleAdd} className="bg-gray-50 p-4 rounded-lg mb-6">
         <h3 className="text-lg font-semibold mb-4">Add New Rule</h3>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <input
             type="text"
             placeholder="Rule name"
@@ -195,13 +226,22 @@ export default function CategorizationRules() {
             className="border rounded px-3 py-2"
           />
           <select
+            value={newTransactionType}
+            onChange={e => setNewTransactionType(e.target.value)}
+            className="border rounded px-3 py-2"
+          >
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+            <option value="transfer">Transfer</option>
+          </select>
+          <select
             value={newCategoryDst}
             onChange={e => setNewCategoryDst(Number(e.target.value))}
             required
             className="border rounded px-3 py-2"
           >
             <option value={0}>Select category...</option>
-            {categories.map(category => (
+            {getCategoriesByType(newTransactionType).map(category => (
               <option key={category.id} value={category.id}>
                 {category.name}
               </option>
@@ -235,6 +275,7 @@ export default function CategorizationRules() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction Type</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -281,11 +322,26 @@ export default function CategorizationRules() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   {editId === rule.id ? (
                     <select
+                      value={editTransactionType}
+                      onChange={e => setEditTransactionType(e.target.value)}
+                      className="border rounded px-2 py-1"
+                    >
+                      <option value="expense">Expense</option>
+                      <option value="income">Income</option>
+                      <option value="transfer">Transfer</option>
+                    </select>
+                  ) : (
+                    <div className="text-sm text-gray-900">{rule.transaction_type ? rule.transaction_type.charAt(0).toUpperCase() + rule.transaction_type.slice(1) : 'All'}</div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editId === rule.id ? (
+                    <select
                       value={editCategoryDst}
                       onChange={e => setEditCategoryDst(Number(e.target.value))}
                       className="border rounded px-2 py-1"
                     >
-                      {categories.map(category => (
+                      {getCategoriesByType(editTransactionType).map(category => (
                         <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
@@ -319,33 +375,37 @@ export default function CategorizationRules() {
                     </button>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td className="px-6 py-4 whitespace-nowrap">
                   {editId === rule.id ? (
                     <div className="flex gap-2">
-                      <button 
-                        onClick={handleEdit} 
-                        className="text-green-600 hover:text-green-900"
+                      <button
+                        onClick={handleEdit}
+                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                        disabled={isLoading}
                       >
                         Save
                       </button>
-                      <button 
-                        onClick={() => setEditId(null)} 
-                        className="text-gray-500 hover:text-gray-700"
+                      <button
+                        onClick={() => setEditId(null)}
+                        className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400"
+                        disabled={isLoading}
                       >
                         Cancel
                       </button>
                     </div>
                   ) : (
                     <div className="flex gap-2">
-                      <button 
-                        onClick={() => startEdit(rule)} 
-                        className="text-blue-600 hover:text-blue-900"
+                      <button
+                        onClick={() => startEdit(rule)}
+                        className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500"
+                        disabled={isLoading}
                       >
                         Edit
                       </button>
-                      <button 
-                        onClick={() => handleDelete(rule.id)} 
-                        className="text-red-600 hover:text-red-900"
+                      <button
+                        onClick={() => handleDelete(rule.id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                        disabled={isLoading}
                       >
                         Delete
                       </button>

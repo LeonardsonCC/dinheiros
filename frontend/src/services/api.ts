@@ -45,9 +45,9 @@ export default api;
 export const categorizationRulesApi = {
   list: () => api.get('/api/categorization-rules'),
   get: (id: number) => api.get(`/api/categorization-rules/${id}`),
-  create: (data: { name: string; type: string; value: string; category_dst: number; active?: boolean }) => 
+  create: (data: { name: string; type: string; value: string; transaction_type: string; category_dst: number; active?: boolean }) => 
     api.post('/api/categorization-rules', data),
-  update: (id: number, data: { name?: string; type?: string; value?: string; category_dst?: number; active?: boolean }) => 
+  update: (id: number, data: { name?: string; type?: string; value?: string; transaction_type?: string; category_dst?: number; active?: boolean }) => 
     api.put(`/api/categorization-rules/${id}`, data),
   delete: (id: number) => api.delete(`/api/categorization-rules/${id}`),
 };
