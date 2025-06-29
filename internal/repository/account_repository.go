@@ -13,6 +13,12 @@ type AccountRepository interface {
 	Update(account *models.Account) error
 	Delete(id uint, userID uint) error
 	UpdateBalance(accountID uint, amount float64) error
+
+	// Transaction management
+	Begin() *gorm.DB
+	Commit(tx *gorm.DB) error
+	Rollback(tx *gorm.DB) error
+	WithTx(tx *gorm.DB) AccountRepository
 }
 
 type accountRepository struct {
@@ -58,4 +64,23 @@ func (r *accountRepository) UpdateBalance(accountID uint, amount float64) error 
 	return r.db.Model(&models.Account{}).
 		Where("id = ?", accountID).
 		Update("balance", gorm.Expr("balance + ?", amount)).Error
+}
+
+// Begin starts a new transaction
+func (r *accountRepository) Begin() *gorm.DB {
+	return r.db.Begin()
+}
+
+// Commit commits a transaction
+func (r *accountRepository) Commit(tx *gorm.DB) error {
+	return tx.Commit().Error
+}
+
+// Rollback rolls back a transaction
+func (r *accountRepository) Rollback(tx *gorm.DB) error {
+	return tx.Rollback().Error
+}
+
+func (r *accountRepository) WithTx(tx *gorm.DB) AccountRepository {
+	return &accountRepository{db: tx}
 }

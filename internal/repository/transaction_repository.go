@@ -36,6 +36,7 @@ type TransactionRepository interface {
 	Begin() *gorm.DB
 	Commit(tx *gorm.DB) error
 	Rollback(tx *gorm.DB) error
+	WithTx(tx *gorm.DB) TransactionRepository
 }
 
 type transactionRepository struct {
@@ -200,6 +201,10 @@ func (r *transactionRepository) Commit(tx *gorm.DB) error {
 // Rollback rolls back a transaction
 func (r *transactionRepository) Rollback(tx *gorm.DB) error {
 	return tx.Rollback().Error
+}
+
+func (r *transactionRepository) WithTx(tx *gorm.DB) TransactionRepository {
+	return &transactionRepository{db: tx}
 }
 
 func (r *transactionRepository) AssociateCategories(transactionID uint, categoryIDs []uint) error {

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/LeonardsonCC/dinheiros/internal/dto"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/LeonardsonCC/dinheiros/internal/repository"
@@ -15,17 +17,62 @@ type AccountService interface {
 }
 
 type accountService struct {
-	repo repository.AccountRepository
+	repo            repository.AccountRepository
+	transactionRepo repository.TransactionRepository
 }
 
-func NewAccountService(repo repository.AccountRepository) AccountService {
-	return &accountService{repo: repo}
+func NewAccountService(repo repository.AccountRepository, transactionRepo repository.TransactionRepository) AccountService {
+	return &accountService{repo: repo, transactionRepo: transactionRepo}
 }
 
 func (s *accountService) CreateAccount(account *models.Account) error {
-	// Set initial balance
-	account.Balance = account.InitialBalance
-	return s.repo.Create(account)
+	tx := s.repo.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	// a defer function to handle panic and rollback the transaction
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	accountRepoTx := s.repo.WithTx(tx)
+
+	initialBalance := account.InitialBalance
+	account.Balance = 0
+
+	err := accountRepoTx.Create(account)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if initialBalance != 0 {
+		transactionRepoTx := s.transactionRepo.WithTx(tx)
+		t := &models.Transaction{
+			Date:        time.Now(),
+			Amount:      initialBalance,
+			Type:        models.TransactionTypeInitial,
+			Description: "Initial Balance",
+			AccountID:   account.ID,
+		}
+
+		err = transactionRepoTx.Create(t)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		err = accountRepoTx.UpdateBalance(account.ID, initialBalance)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		account.Balance = initialBalance
+	}
+
+	return tx.Commit().Error
 }
 
 func (s *accountService) GetAccountByID(id uint, userID uint) (*models.Account, error) {

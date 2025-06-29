@@ -12,6 +12,7 @@ const (
 	TransactionTypeIncome   TransactionType = "income"
 	TransactionTypeExpense  TransactionType = "expense"
 	TransactionTypeTransfer TransactionType = "transfer"
+	TransactionTypeInitial  TransactionType = "initial"
 )
 
 type Transaction struct {

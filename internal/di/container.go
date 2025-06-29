@@ -71,7 +71,7 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 	categorizationRuleRepo := repository.NewCategorizationRuleRepository(db)
 
 	// Initialize services
-	accountService := service.NewAccountService(accountRepo)
+	accountService := service.NewAccountService(accountRepo, transactionRepo)
 	categoryService := service.NewCategoryService(db)
 	transactionService := service.NewTransactionService(transactionRepo, accountRepo, categoryService)
 	userService := service.NewUserService(userRepo, jwtManager)
