@@ -107,7 +107,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {transactions.length === 0 ? (
+                {transactions.length === 0 || loading ? (
                   <tr>
                     <td colSpan={renderActions ? 6 : 5} className="px-3 py-4 text-sm text-gray-500 text-center">
                       {loading ? t('transactionsTable.loading') : t('transactionsTable.noTransactions')}

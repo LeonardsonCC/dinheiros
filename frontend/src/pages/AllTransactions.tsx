@@ -269,6 +269,7 @@ export default function AllTransactions() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -323,6 +324,7 @@ export default function AllTransactions() {
   // Fetch transactions when filters, pagination, or sort changes
   const fetchTransactions = useCallback(async () => {
     try {
+      if (!loading) setTableLoading(true);
       setLoading(true);
       
       // Build query params
@@ -364,6 +366,7 @@ export default function AllTransactions() {
       }));
     } finally {
       setLoading(false);
+      setTableLoading(false);
     }
   }, [filters, pagination.currentPage, pagination.pageSize, sortConfig]);
   
@@ -413,6 +416,7 @@ export default function AllTransactions() {
   // Handle pagination
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setTableLoading(true);
       setPagination(prev => ({
         ...prev,
         currentPage: newPage,
@@ -420,18 +424,18 @@ export default function AllTransactions() {
       window.scrollTo(0, 0);
     }
   };
-  
   // Handle page size change
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTableLoading(true);
     setPagination(prev => ({
       ...prev,
       pageSize: Number(e.target.value),
       currentPage: 1, // Reset to first page when changing page size
     }));
   };
-  
   // Handle sorting
   const handleSort = (key: keyof Transaction) => {
+    setTableLoading(true);
     setSortConfig(prev => ({
       key,
       direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
@@ -682,7 +686,7 @@ export default function AllTransactions() {
       {/* Transactions Table */}
       <TransactionsTable
         transactions={transactions}
-        loading={loading}
+        loading={tableLoading}
         pagination={pagination}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
