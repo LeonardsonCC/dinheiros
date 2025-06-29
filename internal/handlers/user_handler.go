@@ -215,3 +215,42 @@ func (h *UserHandler) UpdatePassword(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
 }
+
+// GoogleLogin handles Google OAuth login
+// @Summary Login a user with Google
+// @Description Authenticate a user with Google OAuth and return a token
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body struct{ Credential string `json:"credential" binding:"required"` } true "Google login credentials"
+// @Success 200 {object} dto.AuthResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/google [post]
+func (h *UserHandler) GoogleLogin(c *gin.Context) {
+	var req struct {
+		Credential string `json:"credential" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing Google credential"})
+		return
+	}
+
+	// Verify Google token
+	googleUser, err := service.VerifyGoogleToken(req.Credential)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Google token"})
+		return
+	}
+
+	// Find or create user by email
+	token, user, err := h.userService.LoginOrRegisterGoogle(googleUser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := dto.ToAuthResponse("Google login successful", token, user)
+	c.JSON(http.StatusOK, response)
+}

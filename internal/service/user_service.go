@@ -1,11 +1,14 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
+	"net/http"
 
 	"github.com/LeonardsonCC/dinheiros/internal/auth"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	repo "github.com/LeonardsonCC/dinheiros/internal/repository"
+	"github.com/google/uuid"
 )
 
 // UserService defines the interface for user-related operations
@@ -20,6 +23,8 @@ type UserService interface {
 	UpdateName(id uint, name string) (*models.User, error)
 	// UpdatePassword updates the user's password after verifying the current password
 	UpdatePassword(id uint, currentPassword, newPassword string) error
+	// LoginOrRegisterGoogle logs in or registers a user using Google info
+	LoginOrRegisterGoogle(googleUser *GoogleUser) (string, *models.User, error)
 }
 
 type userService struct {
@@ -144,4 +149,65 @@ func (s *userService) FindByID(id uint) (*models.User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+// GoogleUser represents the minimal user info from Google
+// You can expand this struct as needed
+// (sub = user id, email, name, picture, etc)
+type GoogleUser struct {
+	Sub     string `json:"sub"`
+	Email   string `json:"email"`
+	Name    string `json:"name"`
+	Picture string `json:"picture"`
+}
+
+// VerifyGoogleToken verifies the Google ID token and returns user info
+func VerifyGoogleToken(idToken string) (*GoogleUser, error) {
+	resp, err := http.Get("https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, err
+	}
+	var gu GoogleUser
+	if err := json.NewDecoder(resp.Body).Decode(&gu); err != nil {
+		return nil, err
+	}
+	if gu.Email == "" {
+		return nil, err
+	}
+	return &gu, nil
+}
+
+// LoginOrRegisterGoogle logs in or registers a user using Google info
+func (s *userService) LoginOrRegisterGoogle(googleUser *GoogleUser) (string, *models.User, error) {
+	// Try to find user by email
+	user, err := s.userRepo.FindByEmail(googleUser.Email)
+	if err != nil && err.Error() != "record not found" {
+		return "", nil, err
+	}
+	if user == nil {
+		// Register new user with Google info, set a random password
+		user = &models.User{
+			Name:     googleUser.Name,
+			Email:    googleUser.Email,
+			Password: generateRandomPassword(), // Not used, but required by schema
+		}
+		if err := s.userRepo.Create(user); err != nil {
+			return "", nil, err
+		}
+	}
+	// Generate JWT token
+	token, err := s.jwtManager.GenerateToken(user)
+	if err != nil {
+		return "", nil, err
+	}
+	return token, user, nil
+}
+
+// generateRandomPassword returns a random string (for Google users, password is not used)
+func generateRandomPassword() string {
+	return uuid.NewString()
 }

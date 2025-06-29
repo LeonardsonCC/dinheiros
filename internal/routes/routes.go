@@ -17,6 +17,8 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 		{
 			authGroup.POST("/register", container.UserHandler.Register)
 			authGroup.POST("/login", container.UserHandler.Login)
+			// Google OAuth login
+			authGroup.POST("/google", container.UserHandler.GoogleLogin)
 		}
 
 		// Protected routes

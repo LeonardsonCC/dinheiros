@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -37,6 +38,27 @@ export default function Login() {
     } catch (error) {
       toast.error('Invalid email or password');
       console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse.credential) {
+      toast.error('Google login failed: No credential');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await api.post('/api/auth/google', {
+        credential: credentialResponse.credential,
+      });
+      localStorage.setItem('token', response.data.token);
+      toast.success('Logged in with Google!');
+      window.location.href = '/';
+    } catch (error) {
+      toast.error('Google login failed');
+      console.error('Google login error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -107,6 +129,15 @@ export default function Login() {
             </button>
           </div>
         </form>
+        <div className="flex flex-col items-center mt-4">
+          <span className="mb-2 text-gray-500">or</span>
+          <GoogleLogin
+            onSuccess={onGoogleSuccess}
+            onError={() => toast.error('Google login failed')}
+            useOneTap
+            width="100%"
+          />
+        </div>
       </div>
     </div>
   );
