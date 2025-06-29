@@ -159,22 +159,3 @@ func parseAmountType(s string) float64 {
 	amount, _ := strconv.ParseFloat(amountStr, 64)
 	return amount
 }
-
-func (e *caixaCCFaturaExtractor) isTransactionRow(row []string) bool {
-	return false
-}
-
-func (e *caixaCCFaturaExtractor) splitLines(s string) []string {
-	// Split on newlines and tabs
-	fields := strings.FieldsFunc(s, func(r rune) bool {
-		return r == '\n' || r == '\r' || r == '\t'
-	})
-	var lines []string
-	for _, f := range fields {
-		trimmed := strings.TrimSpace(f)
-		if trimmed != "" {
-			lines = append(lines, trimmed)
-		}
-	}
-	return lines
-}
