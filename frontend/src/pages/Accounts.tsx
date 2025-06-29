@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
@@ -150,25 +150,34 @@ export default function Accounts() {
         ) : (
           accounts.map((account) => (
             <div key={account.id} className="relative p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  handleDelete(account.id);
-                }}
-                disabled={deletingId === account.id}
-                className="absolute top-2 right-2 p-1 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity duration-200 disabled:opacity-50"
-                title={t('accounts.deleteAccount')}
-              >
-                {deletingId === account.id ? (
-                  <svg className="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  <TrashIcon className="h-5 w-5" />
-                )}
-              </button>
+              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <Link
+                  to={`/accounts/${account.id}/edit`}
+                  className="p-1 text-gray-400 hover:text-blue-500 transition-colors duration-200"
+                  title={t('accounts.editAccount')}
+                >
+                  <PencilIcon className="h-5 w-5" />
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleDelete(account.id);
+                  }}
+                  disabled={deletingId === account.id}
+                  className="p-1 text-gray-400 hover:text-red-500 transition-colors duration-200 disabled:opacity-50"
+                  title={t('accounts.deleteAccount')}
+                >
+                  {deletingId === account.id ? (
+                    <svg className="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <TrashIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
               <Link to={`/accounts/${account.id}/transactions`}>
                 <div className="flex items-center gap-2">
                   <span

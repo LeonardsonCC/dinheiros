@@ -8,6 +8,7 @@ import AllTransactions from './pages/AllTransactions';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NewAccount from './pages/NewAccount';
+import EditAccount from './pages/EditAccount';
 import NewTransaction from './pages/NewTransaction';
 import EditTransaction from './pages/EditTransaction';
 import ImportTransactions from './pages/ImportTransactions';
@@ -31,6 +32,7 @@ function App() {
           <Route path="accounts">
             <Route index element={<Accounts />} />
             <Route path="new" element={<NewAccount />} />
+            <Route path=":accountId/edit" element={<EditAccount />} />
             <Route path=":accountId/transactions" element={<Transactions />} />
             <Route path=":accountId/transactions/new" element={<NewTransaction />} />
             <Route path=":accountId/transactions/import" element={<ImportTransactions />} />

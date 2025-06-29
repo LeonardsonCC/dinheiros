@@ -94,6 +94,37 @@ func (h *AccountHandler) GetAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToAccountResponse(account))
 }
 
+func (h *AccountHandler) UpdateAccount(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	accountID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+		return
+	}
+
+	var req dto.UpdateAccountRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updatedAccount, err := h.accountService.UpdateAccount(uint(accountID), user.(uint), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating account"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Account updated successfully",
+		"account": dto.ToAccountResponse(updatedAccount),
+	})
+}
+
 func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {

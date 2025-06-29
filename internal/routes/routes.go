@@ -43,6 +43,7 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 				account := accounts.Group("/:id")
 				{
 					account.GET("", container.AccountHandler.GetAccount)
+					account.PUT("", container.AccountHandler.UpdateAccount)
 					account.DELETE("", container.AccountHandler.DeleteAccount)
 
 					// Transaction routes for a specific account

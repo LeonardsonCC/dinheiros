@@ -9,6 +9,12 @@ type CreateAccountRequest struct {
 	Color          string             `json:"color" binding:"omitempty,hexcolor"`
 }
 
+type UpdateAccountRequest struct {
+	Name  string             `json:"name" binding:"required"`
+	Type  models.AccountType `json:"type" binding:"required,oneof=checking savings credit_card cash"`
+	Color string             `json:"color" binding:"omitempty,hexcolor"`
+}
+
 type AccountResponse struct {
 	ID             uint               `json:"id"`
 	Name           string             `json:"name"`

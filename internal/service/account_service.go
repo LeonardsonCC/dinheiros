@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/LeonardsonCC/dinheiros/internal/dto"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/LeonardsonCC/dinheiros/internal/repository"
 )
@@ -9,7 +10,7 @@ type AccountService interface {
 	CreateAccount(account *models.Account) error
 	GetAccountByID(id uint, userID uint) (*models.Account, error)
 	GetAccountsByUserID(userID uint) ([]models.Account, error)
-	UpdateAccount(account *models.Account, userID uint) error
+	UpdateAccount(id uint, userID uint, req *dto.UpdateAccountRequest) (*models.Account, error)
 	DeleteAccount(id uint, userID uint) error
 }
 
@@ -35,19 +36,25 @@ func (s *accountService) GetAccountsByUserID(userID uint) ([]models.Account, err
 	return s.repo.FindByUserID(userID)
 }
 
-func (s *accountService) UpdateAccount(account *models.Account, userID uint) error {
+func (s *accountService) UpdateAccount(id uint, userID uint, req *dto.UpdateAccountRequest) (*models.Account, error) {
 	// First verify the account belongs to the user
-	existing, err := s.repo.FindByID(account.ID, userID)
+	existing, err := s.repo.FindByID(id, userID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Update only allowed fields
-	existing.Name = account.Name
-	existing.Type = account.Type
-	existing.Color = account.Color
+	existing.Name = req.Name
+	existing.Type = req.Type
+	existing.Color = req.Color
+	if existing.Color == "" {
+		existing.Color = "#cccccc"
+	}
 
-	return s.repo.Update(existing)
+	if err := s.repo.Update(existing); err != nil {
+		return nil, err
+	}
+	return existing, nil
 }
 
 func (s *accountService) DeleteAccount(id uint, userID uint) error {
