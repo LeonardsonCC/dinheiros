@@ -6,8 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/ledongthuc/pdf"
+
+	"github.com/LeonardsonCC/dinheiros/internal/models"
 )
 
 type caixaExtratoExtractor struct{}

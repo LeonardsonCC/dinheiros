@@ -3,8 +3,9 @@ package repository
 import (
 	"errors"
 
-	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"gorm.io/gorm"
+
+	"github.com/LeonardsonCC/dinheiros/internal/models"
 )
 
 // Common repository errors

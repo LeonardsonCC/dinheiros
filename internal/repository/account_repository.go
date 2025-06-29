@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"gorm.io/gorm"
+
+	"github.com/LeonardsonCC/dinheiros/internal/models"
 )
 
 type AccountRepository interface {

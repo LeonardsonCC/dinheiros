@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/LeonardsonCC/dinheiros/internal/dto"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/LeonardsonCC/dinheiros/internal/service"
-	"github.com/gin-gonic/gin"
 )
 
 type AccountHandler struct {

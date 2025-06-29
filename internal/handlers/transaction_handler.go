@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -9,16 +10,15 @@ import (
 	"sync"
 	"time"
 
-	"mime/multipart"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/sync/errgroup"
+	"gorm.io/gorm"
 
 	"github.com/LeonardsonCC/dinheiros/internal/dto"
 	"github.com/LeonardsonCC/dinheiros/internal/errors"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/LeonardsonCC/dinheiros/internal/pdfextractors"
 	"github.com/LeonardsonCC/dinheiros/internal/service"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/sync/errgroup"
-	"gorm.io/gorm"
 )
 
 type UpdateTransactionRequest struct {
@@ -31,8 +31,8 @@ type UpdateTransactionRequest struct {
 }
 
 type TransactionHandler struct {
-	transactionService service.TransactionService
-	categoryService    service.CategoryService
+	transactionService        service.TransactionService
+	categoryService           service.CategoryService
 	categorizationRuleService service.CategorizationRuleService
 }
 
@@ -43,8 +43,8 @@ type ImportTransactionsRequest struct {
 
 func NewTransactionHandler(transactionService service.TransactionService, categoryService service.CategoryService, categorizationRuleService service.CategorizationRuleService) *TransactionHandler {
 	return &TransactionHandler{
-		transactionService: transactionService,
-		categoryService:    categoryService,
+		transactionService:        transactionService,
+		categoryService:           categoryService,
 		categorizationRuleService: categorizationRuleService,
 	}
 }

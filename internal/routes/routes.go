@@ -1,9 +1,10 @@
 package routes
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"github.com/LeonardsonCC/dinheiros/internal/di"
 	"github.com/LeonardsonCC/dinheiros/internal/middleware"
-	"github.com/gin-gonic/gin"
 )
 
 func SetupRoutes(container *di.Container) *gin.Engine {

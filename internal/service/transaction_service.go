@@ -2,12 +2,11 @@ package service
 
 import (
 	"context"
+	stdErrors "errors"
 	"regexp"
 	"sort"
 	"strconv"
 	"time"
-
-	stdErrors "errors"
 
 	"github.com/LeonardsonCC/dinheiros/internal/errors"
 	"github.com/LeonardsonCC/dinheiros/internal/models"

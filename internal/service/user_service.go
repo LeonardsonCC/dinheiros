@@ -5,10 +5,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"github.com/LeonardsonCC/dinheiros/internal/auth"
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	repo "github.com/LeonardsonCC/dinheiros/internal/repository"
-	"github.com/google/uuid"
 )
 
 // UserService defines the interface for user-related operations

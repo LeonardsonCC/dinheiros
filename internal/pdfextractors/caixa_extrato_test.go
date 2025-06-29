@@ -5,9 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/LeonardsonCC/dinheiros/internal/models"
 	"github.com/LeonardsonCC/dinheiros/internal/pdfextractors"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCaixaExtratoExtractor_ExtractTransactions(t *testing.T) {

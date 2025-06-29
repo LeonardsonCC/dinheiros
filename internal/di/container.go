@@ -4,37 +4,38 @@ import (
 	"os"
 	"time"
 
+	"gorm.io/gorm"
+
 	"github.com/LeonardsonCC/dinheiros/internal/auth"
 	"github.com/LeonardsonCC/dinheiros/internal/handlers"
 	"github.com/LeonardsonCC/dinheiros/internal/repository"
 	"github.com/LeonardsonCC/dinheiros/internal/service"
-	"gorm.io/gorm"
 )
 
 type Container struct {
 	// Repositories
-	AccountRepository     repository.AccountRepository
-	TransactionRepository repository.TransactionRepository
-	UserRepository        repository.UserRepository
-	CategoryRepository    repository.CategoryRepository
+	AccountRepository            repository.AccountRepository
+	TransactionRepository        repository.TransactionRepository
+	UserRepository               repository.UserRepository
+	CategoryRepository           repository.CategoryRepository
 	CategorizationRuleRepository repository.CategorizationRuleRepository
 
 	// Services
-	AccountService     service.AccountService
-	TransactionService service.TransactionService
-	UserService        service.UserService
-	CategoryService    service.CategoryService
-	CategorizationRuleService    service.CategorizationRuleService
+	AccountService            service.AccountService
+	TransactionService        service.TransactionService
+	UserService               service.UserService
+	CategoryService           service.CategoryService
+	CategorizationRuleService service.CategorizationRuleService
 
 	// Auth
 	JWTManager *auth.JWTManager
 
 	// Handlers
-	AccountHandler     *handlers.AccountHandler
-	TransactionHandler *handlers.TransactionHandler
-	UserHandler        *handlers.UserHandler
-	CategoryHandler    *handlers.CategoryHandler
-	CategorizationRuleHandler    *handlers.CategorizationRuleHandler
+	AccountHandler            *handlers.AccountHandler
+	TransactionHandler        *handlers.TransactionHandler
+	UserHandler               *handlers.UserHandler
+	CategoryHandler           *handlers.CategoryHandler
+	CategorizationRuleHandler *handlers.CategorizationRuleHandler
 }
 
 func NewContainer(db *gorm.DB) (*Container, error) {
@@ -84,21 +85,21 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 	categorizationRuleHandler := handlers.NewCategorizationRuleHandler(categorizationRuleService)
 
 	return &Container{
-		AccountRepository:     accountRepo,
-		TransactionRepository: transactionRepo,
-		UserRepository:        userRepo,
-		CategoryRepository:    categoryRepo,
+		AccountRepository:            accountRepo,
+		TransactionRepository:        transactionRepo,
+		UserRepository:               userRepo,
+		CategoryRepository:           categoryRepo,
 		CategorizationRuleRepository: categorizationRuleRepo,
-		AccountService:        accountService,
-		TransactionService:    transactionService,
-		UserService:           userService,
-		CategoryService:       categoryService,
+		AccountService:               accountService,
+		TransactionService:           transactionService,
+		UserService:                  userService,
+		CategoryService:              categoryService,
 		CategorizationRuleService:    categorizationRuleService,
-		JWTManager:            jwtManager,
-		AccountHandler:        accountHandler,
-		TransactionHandler:    transactionHandler,
-		UserHandler:           userHandler,
-		CategoryHandler:       categoryHandler,
+		JWTManager:                   jwtManager,
+		AccountHandler:               accountHandler,
+		TransactionHandler:           transactionHandler,
+		UserHandler:                  userHandler,
+		CategoryHandler:              categoryHandler,
 		CategorizationRuleHandler:    categorizationRuleHandler,
 	}, nil
 }

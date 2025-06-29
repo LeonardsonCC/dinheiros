@@ -3,12 +3,11 @@ package database
 import (
 	"fmt"
 
-	"github.com/LeonardsonCC/dinheiros/config"
 	"gorm.io/driver/postgres"
-
-	// "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/LeonardsonCC/dinheiros/config"
 )
 
 var DB *gorm.DB
