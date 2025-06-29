@@ -287,9 +287,6 @@ export default function ImportTransactions() {
     const [newCategory, setNewCategory] = useState('');
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Debug logging
-    console.log('CategoryMultiSelectDropdown props:', { options, selected });
-
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -334,7 +331,6 @@ export default function ImportTransactions() {
             ) : (
               selected.map(id => {
                 const option = options.find(opt => opt.id === id);
-                console.log(`Mapping category ID ${id} to option:`, option);
                 return (
                   <span key={id} className="inline-flex items-center rounded bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800">
                     {option?.name || `Unknown (${id})`}
