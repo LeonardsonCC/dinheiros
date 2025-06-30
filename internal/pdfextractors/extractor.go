@@ -17,6 +17,8 @@ func GetExtractorByName(name string) PDFExtractor {
 		return NewCaixaCCFaturaExtractor()
 	case "nubank_extrato":
 		return NewNubankExtratoExtractor()
+	case "nubank_cc_fatura":
+		return NewNubankCCFaturaExtractor()
 	default:
 		return nil
 	}
