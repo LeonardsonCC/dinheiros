@@ -19,7 +19,7 @@ func NewNubankCCFaturaExtractor() *nubankCCFaturaExtractor {
 }
 
 func (s *nubankCCFaturaExtractor) Name() string {
-	return "Nubank - CCFatura"
+	return "Nubank - Cartão de Crédito Fatura"
 }
 
 func (s *nubankCCFaturaExtractor) ExtractText(filePath string) (string, error) {
