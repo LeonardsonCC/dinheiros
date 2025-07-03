@@ -40,8 +40,7 @@ type Container struct {
 
 func NewContainer(db *gorm.DB) (*Container, error) {
 	// Initialize JWT manager
-	// jwtSecret := os.Getenv("JWT_SECRET")
-	jwtSecret := "test"
+	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		// In a production environment, you should always have a proper JWT secret
 		// For development, we'll generate a random one if not set
