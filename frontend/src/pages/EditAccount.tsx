@@ -4,7 +4,6 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
-import { useTranslation } from 'react-i18next';
 
 interface AxiosError {
   response?: {
@@ -29,7 +28,6 @@ function isValidHexColor(color: string) {
 export default function EditAccount() {
   const navigate = useNavigate();
   const { accountId } = useParams<{ accountId: string }>();
-  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [color, setColor] = useState('#cccccc');
