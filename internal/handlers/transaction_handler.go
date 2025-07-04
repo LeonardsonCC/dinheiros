@@ -177,6 +177,30 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 		return
 	}
 
+	if req.Type == models.TransactionTypeTransfer {
+		if req.ToAccountID == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Destination account ID is required for transfers"})
+			return
+		}
+
+		expenseTx, incomeTx, err := h.transactionService.CreateTransferTransaction(user.(uint), uint(accountID), *req.ToAccountID, req.Amount, req.Description, parsedDate)
+		if err != nil {
+			if err == errors.ErrSameAccountTransfer || err == errors.ErrFromAccountNotFound || err == errors.ErrToAccountNotFound {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create transfer transaction"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusCreated, gin.H{
+			"message":             "Transfer created successfully",
+			"expense_transaction": dto.ToTransactionResponse(expenseTx),
+			"income_transaction":  dto.ToTransactionResponse(incomeTx),
+		})
+		return
+	}
+
 	// Create the transaction using the service
 	transaction, err := h.transactionService.CreateTransaction(
 		user.(uint),
@@ -378,7 +402,7 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 		return
 	}
 
-	// Get the existing transaction to verify ownership
+	// Get the existing transaction to check its type
 	existingTx, err := h.transactionService.GetTransactionByID(user.(uint), uint(transactionID))
 	if err != nil {
 		switch e := err.(type) {
@@ -387,6 +411,11 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching transaction"})
 		}
+		return
+	}
+
+	if existingTx.ToAccountID != nil && (existingTx.Type == models.TransactionTypeExpense || existingTx.Type == models.TransactionTypeIncome) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot update a transaction that is part of a transfer."})
 		return
 	}
 
@@ -460,6 +489,23 @@ func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
 	transactionID, err := strconv.Atoi(c.Param("transactionId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+		return
+	}
+
+	// Get the existing transaction to check its type
+	existingTx, err := h.transactionService.GetTransactionByID(user.(uint), uint(transactionID))
+	if err != nil {
+		switch e := err.(type) {
+		case *errors.NotFoundError:
+			c.JSON(http.StatusNotFound, gin.H{"error": e.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching transaction"})
+		}
+		return
+	}
+
+	if existingTx.ToAccountID != nil && (existingTx.Type == models.TransactionTypeExpense || existingTx.Type == models.TransactionTypeIncome) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete a transaction that is part of a transfer."})
 		return
 	}
 
@@ -764,3 +810,4 @@ func (h *TransactionHandler) ListExtractors(c *gin.Context) {
 	extractors := pdfextractors.ListExtractors()
 	c.JSON(http.StatusOK, gin.H{"extractors": extractors})
 }
+
