@@ -167,7 +167,7 @@ export default function NewTransaction() {
         description: formData.description,
         category_ids: formData.categoryIds,
         date: formData.date,
-        to_account_id: formData.type === 'transfer' ? formData.toAccountId : undefined
+        to_account_id: formData.type === 'transfer' && !isNaN(Number(formData.toAccountId)) ? Number(formData.toAccountId) : undefined
       };
 
       await api.post(`/api/accounts/${selectedAccountId}/transactions`, payload);

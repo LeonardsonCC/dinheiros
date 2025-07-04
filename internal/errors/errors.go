@@ -4,9 +4,13 @@ import "errors"
 
 var (
 	// Common errors
-	ErrInvalidRequest    = errors.New("invalid request")
-	ErrNotFound          = errors.New("not found")
-	ErrInsufficientFunds = errors.New("insufficient funds")
+	ErrInvalidRequest      = errors.New("invalid request")
+	ErrNotFound            = errors.New("not found")
+	ErrInsufficientFunds   = errors.New("insufficient funds")
+	ErrUnauthorized        = errors.New("unauthorized")
+	ErrSameAccountTransfer = errors.New("transfer to the same account is not allowed")
+	ErrFromAccountNotFound = errors.New("source account not found")
+	ErrToAccountNotFound   = errors.New("destination account not found")
 )
 
 // ValidationError represents a validation error

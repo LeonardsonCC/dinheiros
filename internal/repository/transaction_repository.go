@@ -12,6 +12,7 @@ import (
 type TransactionRepository interface {
 	// Basic CRUD operations
 	Create(transaction *models.Transaction) error
+	CreateInBatch(transactions []*models.Transaction) error
 	FindByID(id uint, userID uint) (*models.Transaction, error)
 	FindByAccountID(accountID uint, userID uint) ([]models.Transaction, error)
 	FindByUserID(
@@ -49,6 +50,10 @@ func NewTransactionRepository(db *gorm.DB) TransactionRepository {
 
 func (r *transactionRepository) Create(transaction *models.Transaction) error {
 	return r.db.Create(transaction).Error
+}
+
+func (r *transactionRepository) CreateInBatch(transactions []*models.Transaction) error {
+	return r.db.Create(transactions).Error
 }
 
 func (r *transactionRepository) FindByID(id uint, userID uint) (*models.Transaction, error) {

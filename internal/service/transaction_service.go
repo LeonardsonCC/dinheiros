@@ -17,6 +17,7 @@ import (
 type TransactionService interface {
 	CreateTransaction(userID uint, accountID uint, amount float64, transactionType models.TransactionType,
 		description string, toAccountID *uint, categoryIDs []uint, date time.Time) (*models.Transaction, error)
+	CreateTransferTransaction(userID uint, fromAccountID uint, toAccountID uint, amount float64, description string, date time.Time) (*models.Transaction, *models.Transaction, error)
 	GetTransactionByID(userID uint, transactionID uint) (*models.Transaction, error)
 	GetTransactionsByAccountID(userID uint, accountID uint) ([]models.Transaction, error)
 	ListTransactions(
@@ -84,16 +85,8 @@ func (s *transactionService) CreateTransaction(
 		return nil, err
 	}
 
-	// For transfers, verify the destination account exists and belongs to the user
 	if transactionType == models.TransactionTypeTransfer {
-		if toAccountID == nil {
-			return nil, errors.ErrInvalidRequest
-		}
-
-		// Check if the destination account exists and belongs to the user
-		if _, err := s.accountRepo.FindByID(*toAccountID, userID); err != nil {
-			return nil, errors.ErrNotFound
-		}
+		return nil, stdErrors.New("CreateTransaction does not handle transfers. Use CreateTransferTransaction instead")
 	}
 
 	// Create the transaction
@@ -129,21 +122,64 @@ func (s *transactionService) CreateTransaction(
 		if err := s.accountRepo.UpdateBalance(accountID, -amount); err != nil {
 			return nil, err
 		}
-
-	case models.TransactionTypeTransfer:
-		// Deduct from source account
-		if err := s.accountRepo.UpdateBalance(accountID, -amount); err != nil {
-			return nil, err
-		}
-		// Add to destination account
-		if err := s.accountRepo.UpdateBalance(*toAccountID, amount); err != nil {
-			// Compensate the source account
-			err = s.accountRepo.UpdateBalance(accountID, amount)
-			return nil, err
-		}
 	}
 
 	return transaction, nil
+}
+
+func (s *transactionService) CreateTransferTransaction(userID uint, fromAccountID uint, toAccountID uint, amount float64, description string, date time.Time) (*models.Transaction, *models.Transaction, error) {
+	if fromAccountID == toAccountID {
+		return nil, nil, errors.ErrSameAccountTransfer
+	}
+	// Verify accounts exist and belong to user
+	if _, err := s.accountRepo.FindByID(fromAccountID, userID); err != nil {
+		return nil, nil, errors.ErrFromAccountNotFound
+	}
+	if _, err := s.accountRepo.FindByID(toAccountID, userID); err != nil {
+		return nil, nil, errors.ErrToAccountNotFound
+	}
+
+	expenseDesc := "Transfer to account " + strconv.FormatUint(uint64(toAccountID), 10)
+	if description != "" {
+		expenseDesc += " - " + description
+	}
+	expenseTx := &models.Transaction{
+		Date:        date,
+		Amount:      amount,
+		Type:        models.TransactionTypeExpense,
+		Description: expenseDesc,
+		AccountID:   fromAccountID,
+		ToAccountID: &toAccountID,
+	}
+
+	incomeDesc := "Transfer from account " + strconv.FormatUint(uint64(fromAccountID), 10)
+	if description != "" {
+		incomeDesc += " - " + description
+	}
+	incomeTx := &models.Transaction{
+		Date:        date,
+		Amount:      amount,
+		Type:        models.TransactionTypeIncome,
+		Description: incomeDesc,
+		AccountID:   toAccountID,
+		ToAccountID: &fromAccountID,
+	}
+
+	err := s.transactionRepo.CreateInBatch([]*models.Transaction{expenseTx, incomeTx})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err := s.accountRepo.UpdateBalance(fromAccountID, -amount); err != nil {
+		return nil, nil, err
+	}
+	if err := s.accountRepo.UpdateBalance(toAccountID, amount); err != nil {
+		// Rollback balance update
+		_ = s.accountRepo.UpdateBalance(fromAccountID, amount)
+		return nil, nil, err
+	}
+
+	return expenseTx, incomeTx, nil
 }
 
 func (s *transactionService) GetTransactionByID(userID uint, transactionID uint) (*models.Transaction, error) {
@@ -285,18 +321,7 @@ func (s *transactionService) DeleteTransaction(userID uint, transactionID uint) 
 		}
 
 	case models.TransactionTypeTransfer:
-		// Add amount back to source account
-		if err := s.accountRepo.UpdateBalance(transaction.AccountID, transaction.Amount); err != nil {
-			return err
-		}
-		// Deduct amount from destination account
-		if transaction.ToAccountID != nil {
-			if err := s.accountRepo.UpdateBalance(*transaction.ToAccountID, -transaction.Amount); err != nil {
-				// Compensate the source account
-				err = s.accountRepo.UpdateBalance(transaction.AccountID, -transaction.Amount)
-				return err
-			}
-		}
+		return stdErrors.New("transfer type is deprecated")
 	}
 
 	// Delete the transaction
