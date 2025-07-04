@@ -103,26 +103,26 @@ export default function EditAccount() {
   }
 
   if (!account) {
-    return <div className="p-6 text-center text-gray-500">Account not found</div>;
+    return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Account not found</div>;
   }
 
   return (
     <div className="p-6">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow p-6">
+      <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="mb-6">
           <button
             onClick={() => navigate('/accounts')}
-            className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
+            className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
           >
             <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
             Back to Accounts
           </button>
-          <h2 className="mt-2 text-2xl font-bold text-gray-900">Edit Account</h2>
+          <h2 className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">Edit Account</h2>
         </div>
         <form onSubmit={onSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Account Name
               </label>
               <input
@@ -131,17 +131,17 @@ export default function EditAccount() {
                 name="name"
                 defaultValue={account.name}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
               />
             </div>
 
             <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Account Type
               </label>
               <select
                 id="type"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                 name="type"
                 defaultValue={account.type}
                 required
@@ -156,7 +156,7 @@ export default function EditAccount() {
           </div>
 
           <div>
-            <label htmlFor="balance" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="balance" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Current Balance
             </label>
             <input
@@ -165,15 +165,15 @@ export default function EditAccount() {
               step="0.01"
               value={account.balance}
               disabled
-              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 shadow-sm sm:text-sm text-gray-500 dark:text-gray-400"
             />
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Balance cannot be edited directly. Use transactions to modify the balance.
             </p>
           </div>
 
           <div>
-            <label htmlFor="color" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="color" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Account Color
             </label>
             <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export default function EditAccount() {
                 type="text"
                 value={color}
                 onChange={e => setColor(e.target.value)}
-                className="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                className="mt-1 block w-32 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                 placeholder="#cccccc"
                 maxLength={7}
                 pattern="#?[0-9A-Fa-f]{6}"
@@ -198,21 +198,21 @@ export default function EditAccount() {
                 tabIndex={-1}
               />
             </div>
-            {colorError && <div className="text-red-500 text-xs mt-1">{colorError}</div>}
+            {colorError && <div className="text-red-500 dark:text-red-400 text-xs mt-1">{colorError}</div>}
           </div>
 
           <div className="flex justify-end space-x-3">
             <button
               type="button"
               onClick={() => navigate('/accounts')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary-500 dark:hover:bg-primary-600"
             >
               {isLoading ? 'Saving...' : 'Update Account'}
             </button>

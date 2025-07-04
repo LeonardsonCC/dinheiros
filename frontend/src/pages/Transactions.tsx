@@ -203,13 +203,13 @@ export default function Transactions() {
       <div className="mb-6">
         <Link
           to="/accounts"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
         >
           <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
           {t('transactions.backToAccounts')}
         </Link>
         <div className="flex items-center justify-between mt-2">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {account?.name} {t('transactions.transactions')}
           </h2>
           <Link
@@ -220,7 +220,7 @@ export default function Transactions() {
             {t('transactions.add')}
           </Link>
         </div>
-        <div className="mt-2 text-xl font-semibold text-gray-900">
+        <div className="mt-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
           {formatCurrency(account?.balance || 0)}
         </div>
       </div>
@@ -238,16 +238,16 @@ export default function Transactions() {
           <div className="flex items-center space-x-3 justify-center">
             <Link
               to={`/accounts/${accountId}/transactions/${transaction.id}/edit`}
-              className="text-primary-600 hover:text-primary-900 text-sm"
+              className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
             >
               {t('transactions.edit')}
             </Link>
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300 dark:text-gray-600">|</span>
             <button
               type="button"
               onClick={() => handleDeleteTransaction(transaction.id)}
               disabled={deletingId === transaction.id}
-              className="text-red-600 hover:text-red-900 disabled:opacity-50 text-sm"
+              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 text-sm"
             >
               {deletingId === transaction.id ? t('transactions.deleting') : t('transactions.delete')}
             </button>

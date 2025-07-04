@@ -193,22 +193,22 @@ export default function NewTransaction() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-        <span className="ml-4 text-gray-500">{t('newTransaction.loading')}</span>
+        <span className="ml-4 text-gray-500 dark:text-gray-400">{t('newTransaction.loading')}</span>
       </div>
     );
   }
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
+          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6">
             <div className="text-center">
               <div className="text-red-500 text-5xl mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('newTransaction.errorTitle')}</h2>
-              <p className="text-gray-600 mb-6">{error}</p>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('newTransaction.errorTitle')}</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
               >
                 {t('newTransaction.tryAgain')}
               </button>
@@ -219,25 +219,25 @@ export default function NewTransaction() {
     );
   }
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <button
-            onClick={() => navigate(`/accounts/${accountId}/transactions`)}
-            className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
+            onClick={() => navigate(accountId ? `/accounts/${accountId}/transactions` : '/accounts')}
+            className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
           >
             <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
             {t('newTransaction.back')}
           </button>
-          <h1 className="mt-2 text-2xl font-bold text-gray-900">{t('newTransaction.addNew')}</h1>
+          <h1 className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{t('newTransaction.addNew')}</h1>
         </div>
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {/* Account Selection (only shown when accountId is not in URL) */}
               {!accountId && (
                 <div className="sm:col-span-2">
-                  <label htmlFor="accountId" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="accountId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {t('newTransaction.account')}
                   </label>
                   <select
@@ -245,7 +245,7 @@ export default function NewTransaction() {
                     name="accountId"
                     value={formData.accountId}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                     required
                   >
                     <option value="">{t('newTransaction.account')}</option>
@@ -259,7 +259,7 @@ export default function NewTransaction() {
               )}
               {/* Transaction Type */}
               <div className="sm:col-span-2">
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('newTransaction.transactionType')}
                 </label>
                 <select
@@ -267,7 +267,7 @@ export default function NewTransaction() {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   required
                 >
                   <option value="expense">{t('dashboard.expenses')}</option>
@@ -277,7 +277,7 @@ export default function NewTransaction() {
               </div>
               {/* Amount */}
               <div className="sm:col-span-2">
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('newTransaction.amount')}
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
@@ -289,7 +289,7 @@ export default function NewTransaction() {
                     id="amount"
                     value={formData.amount}
                     onChange={handleChange}
-                    className="pl-8 pr-4 py-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    className="pl-8 pr-4 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                     placeholder="0.00"
                     required
                   />
@@ -297,7 +297,7 @@ export default function NewTransaction() {
               </div>
               {/* Description */}
               <div className="sm:col-span-2">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('newTransaction.description')}
                 </label>
                 <input
@@ -306,7 +306,7 @@ export default function NewTransaction() {
                   id="description"
                   value={formData.description}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                 />
               </div>
               {/* Categories */}
@@ -333,11 +333,11 @@ export default function NewTransaction() {
                           id={`category-${category.id}`}
                           checked={formData.categoryIds.includes(category.id)}
                           onChange={() => handleCategoryChange(category.id)}
-                          className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                          className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
                         />
                         <label
                           htmlFor={`category-${category.id}`}
-                          className="ml-2 block text-sm text-gray-700 truncate"
+                          className="ml-2 block text-sm text-gray-700 dark:text-gray-300 truncate"
                           title={category.description}
                         >
                           {category.name}
@@ -346,27 +346,27 @@ export default function NewTransaction() {
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     {t('newTransaction.categories')}
                   </p>
                 )}
               </div>
               {/* Date & Time */}
               <div className="sm:col-span-2">
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('newTransaction.dateTime')}
                 </label>
                 <DatePicker
                   label=""
                   value={dateInput}
                   onChange={setDateInput}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                 />
               </div>
               {/* To Account (only for transfers) */}
               {formData.type === 'transfer' && (
                 <div className="sm:col-span-2">
-                  <label htmlFor="toAccountId" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="toAccountId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {t('newTransaction.toAccount')}
                   </label>
                   <select
@@ -374,7 +374,7 @@ export default function NewTransaction() {
                     name="toAccountId"
                     value={formData.toAccountId}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                     required={formData.type === 'transfer'}
                   >
                     <option value="">{t('newTransaction.toAccount')}</option>
@@ -392,15 +392,15 @@ export default function NewTransaction() {
             <div className="flex justify-end pt-4">
               <button
                 type="button"
-                onClick={() => navigate(`/accounts/${accountId}/transactions`)}
-                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 mr-3"
+                onClick={() => navigate(accountId ? `/accounts/${accountId}/transactions` : '/accounts')}
+                className="bg-white dark:bg-gray-700 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 mr-3"
               >
                 {t('newTransaction.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary-500 dark:hover:bg-primary-600"
               >
                 {submitting ? t('newTransaction.saving') : t('newTransaction.save')}
               </button>

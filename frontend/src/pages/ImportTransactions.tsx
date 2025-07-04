@@ -237,17 +237,17 @@ export default function ImportTransactions() {
   if (!urlAccountId && !selectedAccountId) {
     return (
       <div className="p-6 max-w-lg mx-auto">
-        <h1 className="text-2xl font-bold mb-4">{t('importTransactions.selectAccount')}</h1>
+        <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">{t('importTransactions.selectAccount')}</h1>
         {accountsLoading ? (
-          <p>{t('importTransactions.loading')}</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('importTransactions.loading')}</p>
         ) : accounts.length === 0 ? (
-          <p className="text-gray-500">{t('importTransactions.noAccounts')}</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('importTransactions.noAccounts')}</p>
         ) : (
           <ul className="space-y-2">
             {accounts.map(acc => (
               <li key={acc.id}>
                 <button
-                  className="w-full text-left px-4 py-2 rounded bg-primary-100 hover:bg-primary-200 text-primary-800 font-medium"
+                  className="w-full text-left px-4 py-2 rounded bg-primary-100 dark:bg-primary-900/50 hover:bg-primary-200 dark:hover:bg-primary-900 text-primary-800 dark:text-primary-200 font-medium"
                   onClick={() => setSelectedAccountId(acc.id)}
                 >
                   {acc.name}
@@ -258,7 +258,7 @@ export default function ImportTransactions() {
         )}
         <button
           onClick={() => navigate(-1)}
-          className="mt-6 text-sm text-gray-600 hover:text-gray-900 flex items-center"
+          className="mt-6 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 flex items-center"
         >
           <ArrowLongLeftIcon className="w-4 h-4 mr-1" /> {t('importTransactions.back')}
         </button>
@@ -321,21 +321,21 @@ export default function ImportTransactions() {
       <div className="relative" ref={dropdownRef}>
         <button
           type="button"
-          className={`w-full border rounded px-1 py-0.5 text-left bg-white h-10 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full border rounded px-1 py-0.5 text-left bg-white dark:bg-gray-700 h-10 border-gray-300 dark:border-gray-600 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={() => !disabled && setIsOpen(v => !v)}
           disabled={disabled}
         >
           <div className="flex flex-wrap gap-1">
             {selected.length === 0 ? (
-              <span className="text-gray-400">{placeholder}</span>
+              <span className="text-gray-400 dark:text-gray-500">{placeholder}</span>
             ) : (
               selected.map(id => {
                 const option = options.find(opt => opt.id === id);
                 return (
-                  <span key={id} className="inline-flex items-center rounded bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800">
+                  <span key={id} className="inline-flex items-center rounded bg-indigo-100 dark:bg-indigo-900/50 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:text-indigo-200">
                     {option?.name || `Unknown (${id})`}
                     <XMarkIcon
-                      className="ml-1 h-3 w-3 text-indigo-500 hover:text-indigo-700 cursor-pointer"
+                      className="ml-1 h-3 w-3 text-indigo-500 dark:text-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-100 cursor-pointer"
                       onClick={e => {
                         e.stopPropagation();
                         toggleOption(id);
@@ -347,7 +347,7 @@ export default function ImportTransactions() {
             )}
           </div>
           <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-            <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+            <ChevronUpDownIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           </span>
         </button>
         <Transition
@@ -357,11 +357,11 @@ export default function ImportTransactions() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-xs">
+          <div className="absolute z-10 mt-1 w-full rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black dark:ring-gray-700 ring-opacity-5 focus:outline-none text-xs">
             <div className="p-2">
               <input
                 type="text"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
                 placeholder={t('importTransactions.searchOrAddCategory')}
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
@@ -369,12 +369,12 @@ export default function ImportTransactions() {
               />
             </div>
             {filteredOptions.length === 0 && searchTerm.trim() ? (
-              <div className="px-3 py-2 text-gray-500 flex items-center justify-between">
+              <div className="px-3 py-2 text-gray-500 dark:text-gray-400 flex items-center justify-between">
                 <span>{t('importTransactions.noMatchAdd', { name: searchTerm })}</span>
                 {onAddCategory && (
                   <button
                     type="button"
-                    className="ml-2 inline-flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 text-xs"
+                    className="ml-2 inline-flex items-center px-2 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-200 rounded hover:bg-indigo-200 dark:hover:bg-indigo-900 text-xs"
                     onClick={() => { setNewCategory(searchTerm); handleAddCategory(); setIsOpen(false); }}
                   >
                     <PlusIcon className="h-4 w-4 mr-1" /> {t('importTransactions.add')}
@@ -385,12 +385,12 @@ export default function ImportTransactions() {
             {filteredOptions.map(option => (
               <div
                 key={option.id}
-                className={`cursor-pointer px-3 py-2 hover:bg-indigo-50 flex items-center ${selected.includes(option.id) ? 'font-semibold text-indigo-700' : ''}`}
+                className={`cursor-pointer px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900 flex items-center ${selected.includes(option.id) ? 'font-semibold text-indigo-700 dark:text-indigo-200' : 'text-gray-900 dark:text-gray-300'}`}
                 onClick={() => toggleOption(option.id)}
               >
                 {option.name}
                 {selected.includes(option.id) && (
-                  <CheckIcon className="ml-2 h-4 w-4 text-indigo-600" />
+                  <CheckIcon className="ml-2 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 )}
               </div>
             ))}
@@ -429,44 +429,44 @@ export default function ImportTransactions() {
       <div className="mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+          className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-4"
         >
           <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
           {t('importTransactions.back')} {t('transactions.transactions')}
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">{t('importTransactions.title')}</h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('importTransactions.title')}</h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           {t('importTransactions.uploadPdf')}
         </p>
       </div>
-      <div className="bg-white shadow sm:rounded-lg">
+      <div className="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           {transactions.length > 0 ? (
             <div>
-              <h2 className="text-lg font-bold mb-2">{t('importTransactions.reviewEdit')}</h2>
+              <h2 className="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">{t('importTransactions.reviewEdit')}</h2>
               <div className="overflow-x-auto">
                 <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                    <table className="min-w-full divide-y divide-gray-300">
-                      <thead className="bg-gray-50">
+                  <div className="overflow-hidden shadow ring-1 ring-black dark:ring-gray-700 ring-opacity-5 md:rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                          <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">{t('transactionsTable.type.expense')}</th>
-                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('transactionsTable.date')}</th>
-                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('transactionsTable.description')}</th>
-                          <th className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">{t('transactionsTable.amount')}</th>
-                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{t('transactionsTable.categories')}</th>
-                          <th className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 cursor-pointer select-none" onClick={() => {
+                          <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 sm:pl-6">{t('transactionsTable.type.expense')}</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">{t('transactionsTable.date')}</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">{t('transactionsTable.description')}</th>
+                          <th className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-200">{t('transactionsTable.amount')}</th>
+                          <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">{t('transactionsTable.categories')}</th>
+                          <th className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 dark:text-gray-200 cursor-pointer select-none" onClick={() => {
                             const allIgnored = transactions.length > 0 && transactions.every(t => t.ignored);
                             setTransactions(prev => prev.map(t => ({ ...t, ignored: !allIgnored })));
                           }} title={t('importTransactions.toggleAll')}>{t('importTransactions.ignoreTransaction')}</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200 bg-white">
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
                         {transactions.map((tx, idx) => (
-                          <tr key={idx} className={`hover:bg-gray-50 ${tx.ignored ? 'opacity-40 line-through bg-gray-100' : ''}`}> 
-                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          <tr key={idx} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${tx.ignored ? 'opacity-40 line-through bg-gray-100 dark:bg-gray-700' : ''}`}> 
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-200 sm:pl-6">
                               <select
-                                className="border rounded px-1 py-0.5 w-full"
+                                className="border rounded px-1 py-0.5 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                                 value={typeof tx.type === 'string' ? tx.type : 'expense'}
                                 onChange={e => handleTransactionChange(idx, 'type', e.target.value)}
                                 disabled={!!tx.ignored}
@@ -476,33 +476,33 @@ export default function ImportTransactions() {
                                 <option value="transfer">{t('transactionsTable.type.transfer')}</option>
                               </select>
                             </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                               <DatePicker
                                 label=""
                                 value={typeof tx.date === 'string' ? tx.date : ''}
                                 onChange={value => handleTransactionChange(idx, 'date', value)}
-                                className="border rounded px-1 py-0.5 w-full"
+                                className="border rounded px-1 py-0.5 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                               />
                             </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                               <input
                                 type="text"
-                                className="border rounded px-1 py-0.5 w-full"
+                                className="border rounded px-1 py-0.5 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                                 value={typeof tx.description === 'string' ? tx.description : ''}
                                 onChange={e => handleTransactionChange(idx, 'description', e.target.value)}
                                 disabled={!!tx.ignored}
                               />
                             </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 text-right">
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
                               <input
                                 type="number"
-                                className="border rounded px-1 py-0.5 w-full text-right"
+                                className="border rounded px-1 py-0.5 w-full text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                                 value={typeof tx.amount === 'number' ? tx.amount : ''}
                                 onChange={e => handleTransactionChange(idx, 'amount', parseFloat(e.target.value))}
                                 disabled={!!tx.ignored}
                               />
                             </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                               <div className="flex items-center gap-2">
                                 <CategoryMultiSelectDropdown
                                   options={getFilteredCategories(typeof tx.type === 'string' ? tx.type : 'expense')}
@@ -527,7 +527,7 @@ export default function ImportTransactions() {
                               <button
                                 type="button"
                                 onClick={() => toggleIgnoreTransaction(idx)}
-                                className={`text-gray-400 hover:text-red-500 transition ${tx.ignored ? 'opacity-100' : ''}`}
+                                className={`text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition ${tx.ignored ? 'opacity-100' : ''}`}
                                 title={tx.ignored ? t('importTransactions.restoreTransaction') : t('importTransactions.ignoreTransaction')}
                               >
                                 <XMarkIcon className="h-5 w-5 inline" />
@@ -544,7 +544,7 @@ export default function ImportTransactions() {
                 <button
                   type="button"
                   onClick={() => setTransactions([])}
-                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="bg-white dark:bg-gray-700 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
                   {t('importTransactions.cancel')}
                 </button>
@@ -552,7 +552,7 @@ export default function ImportTransactions() {
                   type="button"
                   onClick={handleSaveTransactions}
                   disabled={saveLoading}
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
                 >
                   {saveLoading ? t('importTransactions.importing') : t('importTransactions.save')}
                 </button>
@@ -562,12 +562,12 @@ export default function ImportTransactions() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Extractor selection */}
               <div className="mb-4">
-                <label htmlFor="extractor-select" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="extractor-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('importTransactions.extractor')}
                 </label>
                 <select
                   id="extractor-select"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   value={selectedExtractor}
                   onChange={e => setSelectedExtractor(e.target.value)}
                   disabled={extractors.length === 0}
@@ -580,11 +580,11 @@ export default function ImportTransactions() {
               </div>
               {!urlAccountId && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('importTransactions.selectAccount')} <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                     value={selectedAccountId}
                     onChange={e => setSelectedAccountId(e.target.value)}
                     disabled={accountsLoading}
@@ -598,7 +598,7 @@ export default function ImportTransactions() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('importTransactions.file')}
                   <span className="text-red-500">*</span>
                 </label>
@@ -606,18 +606,18 @@ export default function ImportTransactions() {
                 {!selectedFile ? (
                   <div 
                     className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${
-                      isDragging ? 'border-primary-500 bg-primary-50' : 'border-gray-300'
+                      isDragging ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10' : 'border-gray-300 dark:border-gray-600'
                     } ${!isValidFile ? 'border-red-500' : ''}`}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                   >
                     <div className="space-y-1 text-center">
-                      <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-                      <div className="flex text-sm text-gray-600">
+                      <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+                      <div className="flex text-sm text-gray-600 dark:text-gray-400">
                         <label
                           htmlFor="file-upload"
-                          className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none"
+                          className="relative cursor-pointer bg-white dark:bg-transparent rounded-md font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 focus-within:outline-none"
                         >
                           <span>{t('importTransactions.import')}</span>
                           <input
@@ -631,24 +631,24 @@ export default function ImportTransactions() {
                         </label>
                         <p className="pl-1">{t('importTransactions.orDrag')}</p>
                       </div>
-                      <p className="text-xs text-gray-500">{t('importTransactions.pdfLimit')}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{t('importTransactions.pdfLimit')}</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-1 flex items-center justify-between px-4 py-3 bg-gray-50 rounded-md">
+                  <div className="mt-1 flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                     <div className="flex items-center">
-                      <DocumentTextIcon className="h-5 w-5 text-gray-400 mr-3" />
-                      <span className="text-sm font-medium text-gray-900 truncate max-w-xs">
+                      <DocumentTextIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-200 truncate max-w-xs">
                         {selectedFile.name}
                       </span>
-                      <span className="ml-2 text-xs text-gray-500">
+                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                         {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={removeFile}
-                      className="text-gray-400 hover:text-gray-500"
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400"
                     >
                       <XMarkIcon className="h-5 w-5" />
                       <span className="sr-only">{t('importTransactions.removeFile')}</span>
@@ -657,10 +657,10 @@ export default function ImportTransactions() {
                 )}
                 
                 {fileError && (
-                  <p className="mt-2 text-sm text-red-600">{fileError}</p>
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{fileError}</p>
                 )}
                 
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   {t('importTransactions.supported')}
                 </p>
               </div>
@@ -668,14 +668,14 @@ export default function ImportTransactions() {
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="bg-white dark:bg-gray-700 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   {t('importTransactions.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || !selectedFile}
-                  className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+                  className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600 ${
                     isLoading || !selectedFile ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
