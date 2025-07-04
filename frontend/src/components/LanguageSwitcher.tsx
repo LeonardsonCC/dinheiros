@@ -10,12 +10,12 @@ const LanguageSwitcher = () => {
 
   return (
     <div className="px-4 py-2">
-      <label htmlFor="language-select" className="block text-xs font-medium text-gray-500 mb-1">
+      <label htmlFor="language-select" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
         {t('sidebar.language')}
       </label>
       <select
         id="language-select"
-        className="block w-full rounded-md border-gray-300 text-sm"
+        className="block w-full rounded-md border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
         value={i18n.language}
         onChange={e => changeLanguage(e.target.value)}
       >
