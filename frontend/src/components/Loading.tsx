@@ -47,7 +47,7 @@ const Loading: React.FC<{ message?: string }> = ({ message = 'Loading...' }) => 
         }
       `}</style>
     </div>
-    <div className="text-xl text-blue-500 font-semibold tracking-wide text-center">
+    <div className="text-xl text-blue-500 dark:text-blue-400 font-semibold tracking-wide text-center">
       {message}
     </div>
   </div>
