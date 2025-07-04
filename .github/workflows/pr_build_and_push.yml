@@ -1,0 +1,41 @@
+name: Build and Push PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          dockerfile: ./.docker/Dockerfile.backend
+          push: true
+          tags: ghcr.io/leonardsoncc/dinheiros/backend:${{ github.event.pull_request.number }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          dockerfile: ./.docker/Dockerfile.frontend
+          push: true
+          tags: ghcr.io/leonardsoncc/dinheiros/frontend:${{ github.event.pull_request.number }} 
