@@ -5,9 +5,14 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-push-backend:
     runs-on: ubuntu-latest
+    # Individual job permissions are kept as a defense-in-depth measure
     permissions:
       contents: read
       packages: write
@@ -27,7 +32,11 @@ jobs:
         id: meta-backend
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/backend
+          images: |
+            ghcr.io/${{ github.repository_owner }}/dinheiros/backend
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
 
       - name: Build and push backend image
         uses: docker/build-push-action@v5
@@ -59,7 +68,11 @@ jobs:
         id: meta-frontend
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/frontend
+          images: |
+            ghcr.io/${{ github.repository_owner }}/dinheiros/frontend
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
