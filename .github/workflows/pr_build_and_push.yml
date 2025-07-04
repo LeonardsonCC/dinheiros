@@ -28,7 +28,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          dockerfile: ./.docker/Dockerfile.backend
+          file: ./.docker/Dockerfile.backend
           push: true
           tags: ghcr.io/leonardsoncc/dinheiros/backend:${{ github.event.pull_request.number }}
 
@@ -36,6 +36,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          dockerfile: ./.docker/Dockerfile.frontend
+          file: ./.docker/Dockerfile.frontend
           push: true
           tags: ghcr.io/leonardsoncc/dinheiros/frontend:${{ github.event.pull_request.number }} 
