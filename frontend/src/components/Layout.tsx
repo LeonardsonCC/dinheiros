@@ -3,6 +3,7 @@ import { HomeIcon, BanknotesIcon, ArrowLeftOnRectangleIcon, CurrencyDollarIcon, 
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 import CategoryIcon from './CategoryIcon';
+import ThemeToggle from './ThemeToggle';
 
 const Layout = () => {
   const { t } = useTranslation();
@@ -14,28 +15,29 @@ const Layout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <div className="hidden md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64 bg-white border-r border-gray-200">
+        <div className="flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
           <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
-            <div className="flex items-center flex-shrink-0 px-4">
-              <h1 className="text-2xl font-bold text-primary-600">Dinheiros</h1>
+            <div className="flex items-center justify-between flex-shrink-0 px-4">
+              <h1 className="text-2xl font-bold text-primary-600 dark:text-primary-400">Dinheiros</h1>
+              <ThemeToggle />
             </div>
             <LanguageSwitcher />
-            <nav className="flex-1 mt-5 space-y-1 bg-white px-2">
+            <nav className="flex-1 mt-5 space-y-1 bg-white dark:bg-gray-800 px-2">
               <NavLink
                 to="/"
                 className={({ isActive }) => `
                   flex items-center px-4 py-2 text-sm font-medium rounded-md group
                   ${isActive 
-                    ? 'bg-primary-50 text-primary-700' 
-                    : 'text-gray-700 hover:bg-gray-100'}
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                    <HomeIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <HomeIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
                     {t('sidebar.dashboard')}
                   </>
                 )}
@@ -46,13 +48,13 @@ const Layout = () => {
                 className={({ isActive }) => `
                   flex items-center px-4 py-2 text-sm font-medium rounded-md group
                   ${isActive 
-                    ? 'bg-primary-50 text-primary-700' 
-                    : 'text-gray-700 hover:bg-gray-100'}
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                    <BanknotesIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <BanknotesIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
                     {t('sidebar.accounts')}
                   </>
                 )}
@@ -63,13 +65,13 @@ const Layout = () => {
                 className={({ isActive }) => `
                   flex items-center px-4 py-2 text-sm font-medium rounded-md group
                   ${isActive 
-                    ? 'bg-primary-50 text-primary-700' 
-                    : 'text-gray-700 hover:bg-gray-100'}
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                    <CurrencyDollarIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <CurrencyDollarIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
                     {t('sidebar.allTransactions')}
                   </>
                 )}
@@ -79,13 +81,13 @@ const Layout = () => {
                 className={({ isActive }) => `
                   flex items-center px-4 py-2 text-sm font-medium rounded-md group
                   ${isActive 
-                    ? 'bg-primary-50 text-primary-700' 
-                    : 'text-gray-700 hover:bg-gray-100'}
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                    <DocumentTextIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <DocumentTextIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
                     {t('sidebar.importTransactions')}
                   </>
                 )}
@@ -95,13 +97,13 @@ const Layout = () => {
                 className={({ isActive }) => `
                   flex items-center px-4 py-2 text-sm font-medium rounded-md group
                   ${isActive 
-                    ? 'bg-primary-50 text-primary-700' 
-                    : 'text-gray-700 hover:bg-gray-100'}
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                    <ChartBarIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <ChartBarIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
                     {t('sidebar.statistics')}
                   </>
                 )}
@@ -111,13 +113,13 @@ const Layout = () => {
                 className={({ isActive }) => `
                   flex items-center px-4 py-2 text-sm font-medium rounded-md group
                   ${isActive 
-                    ? 'bg-primary-50 text-primary-700' 
-                    : 'text-gray-700 hover:bg-gray-100'}
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                    <CategoryIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <CategoryIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
                     {t('sidebar.categories')}
                   </>
                 )}
@@ -127,13 +129,13 @@ const Layout = () => {
                 className={({ isActive }) => `
                   flex items-center px-4 py-2 text-sm font-medium rounded-md group
                   ${isActive 
-                    ? 'bg-primary-50 text-primary-700' 
-                    : 'text-gray-700 hover:bg-gray-100'}
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                    <Cog6ToothIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <Cog6ToothIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
                     {t('sidebar.categorizationRules')}
                   </>
                 )}
@@ -143,22 +145,22 @@ const Layout = () => {
                 className={({ isActive }) => `
                   flex items-center px-4 py-2 text-sm font-medium rounded-md group
                   ${isActive 
-                    ? 'bg-primary-50 text-primary-700' 
-                    : 'text-gray-700 hover:bg-gray-100'}
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                    <UserCircleIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
+                    <UserCircleIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
                     {t('sidebar.profile')}
                   </>
                 )}
               </NavLink>
               <button
                 onClick={handleLogout}
-                className="flex items-center w-full px-4 py-2 text-sm font-medium text-left text-gray-700 rounded-md hover:bg-gray-100 group"
+                className="flex items-center w-full px-4 py-2 text-sm font-medium text-left text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
-                <ArrowLeftOnRectangleIcon className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" />
+                <ArrowLeftOnRectangleIcon className="w-5 h-5 mr-3 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200" />
                 {t('sidebar.logout')}
               </button>
             </nav>

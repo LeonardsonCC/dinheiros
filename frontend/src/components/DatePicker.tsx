@@ -2,6 +2,7 @@ import React from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../contexts/ThemeContext';
 
 export type DatePickerProps = {
   label: string;
@@ -27,15 +28,25 @@ const DatePicker: React.FC<DatePickerProps> = ({
   disabled = false,
 }) => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
+
+  const getCalendarContainer = ({ children }: { children: React.ReactNode[] }) => {
+    return (
+      <div className={theme === 'dark' ? 'dark-theme' : 'light-theme'}>
+        {children}
+      </div>
+    );
+  };
+
   return (
-    <div>
+    <div className="flex flex-col">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">{t(label)}</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t(label)}</label>
       )}
       <ReactDatePicker
         selected={value ? new Date(value) : null}
         onChange={date => onChange(date ? date.toISOString() : "")}
-        className={className || "border rounded px-2 py-1"}
+        className={className || "w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3"}
         showTimeSelect={showTimeSelect}
         dateFormat={dateFormat}
         minDate={minDate}
@@ -43,6 +54,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         disabled={disabled}
         placeholderText={label ? t(label) : undefined}
         isClearable
+        calendarContainer={getCalendarContainer}
       />
     </div>
   );

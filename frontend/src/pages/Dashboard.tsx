@@ -51,12 +51,12 @@ export default function Dashboard() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('dashboard.title')}</h1>
       
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-5 mt-6 sm:grid-cols-2 lg:grid-cols-3">
         {/* Total Balance */}
-        <div className="overflow-hidden bg-white rounded-lg shadow">
+        <div className="overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-white bg-blue-500 rounded-md">
@@ -64,9 +64,9 @@ export default function Dashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">{t('dashboard.totalBalance')}</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{t('dashboard.totalBalance')}</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">
+                    <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                       {summary ? formatCurrency(summary.totalBalance) : '$0.00'}
                     </div>
                   </dd>
@@ -74,11 +74,11 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="px-5 py-3 bg-gray-50">
+          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700">
             <div className="text-sm">
               <Link
                 to="/accounts"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
               >
                 {t('dashboard.viewAllAccounts')}
               </Link>
@@ -87,7 +87,7 @@ export default function Dashboard() {
         </div>
 
         {/* Income */}
-        <div className="overflow-hidden bg-white rounded-lg shadow">
+        <div className="overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-white bg-green-500 rounded-md">
@@ -95,9 +95,9 @@ export default function Dashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">{t('dashboard.income')}</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{t('dashboard.income')}</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">
+                    <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                       {summary ? formatCurrency(summary.totalIncome) : '$0.00'}
                     </div>
                   </dd>
@@ -105,11 +105,11 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="px-5 py-3 bg-gray-50">
+          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700">
             <div className="text-sm">
               <Link
                 to="/accounts/transactions?types=income"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
               >
                 {t('dashboard.viewAllIncome')}
               </Link>
@@ -118,7 +118,7 @@ export default function Dashboard() {
         </div>
 
         {/* Expenses */}
-        <div className="overflow-hidden bg-white rounded-lg shadow">
+        <div className="overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-white bg-red-500 rounded-md">
@@ -126,9 +126,9 @@ export default function Dashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">{t('dashboard.expenses')}</dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{t('dashboard.expenses')}</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">
+                    <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                       {summary ? formatCurrency(summary.totalExpenses) : '$0.00'}
                     </div>
                   </dd>
@@ -136,11 +136,11 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="px-5 py-3 bg-gray-50">
+          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700">
             <div className="text-sm">
               <Link
                 to="/accounts/transactions?types=expense"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
               >
                 {t('dashboard.viewAllExpenses')}
               </Link>
@@ -152,27 +152,27 @@ export default function Dashboard() {
       {/* Recent Transactions */}
       <div className="mt-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-gray-900">{t('dashboard.recentTransactions')}</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('dashboard.recentTransactions')}</h2>
           <Link
             to="/accounts/transactions"
-            className="text-sm font-medium text-blue-600 hover:text-blue-500"
+            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
           >
             {t('dashboard.viewAll')}
           </Link>
         </div>
-        <div className="mt-4 overflow-hidden bg-white shadow sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
+        <div className="mt-4 overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {summary?.recentTransactions?.length ? (
               summary.recentTransactions.map((transaction) => (
                 <li key={transaction.id}>
                   <div className="px-4 py-4 sm:px-6">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-blue-600 truncate">
+                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">
                         {transaction.description}
                       </p>
                       <p
                         className={`text-sm font-medium ${
-                          transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                          transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                         }`}
                       >
                         {transaction.type === 'income' ? '+' : '-'}
@@ -180,7 +180,7 @@ export default function Dashboard() {
                       </p>
                     </div>
                     <div className="mt-2 sm:flex sm:justify-between">
-                      <p className="flex items-center text-sm text-gray-500">
+                      <p className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                         {new Date(transaction.date).toLocaleDateString()}
                       </p>
                     </div>
@@ -188,7 +188,7 @@ export default function Dashboard() {
                 </li>
               ))
             ) : (
-              <li className="px-4 py-12 text-center text-gray-500">
+              <li className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                 {t('dashboard.noRecentTransactions')}
               </li>
             )}

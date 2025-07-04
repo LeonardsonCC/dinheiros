@@ -80,21 +80,21 @@ export default function Profile() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">{t('profile.title')}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">{t('profile.title')}</h1>
       
       {/* Update Name Section */}
-      <div className="bg-white shadow rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">{t('profile.updateName')}</h2>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('profile.updateName')}</h2>
         <form onSubmit={handleNameSubmit(onNameSubmit)} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('profile.name')}
             </label>
             <input
               type="text"
               id="name"
               {...registerName('name')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               disabled={isLoading}
               placeholder={t('profile.namePlaceholder')}
             />
@@ -115,18 +115,18 @@ export default function Profile() {
       </div>
 
       {/* Update Password Section */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">{t('profile.changePassword')}</h2>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('profile.changePassword')}</h2>
         <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
           <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('profile.currentPassword')}
             </label>
             <input
               type="password"
               id="currentPassword"
               {...registerPassword('currentPassword')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               disabled={isLoading}
               placeholder={t('profile.currentPasswordPlaceholder')}
             />
@@ -136,14 +136,14 @@ export default function Profile() {
           </div>
           
           <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('profile.newPassword')}
             </label>
             <input
               type="password"
               id="newPassword"
               {...registerPassword('newPassword')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               disabled={isLoading}
               placeholder={t('profile.newPasswordPlaceholder')}
             />
@@ -153,14 +153,14 @@ export default function Profile() {
           </div>
           
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('profile.confirmPassword')}
             </label>
             <input
               type="password"
               id="confirmPassword"
               {...registerPassword('confirmPassword')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               disabled={isLoading}
               placeholder={t('profile.confirmPasswordPlaceholder')}
             />

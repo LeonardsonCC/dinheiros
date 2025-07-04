@@ -134,10 +134,10 @@ export default function Accounts() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">{t('accounts.title')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('accounts.title')}</h2>
         <Link
           to="/accounts/new"
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
         >
           <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
           {t('accounts.addAccount')}
@@ -146,14 +146,14 @@ export default function Accounts() {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {accounts.length === 0 ? (
-          <div className="col-span-full p-8 text-center text-gray-500">{t('accounts.noAccounts')}</div>
+          <div className="col-span-full p-8 text-center text-gray-500 dark:text-gray-400">{t('accounts.noAccounts')}</div>
         ) : (
           accounts.map((account) => (
-            <div key={account.id} className="relative p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
+            <div key={account.id} className="relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <Link
                   to={`/accounts/${account.id}/edit`}
-                  className="p-1 text-gray-400 hover:text-blue-500 transition-colors duration-200"
+                  className="p-1 text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 transition-colors duration-200"
                   title={t('accounts.editAccount')}
                 >
                   <PencilIcon className="h-5 w-5" />
@@ -165,7 +165,7 @@ export default function Accounts() {
                     handleDelete(account.id);
                   }}
                   disabled={deletingId === account.id}
-                  className="p-1 text-gray-400 hover:text-red-500 transition-colors duration-200 disabled:opacity-50"
+                  className="p-1 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors duration-200 disabled:opacity-50"
                   title={t('accounts.deleteAccount')}
                 >
                   {deletingId === account.id ? (
@@ -181,19 +181,19 @@ export default function Accounts() {
               <Link to={`/accounts/${account.id}/transactions`}>
                 <div className="flex items-center gap-2">
                   <span
-                    className="inline-block w-4 h-4 rounded-full border border-gray-300"
+                    className="inline-block w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
                     style={{ backgroundColor: account.color || '#cccccc' }}
                     title={account.color || '#cccccc'}
                   ></span>
-                  <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{account.name}</h3>
                 </div>
-                <p className="mt-2 text-2xl font-semibold text-gray-900">
+                <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">
                   {new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'BRL',
                   }).format(account.balance || 0)}
                 </p>
-                <div className="mt-4 text-sm text-primary-600 hover:text-primary-800">
+                <div className="mt-4 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300">
                   {t('accounts.viewTransactions')} &rarr;
                 </div>
               </Link>

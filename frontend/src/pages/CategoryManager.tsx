@@ -87,11 +87,11 @@ export default function CategoryManager() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Manage Categories</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Manage Categories</h2>
       
       {/* Add new category form */}
-      <form onSubmit={handleAdd} className="bg-gray-50 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold mb-4">Add New Category</h3>
+      <form onSubmit={handleAdd} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add New Category</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input
             type="text"
@@ -99,12 +99,12 @@ export default function CategoryManager() {
             value={newName}
             onChange={e => setNewName(e.target.value)}
             required
-            className="border rounded px-3 py-2"
+            className="border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
           />
           <select
             value={newType}
             onChange={e => setNewType(e.target.value as 'income' | 'expense')}
-            className="border rounded px-3 py-2"
+            className="border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
           >
             <option value="income">Income</option>
             <option value="expense">Expense</option>
@@ -112,7 +112,7 @@ export default function CategoryManager() {
           <button 
             type="submit" 
             disabled={isLoading} 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             Add Category
           </button>
@@ -120,27 +120,27 @@ export default function CategoryManager() {
       </form>
 
       {/* Categories table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <table className="min-w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {categories.map(cat => (
-              <tr key={cat.id} className="hover:bg-gray-50">
+              <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                 <td className="px-6 py-4 whitespace-nowrap">
                   {editId === cat.id ? (
                     <input
                       value={editName}
                       onChange={e => setEditName(e.target.value)}
-                      className="border rounded px-2 py-1 w-full"
+                      className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                     />
                   ) : (
-                    <div className="text-sm font-medium text-gray-900">{cat.name}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{cat.name}</div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -148,13 +148,13 @@ export default function CategoryManager() {
                     <select
                       value={editType}
                       onChange={e => setEditType(e.target.value as 'income' | 'expense')}
-                      className="border rounded px-2 py-1"
+                      className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                     >
                       <option value="income">Income</option>
                       <option value="expense">Expense</option>
                     </select>
                   ) : (
-                    <div className="text-sm text-gray-900">{cat.type.charAt(0).toUpperCase() + cat.type.slice(1)}</div>
+                    <div className="text-sm text-gray-900 dark:text-gray-300">{cat.type.charAt(0).toUpperCase() + cat.type.slice(1)}</div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -162,14 +162,14 @@ export default function CategoryManager() {
                     <div className="flex gap-2">
                       <button
                         onClick={handleEdit}
-                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600"
                         disabled={isLoading}
                       >
                         Save
                       </button>
                       <button
                         onClick={() => setEditId(null)}
-                        className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400"
+                        className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                         disabled={isLoading}
                       >
                         Cancel
@@ -179,14 +179,14 @@ export default function CategoryManager() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => startEdit(cat)}
-                        className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500"
+                        className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-600"
                         disabled={isLoading}
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(cat.id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600"
                         disabled={isLoading}
                       >
                         Delete
@@ -199,7 +199,7 @@ export default function CategoryManager() {
           </tbody>
         </table>
         {categories.length === 0 && !isLoading && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             No categories found. Add your first category above.
           </div>
         )}

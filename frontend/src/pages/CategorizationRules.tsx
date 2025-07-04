@@ -196,11 +196,11 @@ export default function CategorizationRules() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Manage Categorization Rules</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Manage Categorization Rules</h2>
       
       {/* Add new rule form */}
-      <form onSubmit={handleAdd} className="bg-gray-50 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold mb-4">Add New Rule</h3>
+      <form onSubmit={handleAdd} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add New Rule</h3>
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <input
             type="text"
@@ -208,12 +208,12 @@ export default function CategorizationRules() {
             value={newName}
             onChange={e => setNewName(e.target.value)}
             required
-            className="border rounded px-3 py-2"
+            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
           />
           <select
             value={newType}
             onChange={e => setNewType(e.target.value)}
-            className="border rounded px-3 py-2"
+            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
           >
             <option value="regex">Regex</option>
           </select>
@@ -223,12 +223,12 @@ export default function CategorizationRules() {
             value={newValue}
             onChange={e => setNewValue(e.target.value)}
             required
-            className="border rounded px-3 py-2"
+            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
           />
           <select
             value={newTransactionType}
             onChange={e => setNewTransactionType(e.target.value)}
-            className="border rounded px-3 py-2"
+            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
           >
             <option value="expense">Expense</option>
             <option value="income">Income</option>
@@ -238,7 +238,7 @@ export default function CategorizationRules() {
             value={newCategoryDst}
             onChange={e => setNewCategoryDst(Number(e.target.value))}
             required
-            className="border rounded px-3 py-2"
+            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
           >
             <option value={0}>Select category...</option>
             {getCategoriesByType(newTransactionType).map(category => (
@@ -253,46 +253,46 @@ export default function CategorizationRules() {
               id="newActive"
               checked={newActive}
               onChange={e => setNewActive(e.target.checked)}
-              className="rounded"
+              className="rounded text-blue-600 focus:ring-blue-500"
             />
-            <label htmlFor="newActive">Active</label>
+            <label htmlFor="newActive" className="text-gray-700 dark:text-gray-300">Active</label>
           </div>
         </div>
         <button 
           type="submit" 
           disabled={isLoading} 
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
         >
           Add Rule
         </button>
       </form>
 
       {/* Rules table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <table className="min-w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Value</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Transaction Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {rules.map(rule => (
-              <tr key={rule.id} className="hover:bg-gray-50">
+              <tr key={rule.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                 <td className="px-6 py-4 whitespace-nowrap">
                   {editId === rule.id ? (
                     <input
                       value={editName}
                       onChange={e => setEditName(e.target.value)}
-                      className="border rounded px-2 py-1 w-full"
+                      className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                     />
                   ) : (
-                    <div className="text-sm font-medium text-gray-900">{rule.name}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{rule.name}</div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -300,12 +300,12 @@ export default function CategorizationRules() {
                     <select
                       value={editType}
                       onChange={e => setEditType(e.target.value)}
-                      className="border rounded px-2 py-1"
+                      className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                     >
                       <option value="regex">Regex</option>
                     </select>
                   ) : (
-                    <div className="text-sm text-gray-900">{rule.type}</div>
+                    <div className="text-sm text-gray-900 dark:text-gray-300">{rule.type}</div>
                   )}
                 </td>
                 <td className="px-6 py-4">
@@ -313,10 +313,10 @@ export default function CategorizationRules() {
                     <input
                       value={editValue}
                       onChange={e => setEditValue(e.target.value)}
-                      className="border rounded px-2 py-1 w-full"
+                      className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                     />
                   ) : (
-                    <div className="text-sm text-gray-900 break-all">{rule.value}</div>
+                    <div className="text-sm text-gray-900 dark:text-gray-300 break-all">{rule.value}</div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -324,14 +324,14 @@ export default function CategorizationRules() {
                     <select
                       value={editTransactionType}
                       onChange={e => setEditTransactionType(e.target.value)}
-                      className="border rounded px-2 py-1"
+                      className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                     >
                       <option value="expense">Expense</option>
                       <option value="income">Income</option>
                       <option value="transfer">Transfer</option>
                     </select>
                   ) : (
-                    <div className="text-sm text-gray-900">{rule.transaction_type ? rule.transaction_type.charAt(0).toUpperCase() + rule.transaction_type.slice(1) : 'All'}</div>
+                    <div className="text-sm text-gray-900 dark:text-gray-300">{rule.transaction_type ? rule.transaction_type.charAt(0).toUpperCase() + rule.transaction_type.slice(1) : 'All'}</div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -339,7 +339,7 @@ export default function CategorizationRules() {
                     <select
                       value={editCategoryDst}
                       onChange={e => setEditCategoryDst(Number(e.target.value))}
-                      className="border rounded px-2 py-1"
+                      className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                     >
                       {getCategoriesByType(editTransactionType).map(category => (
                         <option key={category.id} value={category.id}>
@@ -348,7 +348,7 @@ export default function CategorizationRules() {
                       ))}
                     </select>
                   ) : (
-                    <div className="text-sm text-gray-900">{getCategoryName(rule.category_dst)}</div>
+                    <div className="text-sm text-gray-900 dark:text-gray-300">{getCategoryName(rule.category_dst)}</div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -358,7 +358,7 @@ export default function CategorizationRules() {
                         type="checkbox"
                         checked={editActive}
                         onChange={e => setEditActive(e.target.checked)}
-                        className="rounded"
+                        className="rounded text-blue-600 focus:ring-blue-500"
                       />
                     </div>
                   ) : (
@@ -367,8 +367,8 @@ export default function CategorizationRules() {
                       disabled={isLoading}
                       className={`px-2 py-1 text-xs rounded-full ${
                         rule.active 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                          : 'bg-red-100 text-red-800 hover:bg-red-200'
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-200 dark:hover:bg-green-900' 
+                          : 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-200 dark:hover:bg-red-900'
                       }`}
                     >
                       {rule.active ? 'Active' : 'Inactive'}
@@ -380,14 +380,14 @@ export default function CategorizationRules() {
                     <div className="flex gap-2">
                       <button
                         onClick={handleEdit}
-                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600"
                         disabled={isLoading}
                       >
                         Save
                       </button>
                       <button
                         onClick={() => setEditId(null)}
-                        className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400"
+                        className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                         disabled={isLoading}
                       >
                         Cancel
@@ -397,14 +397,14 @@ export default function CategorizationRules() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => startEdit(rule)}
-                        className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500"
+                        className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-600"
                         disabled={isLoading}
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(rule.id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600"
                         disabled={isLoading}
                       >
                         Delete
@@ -417,7 +417,7 @@ export default function CategorizationRules() {
           </tbody>
         </table>
         {rules.length === 0 && !isLoading && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             No categorization rules found. Add your first rule above.
           </div>
         )}
