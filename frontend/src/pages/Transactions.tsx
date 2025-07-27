@@ -3,32 +3,33 @@ import { useParams, Link } from 'react-router-dom';
 import { PlusIcon, ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Transaction {
-  id: number;
-  amount: number;
-  type: 'income' | 'expense' | 'transfer';
-  description: string;
-  date: string;
-  categories: Category[];
-  toAccountId?: number;
-}
+import TransactionsTable, { Transaction as TableTransaction } from '../components/TransactionsTable';
+import Loading from '../components/Loading';
+import { useTranslation } from 'react-i18next';
+import type { AxiosError } from 'axios';
 
 export default function Transactions() {
+  const { t } = useTranslation();
   const { accountId: accountIdParam } = useParams<{ accountId: string }>();
   // Ensure accountId is a number
   const accountId = accountIdParam ? Number(accountIdParam) : null;
-  console.log('Account ID from URL params:', accountId, 'Type:', typeof accountId);
-  
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  // Use TableTransaction type everywhere instead of local Transaction
+  const [transactions, setTransactions] = useState<TableTransaction[]>([]);
   const [account, setAccount] = useState<{ name: string; balance: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // Pagination and sorting state for TransactionsTable
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 10,
+    totalItems: transactions.length,
+    totalPages: Math.max(1, Math.ceil(transactions.length / 10)),
+  });
+  // Fix sortConfig typing for TransactionsTable
+  type TransactionTableKey = 'date' | 'description' | 'amount';
+  const [sortConfig, setSortConfig] = useState<{ key: TransactionTableKey; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,8 +41,7 @@ export default function Transactions() {
 
       try {
         setLoading(true);
-        console.log('Fetching transactions for account ID:', accountId, 'Type:', typeof accountId);
-        
+
         if (isNaN(accountId as number)) {
           throw new Error('Invalid account ID format');
         }
@@ -49,54 +49,34 @@ export default function Transactions() {
         try {
           // First, fetch account details to verify the account exists
           const accountUrl = `/api/accounts/${accountId}`;
-          console.log('Making request to:', accountUrl);
           const accountRes = await api.get(accountUrl);
-          console.log('Account response:', accountRes.data);
           setAccount(accountRes.data);
           
           // Then fetch transactions
           const transactionsUrl = `/api/accounts/${accountId}/transactions`;
-          console.log('Making request to:', transactionsUrl);
           const transactionsRes = await api.get(transactionsUrl);
-          console.log('Transactions response:', transactionsRes.data);
           
-          if (transactionsRes.data && transactionsRes.data.transactions) {
-            setTransactions(transactionsRes.data.transactions);
+          if (transactionsRes.data) {
+            setTransactions(transactionsRes.data);
           } else {
-            console.warn('Unexpected transactions response format:', transactionsRes.data);
+            console.warn('Unexpected transactions response format');
             setTransactions([]);
           }
-        } catch (err: any) {
-          console.error('Error in fetch sequence:', err);
+        } catch (err: unknown) {
+          console.error('Error in fetch sequence');
           throw err; // Re-throw to be caught by the outer catch block
         }
-      } catch (err: any) {
-        console.error('Error fetching data:', err);
-        
-        // More specific error messages based on the error
-        if (err.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.error('Error response data:', err.response.data);
-          console.error('Error status:', err.response.status);
-          console.error('Error headers:', err.response.headers);
-          
-          if (err.response.status === 404) {
-            toast.error('Account not found');
-          } else if (err.response.status === 400) {
-            toast.error('Invalid account ID format');
-          } else {
-            toast.error(`Error: ${err.response.data?.message || 'Failed to load data'}`);
+      } catch (err: unknown) {
+        let errorMessage = 'Failed to load data';
+        if (typeof err === 'object' && err !== null && 'response' in err) {
+          const error = err as AxiosError;
+          const data = error.response?.data;
+          if (data && typeof data === 'object' && 'message' in data && typeof (data as { message?: unknown }).message === 'string') {
+            errorMessage = (data as { message: string }).message;
           }
-        } else if (err.request) {
-          // The request was made but no response was received
-          console.error('No response received:', err.request);
-          toast.error('No response from server');
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.error('Error message:', err.message);
-          toast.error(`Error: ${err.message}`);
         }
+        console.error('Error fetching data:', err);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -105,8 +85,17 @@ export default function Transactions() {
     fetchData();
   }, [accountId]);
 
+  useEffect(() => {
+    setPagination(prev => ({
+      ...prev,
+      totalItems: transactions.length,
+      totalPages: Math.max(1, Math.ceil(transactions.length / prev.pageSize)),
+      currentPage: Math.min(prev.currentPage, Math.max(1, Math.ceil(transactions.length / prev.pageSize)))
+    }));
+  }, [transactions]);
+
   if (loading) {
-    return <div className="p-8 text-center">Loading transactions...</div>;
+    return <Loading message={t('importTransactions.loading')} />;
   }
 
   const formatCurrency = (amount: number) => {
@@ -145,124 +134,126 @@ export default function Transactions() {
       }
       
       toast.success('Transaction deleted successfully');
-    } catch (err: any) {
+    } catch (err: unknown) {
+      let errorMessage = 'Failed to delete transaction';
+      if (typeof err === 'object' && err !== null && 'response' in err) {
+        const error = err as AxiosError;
+        const data = error.response?.data;
+        if (data && typeof data === 'object' && 'message' in data && typeof (data as { message?: unknown }).message === 'string') {
+          errorMessage = (data as { message: string }).message;
+        }
+      }
       console.error('Error deleting transaction:', err);
-      toast.error(err.response?.data?.message || 'Failed to delete transaction');
+      toast.error(errorMessage);
     } finally {
       setDeletingId(null);
     }
   };
 
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, currentPage: newPage }));
+  };
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPagination(prev => ({ ...prev, pageSize: Number(e.target.value), currentPage: 1 }));
+  };
+  // Accept all keys but only handle allowed ones
+  const handleSort = (key: keyof TableTransaction) => {
+    if (key === 'date' || key === 'description' || key === 'amount') {
+      setSortConfig(prev => ({
+        key,
+        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
+      }));
+    }
+  };
+  const getSortIndicator = (key: keyof TableTransaction) => {
+    if (key !== sortConfig.key) return null;
+    return sortConfig.direction === 'asc' ? '↑' : '↓';
+  };
+
+  // Adapt transactions for TransactionsTable (add dummy account field)
+  const paginatedSortedTransactions = [...transactions]
+    .sort((a, b) => {
+      let aValue: string | number | undefined;
+      let bValue: string | number | undefined;
+      if (sortConfig.key === 'date') {
+        aValue = new Date(a.date).getTime();
+        bValue = new Date(b.date).getTime();
+      } else if (sortConfig.key === 'description') {
+        aValue = a.description || '';
+        bValue = b.description || '';
+      } else if (sortConfig.key === 'amount') {
+        aValue = a.amount;
+        bValue = b.amount;
+      }
+      if (aValue! < bValue!) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue! > bValue!) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    })
+    .slice((pagination.currentPage - 1) * pagination.pageSize, pagination.currentPage * pagination.pageSize)
+    .map(tx => ({
+      ...tx,
+      account: { id: accountId || 0, name: account?.name || 'Account' },
+      // Fix: use toAccount if present, otherwise undefined
+      toAccount: tx.toAccount ? { id: tx.toAccount.id, name: tx.toAccount.name ?? '' } : undefined,
+    }));
+
+  // Use TransactionsTable for displaying transactions
   return (
     <div className="p-6">
       <div className="mb-6">
         <Link
           to="/accounts"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
         >
           <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-          Back to Accounts
+          {t('transactions.backToAccounts')}
         </Link>
         <div className="flex items-center justify-between mt-2">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {account?.name} Transactions
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {account?.name} {t('transactions.transactions')}
           </h2>
           <Link
             to={`/accounts/${accountId}/transactions/new`}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
           >
             <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
-            Add Transaction
+            {t('transactions.add')}
           </Link>
         </div>
-        <div className="mt-2 text-xl font-semibold text-gray-900">
+        <div className="mt-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
           {formatCurrency(account?.balance || 0)}
         </div>
       </div>
-
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul role="list" className="divide-y divide-gray-200">
-          {transactions.length > 0 ? (
-            transactions.map((transaction) => (
-              <li key={transaction.id} className="border-b border-gray-200">
-                <div className="px-4 py-4 sm:px-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {transaction.description}
-                        </p>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          transaction.type === 'income' 
-                            ? 'bg-green-100 text-green-800' 
-                            : transaction.type === 'expense' 
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
-                        </span>
-                      </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-1">
-                        <span className="text-xs text-gray-500">
-                          {new Date(transaction.date).toLocaleDateString()}
-                        </span>
-                        {transaction.categories && transaction.categories.length > 0 && (
-                          <>
-                            <span className="text-xs text-gray-500">•</span>
-                            <div className="flex flex-wrap gap-1">
-                              {transaction.categories.map(category => (
-                                <span 
-                                  key={category.id} 
-                                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-                                >
-                                  {category.name}
-                                </span>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="ml-4 flex-shrink-0 flex flex-col items-end">
-                      <p className={`text-sm font-medium ${
-                        transaction.type === 'income' 
-                          ? 'text-green-600' 
-                          : transaction.type === 'expense' 
-                            ? 'text-red-600'
-                            : 'text-blue-600'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}
-                        {formatCurrency(transaction.amount)}
-                      </p>
-                      <div className="mt-2 flex items-center space-x-3">
-                        <Link
-                          to={`/accounts/${accountId}/transactions/${transaction.id}/edit`}
-                          className="text-primary-600 hover:text-primary-900 text-sm"
-                        >
-                          Edit
-                        </Link>
-                        <span className="text-gray-300">|</span>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteTransaction(transaction.id)}
-                          disabled={deletingId === transaction.id}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50 text-sm"
-                        >
-                          {deletingId === transaction.id ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            ))
-          ) : (
-            <li className="px-4 py-12 text-center text-gray-500">
-              No transactions found. Add your first transaction to get started.
-            </li>
-          )}
-        </ul>
-      </div>
+      <TransactionsTable
+        transactions={paginatedSortedTransactions}
+        loading={loading}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        onSort={handleSort}
+        getSortIndicator={getSortIndicator}
+        formatCurrency={formatCurrency}
+        formatDate={(dateString: string) => new Date(dateString).toLocaleDateString()}
+        renderActions={(transaction) => (
+          <div className="flex items-center space-x-3 justify-center">
+            <Link
+              to={`/accounts/${accountId}/transactions/${transaction.id}/edit`}
+              className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
+            >
+              {t('transactions.edit')}
+            </Link>
+            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <button
+              type="button"
+              onClick={() => handleDeleteTransaction(transaction.id)}
+              disabled={deletingId === transaction.id}
+              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 text-sm"
+            >
+              {deletingId === transaction.id ? t('transactions.deleting') : t('transactions.delete')}
+            </button>
+          </div>
+        )}
+      />
     </div>
   );
 }

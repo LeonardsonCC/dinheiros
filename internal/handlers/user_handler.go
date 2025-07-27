@@ -4,109 +4,255 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/leccarvalho/dinheiros/internal/database"
-	"github.com/leccarvalho/dinheiros/internal/models"
-	"gorm.io/gorm"
+
+	"github.com/LeonardsonCC/dinheiros/internal/dto"
+	"github.com/LeonardsonCC/dinheiros/internal/service"
 )
 
+// UserHandler handles HTTP requests related to user operations
 type UserHandler struct {
-	db *gorm.DB
+	userService service.UserService
 }
 
-func NewUserHandler() *UserHandler {
-	return &UserHandler{db: database.DB}
+// NewUserHandler creates a new instance of UserHandler
+func NewUserHandler(userService service.UserService) *UserHandler {
+	return &UserHandler{
+		userService: userService,
+	}
 }
 
-type RegisterRequest struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
-}
-
+// Register handles user registration
+// @Summary Register a new user
+// @Description Register a new user with the provided information
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body dto.RegisterRequest true "User registration data"
+// @Success 201 {object} dto.AuthResponse
+// @Failure 400 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
-	var req RegisterRequest
+	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Check if user already exists
-	var existingUser models.User
-	if err := h.db.Where("email = ?", req.Email).First(&existingUser).Error; err != gorm.ErrRecordNotFound {
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking for existing user"})
-			return
+	// Create user using the service
+	token, user, err := h.userService.Register(req.Name, req.Email, req.Password)
+	if err != nil {
+		status := http.StatusInternalServerError
+		var errMsg string
+
+		switch errMsg = err.Error(); errMsg {
+		case "email already registered":
+			status = http.StatusConflict
+		case "error hashing password", "error creating user", "error generating token":
+			errMsg = "Error processing registration"
 		}
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already registered"})
+
+		c.JSON(status, gin.H{"error": errMsg})
 		return
 	}
 
-	// Create new user
-	user := models.User{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: req.Password, // Will be hashed in the model
-	}
-
-	if err := user.HashPassword(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
-		return
-	}
-
-	if err := h.db.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating user"})
-		return
-	}
-
-	// In a real app, you would generate a JWT token here
-	// For simplicity, we'll just return the user ID and email as a token
-	token := user.Email
-
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "User registered successfully",
-		"token":   token,
-		"user": gin.H{
-			"id":    user.ID,
-			"name":  user.Name,
-			"email": user.Email,
-		},
-	})
+	// Return success response with JWT token
+	response := dto.ToAuthResponse("User registered successfully", token, user)
+	c.JSON(http.StatusCreated, response)
 }
 
-type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
+// Login handles user login
+// @Summary Login a user
+// @Description Authenticate a user and return a token
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body dto.LoginRequest true "User login credentials"
+// @Success 200 {object} dto.AuthResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
-	var req LoginRequest
+	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var user models.User
-	if err := h.db.Where("email = ?", req.Email).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+	// Authenticate user using the service
+	token, user, err := h.userService.Login(req.Email, req.Password)
+	if err != nil {
+		status := http.StatusInternalServerError
+		errMsg := "An error occurred"
+
+		switch err.Error() {
+		case "invalid credentials":
+			status = http.StatusUnauthorized
+			errMsg = "Invalid credentials"
+		case "error generating token":
+			errMsg = "Error generating authentication token"
+		}
+
+		c.JSON(status, gin.H{"error": errMsg})
 		return
 	}
 
-	if err := user.CheckPassword(req.Password); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+	// Return success response with JWT token
+	response := dto.ToAuthResponse("Login successful", token, user)
+	c.JSON(http.StatusOK, response)
+}
+
+// GetCurrentUser returns the current authenticated user's information
+// @Summary Get current user
+// @Description Get the currently authenticated user's information
+// @Tags users
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} dto.UserResponse
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /users/me [get]
+func (h *UserHandler) GetCurrentUser(c *gin.Context) {
+	// Get user ID from context (set by auth middleware)
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	userID := user.(uint)
+
+	// Get user from service
+	userObj, err := h.userService.FindByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving user"})
 		return
 	}
 
-	// In a real app, you would generate a JWT token here
-	// For simplicity, we'll just return the user's email as a token
-	token := user.Email
+	// Convert to response DTO
+	response := dto.ToUserResponse(userObj)
+	c.JSON(http.StatusOK, response)
+}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Login successful",
-		"token":   token,
-		"user": gin.H{
-			"id":    user.ID,
-			"name":  user.Name,
-			"email": user.Email,
-		},
-	})
+// UpdateName handles updating the current user's name
+// @Summary Update user's name
+// @Description Update the current user's name
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param input body dto.UpdateNameRequest true "Name update data"
+// @Success 200 {object} dto.UserResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /users/me [patch]
+func (h *UserHandler) UpdateName(c *gin.Context) {
+	// Get user ID from context (set by auth middleware)
+	userID, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Parse request body
+	var req dto.UpdateNameRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Update user name
+	user, err := h.userService.UpdateName(userID.(uint), req.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update name"})
+		return
+	}
+
+	// Convert to response DTO
+	response := dto.ToUserResponse(user)
+	c.JSON(http.StatusOK, response)
+}
+
+// UpdatePassword handles updating the current user's password
+// @Summary Update user's password
+// @Description Update the current user's password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param input body dto.UpdatePasswordRequest true "Password update data"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /users/me/password [patch]
+func (h *UserHandler) UpdatePassword(c *gin.Context) {
+	// Get user ID from context (set by auth middleware)
+	userID, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Parse request body
+	var req dto.UpdatePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Update password
+	err := h.userService.UpdatePassword(userID.(uint), req.CurrentPassword, req.NewPassword)
+	if err != nil {
+		errMsg := "Failed to update password"
+		if err.Error() == "current password is incorrect" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": errMsg})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
+}
+
+// GoogleLogin handles Google OAuth login
+// @Summary Login a user with Google
+// @Description Authenticate a user with Google OAuth and return a token
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body struct{ Credential string `json:"credential" binding:"required"` } true "Google login credentials"
+// @Success 200 {object} dto.AuthResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/google [post]
+func (h *UserHandler) GoogleLogin(c *gin.Context) {
+	var req struct {
+		Credential string `json:"credential" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing Google credential"})
+		return
+	}
+
+	// Verify Google token
+	googleUser, err := service.VerifyGoogleToken(req.Credential)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Google token"})
+		return
+	}
+
+	// Find or create user by email
+	token, user, err := h.userService.LoginOrRegisterGoogle(googleUser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := dto.ToAuthResponse("Google login successful", token, user)
+	c.JSON(http.StatusOK, response)
 }

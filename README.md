@@ -34,6 +34,63 @@ A simple personal finance management API built with Go, Gin, and SQLite.
 
    The server will start on `http://localhost:8080` by default.
 
+## Development
+
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality. The hooks will:
+
+- Format Go files with `goimports-reviser`
+- Run `golangci-lint` for code quality checks
+
+#### Setup (Windows)
+
+```powershell
+# Run the PowerShell setup script
+.\scripts\setup-precommit.ps1
+```
+
+#### Setup (Linux/macOS)
+
+```bash
+# Run the bash setup script
+./scripts/setup-precommit.sh
+```
+
+#### Manual Setup
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install hooks
+pre-commit install
+```
+
+#### Manual Commands
+
+You can also run the tools manually:
+
+```bash
+# Format Go files
+make format
+
+# Run linter
+make lint
+```
+
+### Available Make Commands
+
+- `make run` - Start both frontend and backend in development mode
+- `make backend` - Start only the backend server
+- `make frontend` - Start only the frontend development server
+- `make setup-frontend` - Install frontend dependencies
+- `make build` - Build production binary with embedded frontend
+- `make deps` - Install Go dependencies
+- `make clean` - Remove generated files
+- `make format` - Format Go files with goimports-reviser
+- `make lint` - Run golangci-lint
+
 ## API Endpoints
 
 ### Authentication

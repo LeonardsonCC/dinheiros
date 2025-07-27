@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "backend",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd/dinheiros",
+      "cwd": "${workspaceFolder}/"
+    },
+    {
+      "name": "frontend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+          "run",
+          "dev"
+      ],
+      "cwd": "${workspaceFolder}/frontend",
+    }
+    // You can add more individual configurations here
+  ],
+  "compounds": [
+    {
+      "name": "Run everything",
+      "configurations": [
+        "backend",
+        "frontend"
+      ],
+      "stopAll": true // Optional: Stop all sessions when one stops
+    }
+  ]
+}

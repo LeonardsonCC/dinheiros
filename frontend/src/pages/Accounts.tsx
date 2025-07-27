@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import Loading from '../components/Loading';
+import { useTranslation } from 'react-i18next';
 
 interface Account {
   id: number | string;
@@ -12,8 +14,7 @@ interface Account {
   accountName?: string;
   balance: number;
   currentBalance?: number;
-  currency: string;
-  currencyCode?: string;
+  color?: string;
 }
 
 // Internal type for the processed account data
@@ -21,24 +22,28 @@ interface ProcessedAccount {
   id: number | string;
   name: string;
   balance: number;
-  currency: string;
+  color: string;
+}
+
+interface AxiosError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
 }
 
 export default function Accounts() {
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<ProcessedAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | number | null>(null);
 
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
         const response = await api.get('/api/accounts');
-        console.log('Raw API Response:', response);
-        console.log('Response data:', response.data);
-        console.log('Response data type:', typeof response.data);
-        console.log('Accounts in response:', response.data.accounts || response.data.data || response.data);
-        
-        // Log the raw response structure for debugging
-        console.log('Raw response structure:', JSON.stringify(response.data, null, 2));
+
         
         // Handle different possible response formats
         let accountsData: Account[] = [];
@@ -62,37 +67,30 @@ export default function Accounts() {
           }
         }
         
-        // Map the accounts to ensure consistent field names and types
-        accountsData = accountsData.map(account => {
-          // Ensure we have a valid ID
+        // Process the accounts data to ensure consistent structure
+        const processedAccounts: ProcessedAccount[] = accountsData.map(account => {
+          // Handle different ID field names
           const accountId = account.id || account._id || account.ID;
-          if (!accountId) {
-            console.warn('Account missing ID:', account);
-            return null;
-          }
-          
+          if (!accountId) return null;
+
           return {
             id: accountId,
             name: account.name || account.accountName || 'Unnamed Account',
             balance: account.balance || account.currentBalance || 0,
-            currency: account.currency || account.currencyCode || 'USD'
+            color: account.color || '#cccccc',
           };
         }).filter((account): account is ProcessedAccount => account !== null);
         
-        console.log('Processed accounts data:', accountsData);
-        // Log each account's ID to verify they exist
-        accountsData.forEach((account, index) => {
-          console.log(`Account ${index + 1}:`, {
-            id: account.id,
-            name: account.name,
-            balance: account.balance,
-            currency: account.currency
-          });
-        });
-        setAccounts(accountsData);
-      } catch (error) {
+        setAccounts(processedAccounts);
+      } catch (error: unknown) {
+        let errorMessage = 'Failed to load accounts';
+        if (typeof error === 'object' && error !== null && 'response' in error) {
+          const err = error as AxiosError;
+          if (typeof err.response?.data?.message === 'string') {
+            errorMessage = err.response.data.message;
+          }
+        }
         console.error('Error fetching accounts:', error);
-        const errorMessage = error.response?.data?.message || 'Failed to load accounts';
         toast.error(errorMessage);
         setAccounts([]);
       } finally {
@@ -103,45 +101,105 @@ export default function Accounts() {
     fetchAccounts();
   }, []);
 
+  const handleDelete = async (accountId: string | number) => {
+    if (!window.confirm(t('accounts.confirmDelete')))
+      return;
+
+    try {
+      setDeletingId(accountId);
+      await api.delete(`/api/accounts/${accountId}`);
+      
+      // Remove the deleted account from the state
+      setAccounts(accounts.filter(account => account.id !== accountId));
+      toast.success(t('accounts.deleted'));
+    } catch (error: unknown) {
+      let errorMessage = t('accounts.failedDelete');
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const err = error as AxiosError;
+        if (typeof err.response?.data?.message === 'string') {
+          errorMessage = err.response.data.message;
+        }
+      }
+      console.error('Error deleting account:', error);
+      toast.error(errorMessage);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) {
-    return <div className="p-8 text-center">Loading accounts...</div>;
+    return <Loading message={t('accounts.loading')} />;
   }
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Accounts</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('accounts.title')}</h2>
         <Link
           to="/accounts/new"
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
         >
           <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
-          Add Account
+          {t('accounts.addAccount')}
         </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {accounts.map((account) => (
-          <Link
-            key={account.id}
-            to={`/accounts/${account.id}/transactions`}
-            className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
-              <span className="text-sm text-gray-500">{account.currency}</span>
+        {accounts.length === 0 ? (
+          <div className="col-span-full p-8 text-center text-gray-500 dark:text-gray-400">{t('accounts.noAccounts')}</div>
+        ) : (
+          accounts.map((account) => (
+            <div key={account.id} className="relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
+              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <Link
+                  to={`/accounts/${account.id}/edit`}
+                  className="p-1 text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 transition-colors duration-200"
+                  title={t('accounts.editAccount')}
+                >
+                  <PencilIcon className="h-5 w-5" />
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleDelete(account.id);
+                  }}
+                  disabled={deletingId === account.id}
+                  className="p-1 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors duration-200 disabled:opacity-50"
+                  title={t('accounts.deleteAccount')}
+                >
+                  {deletingId === account.id ? (
+                    <svg className="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <TrashIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              <Link to={`/accounts/${account.id}/transactions`}>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="inline-block w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
+                    style={{ backgroundColor: account.color || '#cccccc' }}
+                    title={account.color || '#cccccc'}
+                  ></span>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{account.name}</h3>
+                </div>
+                <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  }).format(account.balance || 0)}
+                </p>
+                <div className="mt-4 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300">
+                  {t('accounts.viewTransactions')} &rarr;
+                </div>
+              </Link>
             </div>
-            <p className="mt-2 text-2xl font-semibold text-gray-900">
-              {new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: account.currency || 'USD',
-              }).format(account.balance || 0)}
-            </p>
-            <div className="mt-4 text-sm text-primary-600 hover:text-primary-800">
-              View transactions →
-            </div>
-          </Link>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

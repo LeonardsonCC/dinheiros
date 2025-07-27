@@ -1,30 +1,50 @@
 package database
 
 import (
-    "fmt"
-    "github.com/leccarvalho/dinheiros/internal/models"
-    "gorm.io/driver/sqlite"
-    "gorm.io/gorm"
+	"fmt"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	"github.com/LeonardsonCC/dinheiros/config"
 )
 
 var DB *gorm.DB
 
-func InitDB(dbPath string) error {
-    var err error
-    DB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
-    if err != nil {
-        return fmt.Errorf("failed to connect to database: %v", err)
-    }
+// InitDB initializes the database connection based on config
+func InitDB(cfg *config.Config) error {
+	var err error
+	var dialector gorm.Dialector
 
-    // Auto migrate the schema
-    err = DB.AutoMigrate(
-        &models.User{},
-        &models.Account{},
-        &models.Transaction{},
-    )
-    if err != nil {
-        return fmt.Errorf("failed to migrate database: %v", err)
-    }
+	switch cfg.DBType {
+	case "postgres":
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+			cfg.DBHost, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBPort)
+		dialector = postgres.Open(dsn)
+	case "sqlite3":
+		fallthrough
+	default:
+		// dialector = sqlite.Open(cfg.DBPath)
+	}
 
-    return nil
+	DB, err = gorm.Open(dialector, &gorm.Config{
+		// Logger: logger.Default.LogMode(logger.Info),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %v", err)
+	}
+
+	// Auto migrate the schema
+	// err = DB.AutoMigrate(
+	// 	&models.User{},
+	// 	&models.Account{},
+	// 	&models.Transaction{},
+	// 	&models.Category{},
+	// 	&models.CategorizationRule{},
+	// )
+	// if err != nil {
+	// 	return fmt.Errorf("failed to migrate database: %v", err)
+	// }
+
+	return nil
 }

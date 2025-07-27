@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -14,7 +15,6 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   
   const {
@@ -32,7 +32,9 @@ export default function Login() {
       
       localStorage.setItem('token', response.data.token);
       toast.success('Logged in successfully!');
-      navigate('/dashboard');
+
+      // Force a full page reload to ensure all state is properly initialized
+      window.location.href = '/';
     } catch (error) {
       toast.error('Invalid email or password');
       console.error('Login error:', error);
@@ -41,18 +43,39 @@ export default function Login() {
     }
   };
 
+  const onGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse.credential) {
+      toast.error('Google login failed: No credential');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await api.post('/api/auth/google', {
+        credential: credentialResponse.credential,
+      });
+      localStorage.setItem('token', response.data.token);
+      toast.success('Logged in with Google!');
+      window.location.href = '/';
+    } catch (error) {
+      toast.error('Google login failed');
+      console.error('Google login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gray-50 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gray-50 dark:bg-gray-900 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div>
-          <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900">
+          <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-sm text-center text-gray-600">
+          <p className="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
             Or{' '}
             <Link
               to="/register"
-              className="font-medium text-primary-600 hover:text-primary-500"
+              className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
             >
               create a new account
             </Link>
@@ -68,12 +91,12 @@ export default function Login() {
                 id="email-address"
                 type="email"
                 autoComplete="email"
-                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                className="relative block w-full px-3 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 {...register('email')}
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
               )}
             </div>
             <div>
@@ -84,12 +107,12 @@ export default function Login() {
                 id="password"
                 type="password"
                 autoComplete="current-password"
-                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                className="relative block w-full px-3 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 {...register('password')}
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
               )}
             </div>
           </div>
@@ -98,7 +121,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md group hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+              className={`relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md group hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 ${
                 isLoading ? 'opacity-70 cursor-not-allowed' : ''
               }`}
             >
@@ -106,6 +129,15 @@ export default function Login() {
             </button>
           </div>
         </form>
+        <div className="flex flex-col items-center mt-4">
+          <span className="mb-2 text-gray-500 dark:text-gray-400">or</span>
+          <GoogleLogin
+            onSuccess={onGoogleSuccess}
+            onError={() => toast.error('Google login failed')}
+            useOneTap
+            width="100%"
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/incu6us/goimports-reviser
+    rev: v3.6.4
+    hooks:
+      - id: goimports-reviser
+        args: [--project-name, github.com/LeonardsonCC/dinheiros]
+        types: [go]
+        stages: [commit]
+
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.58.2
+    hooks:
+      - id: golangci-lint
+        args: [--fix]
+        stages: [commit] 
