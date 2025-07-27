@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, PencilIcon, ShareIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
+import ShareAccountModal from '../components/ShareAccountModal';
 import { useTranslation } from 'react-i18next';
 
 interface Account {
@@ -38,6 +39,8 @@ export default function Accounts() {
   const [accounts, setAccounts] = useState<ProcessedAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -127,6 +130,16 @@ export default function Accounts() {
     }
   };
 
+  const handleShareAccount = (account: ProcessedAccount) => {
+    setSelectedAccount({ id: String(account.id), name: account.name });
+    setShareModalOpen(true);
+  };
+
+  const handleCloseShareModal = () => {
+    setShareModalOpen(false);
+    setSelectedAccount(null);
+  };
+
   if (loading) {
     return <Loading message={t('accounts.loading')} />;
   }
@@ -135,13 +148,22 @@ export default function Accounts() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('accounts.title')}</h2>
-        <Link
-          to="/accounts/new"
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
-        >
-          <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
-          {t('accounts.addAccount')}
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            to="/shared-accounts"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            <UserGroupIcon className="w-5 h-5 mr-2 -ml-1" />
+            {t('sharing.sharedWithMe')}
+          </Link>
+          <Link
+            to="/accounts/new"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
+          >
+            <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
+            {t('accounts.addAccount')}
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -151,6 +173,17 @@ export default function Accounts() {
           accounts.map((account) => (
             <div key={account.id} className="relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleShareAccount(account);
+                  }}
+                  className="p-1 text-gray-400 hover:text-green-500 dark:text-gray-500 dark:hover:text-green-400 transition-colors duration-200"
+                  title={t('sharing.shareAccount')}
+                >
+                  <ShareIcon className="h-5 w-5" />
+                </button>
                 <Link
                   to={`/accounts/${account.id}/edit`}
                   className="p-1 text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 transition-colors duration-200"
@@ -201,6 +234,16 @@ export default function Accounts() {
           ))
         )}
       </div>
+
+      {/* Share Account Modal */}
+      {selectedAccount && (
+        <ShareAccountModal
+          isOpen={shareModalOpen}
+          onClose={handleCloseShareModal}
+          accountId={selectedAccount.id}
+          accountName={selectedAccount.name}
+        />
+      )}
     </div>
   );
 }

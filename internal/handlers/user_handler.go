@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -231,27 +232,38 @@ func (h *UserHandler) UpdatePassword(c *gin.Context) {
 // @Failure 500 {object} map[string]string
 // @Router /auth/google [post]
 func (h *UserHandler) GoogleLogin(c *gin.Context) {
+	log.Printf("[UserHandler] GoogleLogin: Starting Google login")
+
 	var req struct {
 		Credential string `json:"credential" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("[UserHandler] GoogleLogin: JSON binding error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing Google credential"})
 		return
 	}
 
+	log.Printf("[UserHandler] GoogleLogin: Verifying Google token")
+
 	// Verify Google token
 	googleUser, err := service.VerifyGoogleToken(req.Credential)
 	if err != nil {
+		log.Printf("[UserHandler] GoogleLogin: Google token verification failed: %v", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Google token"})
 		return
 	}
 
+	log.Printf("[UserHandler] GoogleLogin: Google token verified for user: %s (%s)", googleUser.Name, googleUser.Email)
+
 	// Find or create user by email
 	token, user, err := h.userService.LoginOrRegisterGoogle(googleUser)
 	if err != nil {
+		log.Printf("[UserHandler] GoogleLogin: LoginOrRegisterGoogle failed: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	log.Printf("[UserHandler] GoogleLogin: Google login successful for user ID: %d", user.ID)
 
 	response := dto.ToAuthResponse("Google login successful", token, user)
 	c.JSON(http.StatusOK, response)

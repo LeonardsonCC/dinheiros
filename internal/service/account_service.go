@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log"
 	"time"
 
 	"github.com/LeonardsonCC/dinheiros/internal/dto"
@@ -26,29 +27,41 @@ func NewAccountService(repo repository.AccountRepository, transactionRepo reposi
 }
 
 func (s *accountService) CreateAccount(account *models.Account) error {
+	log.Printf("[AccountService] CreateAccount: Starting account creation for user %d", account.UserID)
+	log.Printf("[AccountService] CreateAccount: Account data: %+v", account)
+
 	tx := s.repo.Begin()
 	if tx.Error != nil {
+		log.Printf("[AccountService] CreateAccount: Failed to begin transaction: %v", tx.Error)
 		return tx.Error
 	}
+	log.Printf("[AccountService] CreateAccount: Transaction started successfully")
+
 	// a defer function to handle panic and rollback the transaction
 	defer func() {
 		if r := recover(); r != nil {
+			log.Printf("[AccountService] CreateAccount: Panic occurred, rolling back: %v", r)
 			tx.Rollback()
 		}
 	}()
 
 	accountRepoTx := s.repo.WithTx(tx)
+	log.Printf("[AccountService] CreateAccount: Created transaction-aware repository")
 
 	initialBalance := account.InitialBalance
 	account.Balance = 0
+	log.Printf("[AccountService] CreateAccount: Initial balance: %f, setting account balance to 0", initialBalance)
 
 	err := accountRepoTx.Create(account)
 	if err != nil {
+		log.Printf("[AccountService] CreateAccount: Failed to create account: %v", err)
 		tx.Rollback()
 		return err
 	}
+	log.Printf("[AccountService] CreateAccount: Account created successfully with ID: %d", account.ID)
 
 	if initialBalance != 0 {
+		log.Printf("[AccountService] CreateAccount: Creating initial balance transaction")
 		transactionRepoTx := s.transactionRepo.WithTx(tx)
 		t := &models.Transaction{
 			Date:        time.Now(),
@@ -57,22 +70,34 @@ func (s *accountService) CreateAccount(account *models.Account) error {
 			Description: "Initial Balance",
 			AccountID:   account.ID,
 		}
+		log.Printf("[AccountService] CreateAccount: Initial transaction data: %+v", t)
 
 		err = transactionRepoTx.Create(t)
 		if err != nil {
+			log.Printf("[AccountService] CreateAccount: Failed to create initial transaction: %v", err)
 			tx.Rollback()
 			return err
 		}
+		log.Printf("[AccountService] CreateAccount: Initial transaction created successfully")
 
 		err = accountRepoTx.UpdateBalance(account.ID, initialBalance)
 		if err != nil {
+			log.Printf("[AccountService] CreateAccount: Failed to update account balance: %v", err)
 			tx.Rollback()
 			return err
 		}
+		log.Printf("[AccountService] CreateAccount: Account balance updated successfully")
 		account.Balance = initialBalance
 	}
 
-	return tx.Commit().Error
+	commitErr := tx.Commit().Error
+	if commitErr != nil {
+		log.Printf("[AccountService] CreateAccount: Failed to commit transaction: %v", commitErr)
+		return commitErr
+	}
+
+	log.Printf("[AccountService] CreateAccount: Transaction committed successfully")
+	return nil
 }
 
 func (s *accountService) GetAccountByID(id uint, userID uint) (*models.Account, error) {

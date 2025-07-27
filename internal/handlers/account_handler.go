@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -20,34 +21,50 @@ func NewAccountHandler(accountService service.AccountService) *AccountHandler {
 }
 
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
+	log.Printf("[AccountHandler] CreateAccount: Starting account creation")
+
 	user, exists := c.Get("user")
 	if !exists {
+		log.Printf("[AccountHandler] CreateAccount: User not authenticated")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
 
+	userID := user.(uint)
+	log.Printf("[AccountHandler] CreateAccount: User ID: %d", userID)
+
 	var req dto.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("[AccountHandler] CreateAccount: JSON binding error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	log.Printf("[AccountHandler] CreateAccount: Request data - Name: %s, Type: %s, InitialBalance: %f, Color: %s",
+		req.Name, req.Type, req.InitialBalance, req.Color)
 
 	account := models.Account{
 		Name:           req.Name,
 		Type:           req.Type,
 		InitialBalance: req.InitialBalance,
-		UserID:         user.(uint),
+		UserID:         userID,
 		Color:          req.Color,
 	}
 
 	if account.Color == "" {
 		account.Color = "#cccccc"
+		log.Printf("[AccountHandler] CreateAccount: Set default color: %s", account.Color)
 	}
 
+	log.Printf("[AccountHandler] CreateAccount: Calling account service with account: %+v", account)
+
 	if err := h.accountService.CreateAccount(&account); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating account"})
+		log.Printf("[AccountHandler] CreateAccount: Service error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating account", "message": err.Error()})
 		return
 	}
+
+	log.Printf("[AccountHandler] CreateAccount: Account created successfully with ID: %d", account.ID)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Account created successfully",

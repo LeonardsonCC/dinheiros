@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -186,27 +187,46 @@ func VerifyGoogleToken(idToken string) (*GoogleUser, error) {
 
 // LoginOrRegisterGoogle logs in or registers a user using Google info
 func (s *userService) LoginOrRegisterGoogle(googleUser *GoogleUser) (string, *models.User, error) {
+	log.Printf("[UserService] LoginOrRegisterGoogle: Starting Google login for email: %s", googleUser.Email)
+
 	// Try to find user by email
 	user, err := s.userRepo.FindByEmail(googleUser.Email)
-	if err != nil && err.Error() != "record not found" {
+	if err != nil && !errors.Is(err, repo.ErrNotFound) {
+		log.Printf("[UserService] LoginOrRegisterGoogle: Error finding user by email: %v", err)
 		return "", nil, err
 	}
+
 	if user == nil {
+		log.Printf("[UserService] LoginOrRegisterGoogle: User not found, creating new user for: %s", googleUser.Email)
+
 		// Register new user with Google info, set a random password
 		user = &models.User{
 			Name:     googleUser.Name,
 			Email:    googleUser.Email,
 			Password: generateRandomPassword(), // Not used, but required by schema
 		}
-		if err := s.userRepo.Create(user); err != nil {
-			return "", nil, err
+
+		// Hash the random password
+		if err := user.HashPassword(); err != nil {
+			log.Printf("[UserService] LoginOrRegisterGoogle: Error hashing password: %v", err)
+			return "", nil, errors.New("error hashing password")
 		}
+
+		if err := s.userRepo.Create(user); err != nil {
+			log.Printf("[UserService] LoginOrRegisterGoogle: Error creating user: %v", err)
+			return "", nil, errors.New("error creating user")
+		}
+	} else {
+		log.Printf("[UserService] LoginOrRegisterGoogle: Existing user found with ID: %d", user.ID)
 	}
+
 	// Generate JWT token
 	token, err := s.jwtManager.GenerateToken(user)
 	if err != nil {
-		return "", nil, err
+		log.Printf("[UserService] LoginOrRegisterGoogle: Error generating token: %v", err)
+		return "", nil, errors.New("error generating token")
 	}
+
 	return token, user, nil
 }
 

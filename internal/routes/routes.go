@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/LeonardsonCC/dinheiros/internal/di"
@@ -9,6 +11,22 @@ import (
 
 func SetupRoutes(container *di.Container) *gin.Engine {
 	r := gin.Default()
+
+	// Add request logging middleware
+	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		log.Printf("[GIN] %s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			param.ClientIP,
+			param.TimeStamp.Format("02/Jan/2006:15:04:05 -0700"),
+			param.Method,
+			param.Path,
+			param.Request.Proto,
+			param.StatusCode,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
+		return ""
+	}))
 
 	// Public routes
 	api := r.Group("/api")
@@ -46,6 +64,21 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 					account.GET("", container.AccountHandler.GetAccount)
 					account.PUT("", container.AccountHandler.UpdateAccount)
 					account.DELETE("", container.AccountHandler.DeleteAccount)
+
+					// Account sharing routes
+					shares := account.Group("/shares")
+					{
+						shares.POST("", container.AccountShareHandler.CreateShareInvitation)
+						shares.GET("", container.AccountShareHandler.GetAccountShares)
+						shares.DELETE("/:userId", container.AccountShareHandler.RevokeShare)
+					}
+
+					// Share invitations routes
+					invitations := account.Group("/invitations")
+					{
+						invitations.GET("", container.AccountShareHandler.GetPendingInvitations)
+						invitations.DELETE("/:invitationId", container.AccountShareHandler.CancelInvitation)
+					}
 
 					// Transaction routes for a specific account
 					transactions := account.Group("/transactions")
@@ -102,6 +135,13 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 				categorizationRules.GET(":id", container.CategorizationRuleHandler.GetRule)
 				categorizationRules.PUT(":id", container.CategorizationRuleHandler.UpdateRule)
 				categorizationRules.DELETE(":id", container.CategorizationRuleHandler.DeleteRule)
+			}
+
+			// Global sharing routes
+			shares := protected.Group("/shares")
+			{
+				shares.POST("/accept", container.AccountShareHandler.AcceptInvitation)
+				shares.GET("/accounts", container.AccountShareHandler.GetSharedAccounts)
 			}
 		}
 	}

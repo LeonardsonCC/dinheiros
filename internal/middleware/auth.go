@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
@@ -61,6 +62,7 @@ func AuthMiddleware(userService service.UserService, jwtManager *auth.JWTManager
 		}
 
 		// Store the user ID in the context for later use in handlers
+		log.Printf("[AuthMiddleware] Setting user ID in context: %d", user.ID)
 		c.Set("user", user.ID)
 		c.Next()
 	}

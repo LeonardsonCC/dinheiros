@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"gorm.io/gorm"
 
 	"github.com/LeonardsonCC/dinheiros/internal/models"
@@ -9,6 +11,7 @@ import (
 type AccountRepository interface {
 	Create(account *models.Account) error
 	FindByID(id uint, userID uint) (*models.Account, error)
+	FindByIDWithoutUserCheck(id uint) (*models.Account, error)
 	FindByUserID(userID uint) ([]models.Account, error)
 	Update(account *models.Account) error
 	Delete(id uint, userID uint) error
@@ -30,12 +33,28 @@ func NewAccountRepository(db *gorm.DB) AccountRepository {
 }
 
 func (r *accountRepository) Create(account *models.Account) error {
-	return r.db.Create(account).Error
+	log.Printf("[AccountRepository] Create: Creating account: %+v", account)
+	err := r.db.Debug().Create(account).Error
+	if err != nil {
+		log.Printf("[AccountRepository] Create: Error creating account: %v", err)
+	} else {
+		log.Printf("[AccountRepository] Create: Account created successfully with ID: %d", account.ID)
+	}
+	return err
 }
 
 func (r *accountRepository) FindByID(id uint, userID uint) (*models.Account, error) {
 	var account models.Account
 	err := r.db.Where("id = ? AND user_id = ?", id, userID).First(&account).Error
+	if err != nil {
+		return nil, err
+	}
+	return &account, nil
+}
+
+func (r *accountRepository) FindByIDWithoutUserCheck(id uint) (*models.Account, error) {
+	var account models.Account
+	err := r.db.First(&account, id).Error
 	if err != nil {
 		return nil, err
 	}

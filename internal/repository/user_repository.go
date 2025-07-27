@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"log"
 
 	"gorm.io/gorm"
 
@@ -38,9 +39,18 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 // Create implements UserRepository
 func (r *userRepository) Create(user *models.User) error {
-	if err := r.db.Create(user).Error; err != nil {
+	log.Printf("[UserRepository] Create: Creating user: %+v", user)
+	log.Printf("[UserRepository] Create: User ID before creation: %d", user.ID)
+
+	if err := r.db.Debug().Create(user).Error; err != nil {
+		log.Printf("[UserRepository] Create: Error creating user: %v", err)
 		return err
 	}
+
+	log.Printf("[UserRepository] Create: User created successfully")
+	log.Printf("[UserRepository] Create: User ID after creation: %d", user.ID)
+	log.Printf("[UserRepository] Create: Final user object: %+v", user)
+
 	return nil
 }
 

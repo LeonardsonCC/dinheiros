@@ -19,6 +19,7 @@ type Container struct {
 	UserRepository               repository.UserRepository
 	CategoryRepository           repository.CategoryRepository
 	CategorizationRuleRepository repository.CategorizationRuleRepository
+	AccountShareRepository       *repository.AccountShareRepository
 
 	// Services
 	AccountService            service.AccountService
@@ -26,6 +27,7 @@ type Container struct {
 	UserService               service.UserService
 	CategoryService           service.CategoryService
 	CategorizationRuleService service.CategorizationRuleService
+	AccountShareService       *service.AccountShareService
 
 	// Auth
 	JWTManager *auth.JWTManager
@@ -36,6 +38,7 @@ type Container struct {
 	UserHandler               *handlers.UserHandler
 	CategoryHandler           *handlers.CategoryHandler
 	CategorizationRuleHandler *handlers.CategorizationRuleHandler
+	AccountShareHandler       *handlers.AccountShareHandler
 }
 
 func NewContainer(db *gorm.DB) (*Container, error) {
@@ -68,6 +71,7 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 	userRepo := repository.NewUserRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 	categorizationRuleRepo := repository.NewCategorizationRuleRepository(db)
+	accountShareRepo := repository.NewAccountShareRepository(db)
 
 	// Initialize services
 	accountService := service.NewAccountService(accountRepo, transactionRepo)
@@ -75,6 +79,7 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 	transactionService := service.NewTransactionService(transactionRepo, accountRepo, categoryService)
 	userService := service.NewUserService(userRepo, jwtManager)
 	categorizationRuleService := service.NewCategorizationRuleService(categorizationRuleRepo)
+	accountShareService := service.NewAccountShareService(accountShareRepo, userRepo, accountRepo)
 
 	// Initialize handlers
 	accountHandler := handlers.NewAccountHandler(accountService)
@@ -82,6 +87,7 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 	userHandler := handlers.NewUserHandler(userService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 	categorizationRuleHandler := handlers.NewCategorizationRuleHandler(categorizationRuleService)
+	accountShareHandler := handlers.NewAccountShareHandler(accountShareService)
 
 	return &Container{
 		AccountRepository:            accountRepo,
@@ -89,16 +95,19 @@ func NewContainer(db *gorm.DB) (*Container, error) {
 		UserRepository:               userRepo,
 		CategoryRepository:           categoryRepo,
 		CategorizationRuleRepository: categorizationRuleRepo,
+		AccountShareRepository:       accountShareRepo,
 		AccountService:               accountService,
 		TransactionService:           transactionService,
 		UserService:                  userService,
 		CategoryService:              categoryService,
 		CategorizationRuleService:    categorizationRuleService,
+		AccountShareService:          accountShareService,
 		JWTManager:                   jwtManager,
 		AccountHandler:               accountHandler,
 		TransactionHandler:           transactionHandler,
 		UserHandler:                  userHandler,
 		CategoryHandler:              categoryHandler,
 		CategorizationRuleHandler:    categorizationRuleHandler,
+		AccountShareHandler:          accountShareHandler,
 	}, nil
 }

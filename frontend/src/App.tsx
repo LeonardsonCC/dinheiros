@@ -16,6 +16,8 @@ import Profile from './pages/Profile';
 import Statistics from './pages/Statistics';
 import CategoryManager from './pages/CategoryManager';
 import CategorizationRules from './pages/CategorizationRules';
+import SharedAccounts from './pages/SharedAccounts';
+import AcceptInvitation from './pages/AcceptInvitation';
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -26,6 +28,7 @@ function App() {
       <Routes>
         <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
         <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
+        <Route path="/accept-invitation" element={isAuthenticated ? <AcceptInvitation /> : <Navigate to="/login" />} />
         <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
@@ -41,6 +44,9 @@ function App() {
             <Route path="transactions/new" element={<NewTransaction />} />
             <Route path="transactions" element={<AllTransactions />} />
           </Route>
+          
+          {/* Sharing Routes */}
+          <Route path="shared-accounts" element={<SharedAccounts />} />
           
           {/* Profile Route */}
           <Route path="profile" element={<Profile />} />

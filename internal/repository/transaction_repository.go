@@ -49,7 +49,7 @@ func NewTransactionRepository(db *gorm.DB) TransactionRepository {
 }
 
 func (r *transactionRepository) Create(transaction *models.Transaction) error {
-	return r.db.Create(transaction).Error
+	return r.db.Debug().Create(transaction).Error
 }
 
 func (r *transactionRepository) CreateInBatch(transactions []*models.Transaction) error {

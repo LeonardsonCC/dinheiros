@@ -59,3 +59,29 @@ export const categoriesApi = {
   update: (id: string, data: { name: string; type: string }) => api.put(`/api/categories/${id}`, data),
   delete: (id: string) => api.delete(`/api/categories/${id}`),
 };
+
+// Account Sharing API
+export const sharingApi = {
+  // Account sharing
+  shareAccount: (accountId: string, email: string) => 
+    api.post(`/api/accounts/${accountId}/shares`, { invited_email: email }),
+  
+  getAccountShares: (accountId: string) => 
+    api.get(`/api/accounts/${accountId}/shares`),
+  
+  revokeAccountShare: (accountId: string, userId: string) => 
+    api.delete(`/api/accounts/${accountId}/shares/${userId}`),
+  
+  getSharedAccounts: () => 
+    api.get('/api/shares/accounts'),
+  
+  acceptInvitation: (token: string) => 
+    api.post('/api/shares/accept', { token }),
+
+  // Invitations
+  getPendingInvitations: (accountId: string) => 
+    api.get(`/api/accounts/${accountId}/invitations`),
+  
+  cancelInvitation: (accountId: string, invitationId: string) => 
+    api.delete(`/api/accounts/${accountId}/invitations/${invitationId}`),
+};
