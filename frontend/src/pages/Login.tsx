@@ -1,22 +1,30 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import api from '../services/api';
-import { toast } from 'react-hot-toast';
-import { GoogleLogin } from '@react-oauth/google';
+import { z } from 'zod';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ThemeToggle from '../components/ThemeToggle';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function Login() {
+const Login: React.FC = () => {
+  const { t } = useTranslation();
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const {
     register,
     handleSubmit,
@@ -28,117 +36,164 @@ export default function Login() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setIsLoading(true);
-      const response = await api.post('/api/auth/login', data);
-      
-      localStorage.setItem('token', response.data.token);
-      toast.success('Logged in successfully!');
-
-      // Force a full page reload to ensure all state is properly initialized
-      window.location.href = '/';
-    } catch (error) {
-      toast.error('Invalid email or password');
-      console.error('Login error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const onGoogleSuccess = async (credentialResponse: any) => {
-    if (!credentialResponse.credential) {
-      toast.error('Google login failed: No credential');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const response = await api.post('/api/auth/google', {
-        credential: credentialResponse.credential,
-      });
-      localStorage.setItem('token', response.data.token);
-      toast.success('Logged in with Google!');
-      window.location.href = '/';
-    } catch (error) {
-      toast.error('Google login failed');
-      console.error('Google login error:', error);
+      await login(data.email, data.password);
+      toast.success('Welcome back!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast.error(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gray-50 dark:bg-gray-900 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
-            Or{' '}
-            <Link
-              to="/register"
-              className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4 rounded-md shadow-sm">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                type="email"
-                autoComplete="email"
-                className="relative block w-full px-3 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
-              )}
+    <div className="min-h-screen flex">
+      {/* Left side - Login Form */}
+      <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          {/* Header */}
+          <div className="text-center">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mb-6">
+              <span className="text-white font-bold text-2xl">D</span>
             </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                className="relative block w-full px-3 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                {...register('password')}
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
-              )}
-            </div>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Welcome back
+            </h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Sign in to your account to continue
+            </p>
           </div>
 
-          <div>
+          {/* Form */}
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            <div className="space-y-4">
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Email address
+                </label>
+                <input
+                  {...register('email')}
+                  type="email"
+                  autoComplete="email"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
+                  placeholder="Enter your email"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    {...register('password')}
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className={`relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md group hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? (
+                <LoadingSpinner size="sm" />
+              ) : (
+                'Sign in'
+              )}
             </button>
+
+            {/* Sign up link */}
+            <div className="text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Don't have an account?{' '}
+                <Link
+                  to="/register"
+                  className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors duration-200"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 flex items-center justify-center space-x-4">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
+      </div>
+
+      {/* Right side - Hero Image/Content */}
+      <div className="hidden lg:block relative w-0 flex-1">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-primary-800">
+          <div className="absolute inset-0 bg-black opacity-20"></div>
+          <div className="relative h-full flex items-center justify-center p-12">
+            <div className="text-center text-white">
+              <h1 className="text-4xl font-bold mb-6">
+                Take Control of Your Finances
+              </h1>
+              <p className="text-xl opacity-90 mb-8">
+                Track expenses, manage accounts, and gain insights into your spending habits with Dinheiros.
+              </p>
+              <div className="grid grid-cols-1 gap-4 max-w-md mx-auto">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-sm">✓</span>
+                  </div>
+                  <span>Multiple account management</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-sm">✓</span>
+                  </div>
+                  <span>PDF transaction import</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-sm">✓</span>
+                  </div>
+                  <span>Advanced analytics</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-sm">✓</span>
+                  </div>
+                  <span>Account sharing</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </form>
-        <div className="flex flex-col items-center mt-4">
-          <span className="mb-2 text-gray-500 dark:text-gray-400">or</span>
-          <GoogleLogin
-            onSuccess={onGoogleSuccess}
-            onError={() => toast.error('Google login failed')}
-            useOneTap
-            width="100%"
-          />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default Login;
