@@ -6,11 +6,14 @@ import {
   ArrowTrendingUpIcon, 
   ArrowTrendingDownIcon,
   PlusIcon,
-  EyeIcon
+  EyeIcon,
+  DocumentTextIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import TransactionsTable from '../components/TransactionsTable';
+import SimpleTransactionsTable from '../components/SimpleTransactionsTable';
+import CategoryIcon from '../components/CategoryIcon';
 
 interface Account {
   id: string;
@@ -45,7 +48,6 @@ const Dashboard: React.FC = () => {
     accountsCount: 0
   });
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,7 +58,6 @@ const Dashboard: React.FC = () => {
         // Fetch accounts
         const accountsResponse = await api.get('/api/accounts');
         const accountsData = accountsResponse.data;
-        setAccounts(accountsData);
 
         // Calculate stats
         const totalBalance = accountsData.reduce((sum: number, account: Account) => sum + account.balance, 0);
@@ -208,7 +209,7 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="p-6">
           {recentTransactions.length > 0 ? (
-            <TransactionsTable 
+            <SimpleTransactionsTable 
               transactions={recentTransactions}
               showPagination={false}
             />
