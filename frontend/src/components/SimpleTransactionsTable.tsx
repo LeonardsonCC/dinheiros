@@ -20,12 +20,10 @@ interface Transaction {
 
 interface SimpleTransactionsTableProps {
   transactions: Transaction[];
-  showPagination?: boolean;
 }
 
 const SimpleTransactionsTable: React.FC<SimpleTransactionsTableProps> = ({ 
-  transactions, 
-  showPagination = true 
+  transactions
 }) => {
   const { t } = useTranslation();
 
