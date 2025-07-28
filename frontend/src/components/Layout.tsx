@@ -1,180 +1,159 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { HomeIcon, BanknotesIcon, ArrowLeftOnRectangleIcon, CurrencyDollarIcon, UserCircleIcon, DocumentTextIcon, ChartBarIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { 
+  HomeIcon, 
+  BanknotesIcon, 
+  CurrencyDollarIcon, 
+  DocumentTextIcon, 
+  ChartBarIcon, 
+  Cog6ToothIcon,
+  UserCircleIcon,
+  Bars3Icon,
+  XMarkIcon,
+  ShareIcon
+} from '@heroicons/react/24/outline';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import CategoryIcon from './CategoryIcon';
 import ThemeToggle from './ThemeToggle';
+import UserMenu from './UserMenu';
 
-const Layout = () => {
+const Layout: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+  const navigation = [
+    { name: t('sidebar.dashboard'), href: '/dashboard', icon: HomeIcon },
+    { name: t('sidebar.accounts'), href: '/dashboard/accounts', icon: BanknotesIcon },
+    { name: t('sidebar.allTransactions'), href: '/dashboard/transactions', icon: CurrencyDollarIcon },
+    { name: t('sidebar.importTransactions'), href: '/dashboard/transactions/import', icon: DocumentTextIcon },
+    { name: t('sidebar.statistics'), href: '/dashboard/statistics', icon: ChartBarIcon },
+    { name: 'Shared Accounts', href: '/dashboard/shared-accounts', icon: ShareIcon },
+    { name: t('sidebar.categories'), href: '/dashboard/categories', icon: CategoryIcon },
+    { name: t('sidebar.categorizationRules'), href: '/dashboard/categorization-rules', icon: Cog6ToothIcon },
+  ];
+
+  const isActiveRoute = (href: string) => {
+    if (href === '/dashboard') {
+      return location.pathname === '/dashboard';
+    }
+    return location.pathname.startsWith(href);
   };
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+        </div>
+      )}
+
       {/* Sidebar */}
-      <div className="hidden md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
-            <div className="flex items-center justify-between flex-shrink-0 px-4">
-              <h1 className="text-2xl font-bold text-primary-600 dark:text-primary-400">Dinheiros</h1>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">D</span>
+              </div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Dinheiros</h1>
+            </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* User info */}
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                <UserCircleIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {user?.name || 'User'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {user?.email}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActiveRoute(item.href);
+              
+              return (
+                <NavLink
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                    isActive
+                      ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <Icon className={`w-5 h-5 mr-3 transition-colors duration-200 ${
+                    isActive 
+                      ? 'text-primary-600 dark:text-primary-400' 
+                      : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'
+                  }`} />
+                  {item.name}
+                </NavLink>
+              );
+            })}
+          </nav>
+
+          {/* Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+            <div className="flex items-center justify-between">
+              <LanguageSwitcher />
               <ThemeToggle />
             </div>
-            <LanguageSwitcher />
-            <nav className="flex-1 mt-5 space-y-1 bg-white dark:bg-gray-800 px-2">
-              <NavLink
-                to="/"
-                className={({ isActive }) => `
-                  flex items-center px-4 py-2 text-sm font-medium rounded-md group
-                  ${isActive 
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
-                `}
-              >
-                {({ isActive }) => (
-                  <>
-                    <HomeIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
-                    {t('sidebar.dashboard')}
-                  </>
-                )}
-              </NavLink>
-              <NavLink
-                to="/accounts"
-                end
-                className={({ isActive }) => `
-                  flex items-center px-4 py-2 text-sm font-medium rounded-md group
-                  ${isActive 
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
-                `}
-              >
-                {({ isActive }) => (
-                  <>
-                    <BanknotesIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
-                    {t('sidebar.accounts')}
-                  </>
-                )}
-              </NavLink>
-              <NavLink
-                to="/accounts/transactions"
-                end
-                className={({ isActive }) => `
-                  flex items-center px-4 py-2 text-sm font-medium rounded-md group
-                  ${isActive 
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
-                `}
-              >
-                {({ isActive }) => (
-                  <>
-                    <CurrencyDollarIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
-                    {t('sidebar.allTransactions')}
-                  </>
-                )}
-              </NavLink>
-              <NavLink
-                to="/accounts/transactions/import"
-                className={({ isActive }) => `
-                  flex items-center px-4 py-2 text-sm font-medium rounded-md group
-                  ${isActive 
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
-                `}
-              >
-                {({ isActive }) => (
-                  <>
-                    <DocumentTextIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
-                    {t('sidebar.importTransactions')}
-                  </>
-                )}
-              </NavLink>
-              <NavLink
-                to="/statistics"
-                className={({ isActive }) => `
-                  flex items-center px-4 py-2 text-sm font-medium rounded-md group
-                  ${isActive 
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
-                `}
-              >
-                {({ isActive }) => (
-                  <>
-                    <ChartBarIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
-                    {t('sidebar.statistics')}
-                  </>
-                )}
-              </NavLink>
-              <NavLink
-                to="/categories"
-                className={({ isActive }) => `
-                  flex items-center px-4 py-2 text-sm font-medium rounded-md group
-                  ${isActive 
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
-                `}
-              >
-                {({ isActive }) => (
-                  <>
-                    <CategoryIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
-                    {t('sidebar.categories')}
-                  </>
-                )}
-              </NavLink>
-              <NavLink
-                to="/categorization-rules"
-                className={({ isActive }) => `
-                  flex items-center px-4 py-2 text-sm font-medium rounded-md group
-                  ${isActive 
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
-                `}
-              >
-                {({ isActive }) => (
-                  <>
-                    <Cog6ToothIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
-                    {t('sidebar.categorizationRules')}
-                  </>
-                )}
-              </NavLink>
-              <NavLink
-                to="/profile"
-                className={({ isActive }) => `
-                  flex items-center px-4 py-2 text-sm font-medium rounded-md group
-                  ${isActive 
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}
-                `}
-              >
-                {({ isActive }) => (
-                  <>
-                    <UserCircleIcon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'}`} />
-                    {t('sidebar.profile')}
-                  </>
-                )}
-              </NavLink>
-              <button
-                onClick={handleLogout}
-                className="flex items-center w-full px-4 py-2 text-sm font-medium text-left text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <ArrowLeftOnRectangleIcon className="w-5 h-5 mr-3 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200" />
-                {t('sidebar.logout')}
-              </button>
-            </nav>
+            <UserMenu />
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <main className="flex-1 overflow-y-auto focus:outline-none">
-          <div className="py-6">
-            <div className="px-4 mx-auto max-w-7xl sm:px-6 md:px-8">
-              <Outlet />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile header */}
+        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <Bars3Icon className="w-6 h-6" />
+            </button>
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-gradient-to-br from-primary-500 to-primary-600 rounded flex items-center justify-center">
+                <span className="text-white font-bold text-xs">D</span>
+              </div>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white">Dinheiros</h1>
             </div>
+            <div className="w-8" /> {/* Spacer for centering */}
+          </div>
+        </div>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+          <div className="container mx-auto px-4 py-6 max-w-7xl">
+            <Outlet />
           </div>
         </main>
       </div>
