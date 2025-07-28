@@ -77,7 +77,7 @@ export default function Dashboard() {
             {t('dashboard.title')}
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-400">
-            Welcome back! Here's your financial overview.
+            Welcome back! Here&apos;s your financial overview.
           </p>
         </div>
         <Link
