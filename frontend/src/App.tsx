@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
@@ -24,73 +25,66 @@ function App() {
   const isAuthenticated = !!localStorage.getItem('token');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Toaster position="top-right" />
-      <Routes>
-        <Route path="/" element={!isAuthenticated ? <LandingPage /> : <Navigate to="/dashboard" />} />
-        <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
-        <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} />
-        <Route path="/accept-invitation" element={isAuthenticated ? <AcceptInvitation /> : <Navigate to="/login" />} />
-        <Route path="/dashboard" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-          <Route index element={<Dashboard />} />
-          <Route path="accounts">
-            <Route index element={<Accounts />} />
-            <Route path="new" element={<NewAccount />} />
-            <Route path=":accountId/edit" element={<EditAccount />} />
-            <Route path=":accountId/transactions" element={<Transactions />} />
-            <Route path=":accountId/transactions/new" element={<NewTransaction />} />
-            <Route path=":accountId/transactions/import" element={<ImportTransactions />} />
-            <Route path="transactions/import" element={<ImportTransactions />} />
-            <Route path=":accountId/transactions/:transactionId/edit" element={<EditTransaction />} />
-            <Route path="transactions/new" element={<NewTransaction />} />
-            <Route path="transactions" element={<AllTransactions />} />
+    <ThemeProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: 'var(--toast-bg)',
+              color: 'var(--toast-color)',
+              border: '1px solid var(--toast-border)',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#ffffff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#ffffff',
+              },
+            },
+          }}
+        />
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={!isAuthenticated ? <LandingPage /> : <Navigate to="/dashboard" />} />
+          <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
+          <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} />
+          <Route path="/accept-invitation" element={isAuthenticated ? <AcceptInvitation /> : <Navigate to="/login" />} />
+          
+          {/* Protected routes */}
+          <Route path="/dashboard" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
+            <Route index element={<Dashboard />} />
+            
+            {/* Account routes */}
+            <Route path="accounts">
+              <Route index element={<Accounts />} />
+              <Route path="new" element={<NewAccount />} />
+              <Route path=":accountId/edit" element={<EditAccount />} />
+              <Route path=":accountId/transactions" element={<Transactions />} />
+              <Route path=":accountId/transactions/new" element={<NewTransaction />} />
+              <Route path=":accountId/transactions/import" element={<ImportTransactions />} />
+              <Route path=":accountId/transactions/:transactionId/edit" element={<EditTransaction />} />
+              <Route path="transactions/new" element={<NewTransaction />} />
+              <Route path="transactions" element={<AllTransactions />} />
+              <Route path="transactions/import" element={<ImportTransactions />} />
+            </Route>
+            
+            {/* Other routes */}
+            <Route path="shared-accounts" element={<SharedAccounts />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="categories" element={<CategoryManager />} />
+            <Route path="categorization-rules" element={<CategorizationRules />} />
           </Route>
-          
-          {/* Sharing Routes */}
-          <Route path="shared-accounts" element={<SharedAccounts />} />
-          
-          {/* Profile Route */}
-          <Route path="profile" element={<Profile />} />
-          <Route path="statistics" element={<Statistics />} />
-          <Route path="categories" element={<CategoryManager />} />
-          <Route path="categorization-rules" element={<CategorizationRules />} />
-        </Route>
-        
-        {/* Authenticated routes that need Layout wrapper */}
-        <Route path="/accounts" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-          <Route index element={<Accounts />} />
-          <Route path="new" element={<NewAccount />} />
-          <Route path=":accountId/edit" element={<EditAccount />} />
-          <Route path=":accountId/transactions" element={<Transactions />} />
-          <Route path=":accountId/transactions/new" element={<NewTransaction />} />
-          <Route path=":accountId/transactions/import" element={<ImportTransactions />} />
-          <Route path="transactions/import" element={<ImportTransactions />} />
-          <Route path=":accountId/transactions/:transactionId/edit" element={<EditTransaction />} />
-          <Route path="transactions/new" element={<NewTransaction />} />
-          <Route path="transactions" element={<AllTransactions />} />
-        </Route>
-        
-        <Route path="/shared-accounts" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-          <Route index element={<SharedAccounts />} />
-        </Route>
-        
-        <Route path="/profile" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-          <Route index element={<Profile />} />
-        </Route>
-        
-        <Route path="/statistics" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-          <Route index element={<Statistics />} />
-        </Route>
-        
-        <Route path="/categories" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-          <Route index element={<CategoryManager />} />
-        </Route>
-        
-        <Route path="/categorization-rules" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-          <Route index element={<CategorizationRules />} />
-        </Route>
-      </Routes>
-    </div>
+        </Routes>
+      </div>
+    </ThemeProvider>
   );
 }
 
