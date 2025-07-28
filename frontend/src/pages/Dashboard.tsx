@@ -1,200 +1,295 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpIcon, ArrowDownIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import { useTranslation } from 'react-i18next';
+import { 
+  BanknotesIcon, 
+  ArrowTrendingUpIcon, 
+  ArrowTrendingDownIcon,
+  PlusIcon,
+  EyeIcon
+} from '@heroicons/react/24/outline';
 import api from '../services/api';
-import Loading from '../components/Loading';
+import LoadingSpinner from '../components/LoadingSpinner';
+import TransactionsTable from '../components/TransactionsTable';
 
-interface Summary {
+interface Account {
+  id: string;
+  name: string;
+  type: string;
+  balance: number;
+}
+
+interface Transaction {
+  id: string;
+  description: string;
+  amount: number;
+  type: string;
+  date: string;
+  account: Account;
+  categories: Array<{ id: string; name: string; type: string }>;
+}
+
+interface DashboardStats {
   totalBalance: number;
   totalIncome: number;
   totalExpenses: number;
-  recentTransactions: Array<{
-    id: number;
-    amount: number;
-    type: 'income' | 'expense' | 'transfer';
-    description: string;
-    date: string;
-  }>;
+  accountsCount: number;
 }
 
-export default function Dashboard() {
+const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const [summary, setSummary] = useState<Summary | null>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalBalance: 0,
+    totalIncome: 0,
+    totalExpenses: 0,
+    accountsCount: 0
+  });
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSummary = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await api.get('/api/summary');
-        setSummary(response.data);
+        setLoading(true);
+        
+        // Fetch accounts
+        const accountsResponse = await api.get('/api/accounts');
+        const accountsData = accountsResponse.data;
+        setAccounts(accountsData);
+
+        // Calculate stats
+        const totalBalance = accountsData.reduce((sum: number, account: Account) => sum + account.balance, 0);
+        
+        // Fetch recent transactions
+        const transactionsResponse = await api.get('/api/transactions?limit=10');
+        const transactionsData = transactionsResponse.data.transactions || [];
+        setRecentTransactions(transactionsData);
+
+        // Calculate income and expenses from recent transactions
+        const totalIncome = transactionsData
+          .filter((t: Transaction) => t.type === 'income')
+          .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+        
+        const totalExpenses = transactionsData
+          .filter((t: Transaction) => t.type === 'expense')
+          .reduce((sum: number, t: Transaction) => sum + Math.abs(t.amount), 0);
+
+        setStats({
+          totalBalance,
+          totalIncome,
+          totalExpenses,
+          accountsCount: accountsData.length
+        });
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error('Failed to fetch dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSummary();
+    fetchDashboardData();
   }, []);
 
   if (loading) {
-    return <Loading message="Loading dashboard..." />;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+  const StatCard: React.FC<{
+    title: string;
+    value: number;
+    icon: React.ComponentType<any>;
+    color: string;
+    link?: string;
+  }> = ({ title, value, icon: Icon, color, link }) => {
+    const content = (
+      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200 ${link ? 'cursor-pointer' : ''}`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+            <p className={`text-2xl font-bold ${color}`}>
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(value)}
+            </p>
+          </div>
+          <div className={`p-3 rounded-lg ${color.includes('green') ? 'bg-green-100 dark:bg-green-900/30' : 
+            color.includes('red') ? 'bg-red-100 dark:bg-red-900/30' : 
+            'bg-primary-100 dark:bg-primary-900/30'}`}>
+            <Icon className={`w-6 h-6 ${color}`} />
+          </div>
+        </div>
+      </div>
+    );
+
+    return link ? <Link to={link}>{content}</Link> : content;
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('dashboard.title')}</h1>
-      
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-5 mt-6 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Total Balance */}
-        <div className="overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-white bg-blue-500 rounded-md">
-                <CurrencyDollarIcon className="w-6 h-6" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{t('dashboard.totalBalance')}</dt>
-                  <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                      {summary ? formatCurrency(summary.totalBalance) : '$0.00'}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700">
-            <div className="text-sm">
-              <Link
-                to="/accounts"
-                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
-              >
-                {t('dashboard.viewAllAccounts')}
-              </Link>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {t('dashboard.title')}
+          </h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Welcome back! Here's an overview of your finances.
+          </p>
         </div>
+        <div className="mt-4 sm:mt-0 flex space-x-3">
+          <Link
+            to="/dashboard/transactions/new"
+            className="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+          >
+            <PlusIcon className="w-4 h-4 mr-2" />
+            Add Transaction
+          </Link>
+          <Link
+            to="/dashboard/accounts/new"
+            className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <PlusIcon className="w-4 h-4 mr-2" />
+            Add Account
+          </Link>
+        </div>
+      </div>
 
-        {/* Income */}
-        <div className="overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-white bg-green-500 rounded-md">
-                <ArrowUpIcon className="w-6 h-6" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{t('dashboard.income')}</dt>
-                  <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                      {summary ? formatCurrency(summary.totalIncome) : '$0.00'}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700">
-            <div className="text-sm">
-              <Link
-                to="/accounts/transactions?types=income"
-                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
-              >
-                {t('dashboard.viewAllIncome')}
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Expenses */}
-        <div className="overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-white bg-red-500 rounded-md">
-                <ArrowDownIcon className="w-6 h-6" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{t('dashboard.expenses')}</dt>
-                  <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                      {summary ? formatCurrency(summary.totalExpenses) : '$0.00'}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700">
-            <div className="text-sm">
-              <Link
-                to="/accounts/transactions?types=expense"
-                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
-              >
-                {t('dashboard.viewAllExpenses')}
-              </Link>
-            </div>
-          </div>
-        </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title={t('dashboard.totalBalance')}
+          value={stats.totalBalance}
+          icon={BanknotesIcon}
+          color="text-primary-600 dark:text-primary-400"
+          link="/dashboard/accounts"
+        />
+        <StatCard
+          title={t('dashboard.income')}
+          value={stats.totalIncome}
+          icon={ArrowTrendingUpIcon}
+          color="text-green-600 dark:text-green-400"
+        />
+        <StatCard
+          title={t('dashboard.expenses')}
+          value={stats.totalExpenses}
+          icon={ArrowTrendingDownIcon}
+          color="text-red-600 dark:text-red-400"
+        />
+        <StatCard
+          title="Accounts"
+          value={stats.accountsCount}
+          icon={BanknotesIcon}
+          color="text-blue-600 dark:text-blue-400"
+          link="/dashboard/accounts"
+        />
       </div>
 
       {/* Recent Transactions */}
-      <div className="mt-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('dashboard.recentTransactions')}</h2>
-          <Link
-            to="/accounts/transactions"
-            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
-          >
-            {t('dashboard.viewAll')}
-          </Link>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {t('dashboard.recentTransactions')}
+            </h2>
+            <Link
+              to="/dashboard/transactions"
+              className="inline-flex items-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+            >
+              <EyeIcon className="w-4 h-4 mr-1" />
+              {t('dashboard.viewAll')}
+            </Link>
+          </div>
         </div>
-        <div className="mt-4 overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md">
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {summary?.recentTransactions?.length ? (
-              summary.recentTransactions.map((transaction) => (
-                <li key={transaction.id}>
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">
-                        {transaction.description}
-                      </p>
-                      <p
-                        className={`text-sm font-medium ${
-                          transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                        }`}
-                      >
-                        {transaction.type === 'income' ? '+' : '-'}
-                        {formatCurrency(transaction.amount)}
-                      </p>
-                    </div>
-                    <div className="mt-2 sm:flex sm:justify-between">
-                      <p className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(transaction.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </li>
-              ))
-            ) : (
-              <li className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+        <div className="p-6">
+          {recentTransactions.length > 0 ? (
+            <TransactionsTable 
+              transactions={recentTransactions}
+              showPagination={false}
+            />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400">
                 {t('dashboard.noRecentTransactions')}
-              </li>
-            )}
-          </ul>
+              </p>
+              <Link
+                to="/dashboard/transactions/new"
+                className="mt-2 inline-flex items-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+              >
+                <PlusIcon className="w-4 h-4 mr-1" />
+                Add your first transaction
+              </Link>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Link
+          to="/dashboard/transactions/import"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200 group"
+        >
+          <div className="flex items-center">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <DocumentTextIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                Import Transactions
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Upload PDF statements
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          to="/dashboard/statistics"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200 group"
+        >
+          <div className="flex items-center">
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <ChartBarIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                View Statistics
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Analyze your spending
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          to="/dashboard/categories"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200 group"
+        >
+          <div className="flex items-center">
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <CategoryIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                Manage Categories
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Organize your transactions
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
