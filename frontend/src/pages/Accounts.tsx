@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, PencilIcon, ShareIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { 
+  PlusIcon, 
+  TrashIcon, 
+  PencilIcon, 
+  ShareIcon, 
+  UserGroupIcon,
+  EyeIcon,
+  CurrencyDollarIcon,
+  BanknotesIcon
+} from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
@@ -18,7 +27,6 @@ interface Account {
   color?: string;
 }
 
-// Internal type for the processed account data
 interface ProcessedAccount {
   id: number | string;
   name: string;
@@ -47,32 +55,21 @@ export default function Accounts() {
       try {
         const response = await api.get('/api/accounts');
 
-        
-        // Handle different possible response formats
         let accountsData: Account[] = [];
         
         if (response.data) {
-          // Case 1: Response has an 'accounts' array
           if (Array.isArray(response.data.accounts)) {
             accountsData = response.data.accounts;
-          } 
-          // Case 2: Response has a 'data' array
-          else if (Array.isArray(response.data.data)) {
+          } else if (Array.isArray(response.data.data)) {
             accountsData = response.data.data;
-          }
-          // Case 3: Response is an array
-          else if (Array.isArray(response.data)) {
+          } else if (Array.isArray(response.data)) {
             accountsData = response.data;
-          }
-          // Case 4: Response is a single account object
-          else if (response.data.id || response.data._id || response.data.ID) {
+          } else if (response.data.id || response.data._id || response.data.ID) {
             accountsData = [response.data];
           }
         }
         
-        // Process the accounts data to ensure consistent structure
         const processedAccounts: ProcessedAccount[] = accountsData.map(account => {
-          // Handle different ID field names
           const accountId = account.id || account._id || account.ID;
           if (!accountId) return null;
 
@@ -80,7 +77,7 @@ export default function Accounts() {
             id: accountId,
             name: account.name || account.accountName || 'Unnamed Account',
             balance: account.balance || account.currentBalance || 0,
-            color: account.color || '#cccccc',
+            color: account.color || '#3b82f6',
           };
         }).filter((account): account is ProcessedAccount => account !== null);
         
@@ -112,7 +109,6 @@ export default function Accounts() {
       setDeletingId(accountId);
       await api.delete(`/api/accounts/${accountId}`);
       
-      // Remove the deleted account from the state
       setAccounts(accounts.filter(account => account.id !== accountId));
       toast.success(t('accounts.deleted'));
     } catch (error: unknown) {
@@ -140,56 +136,91 @@ export default function Accounts() {
     setSelectedAccount(null);
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  };
+
   if (loading) {
     return <Loading message={t('accounts.loading')} />;
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('accounts.title')}</h2>
-        <div className="flex gap-3">
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+            {t('accounts.title')}
+          </h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
+            Manage your financial accounts and track balances
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
           <Link
-            to="/shared-accounts"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            to="/dashboard/shared-accounts"
+            className="btn-secondary"
           >
-            <UserGroupIcon className="w-5 h-5 mr-2 -ml-1" />
+            <UserGroupIcon className="w-4 h-4 mr-2" />
             {t('sharing.sharedWithMe')}
           </Link>
           <Link
-            to="/accounts/new"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
+            to="/dashboard/accounts/new"
+            className="btn-primary"
           >
-            <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
+            <PlusIcon className="w-4 h-4 mr-2" />
             {t('accounts.addAccount')}
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {accounts.length === 0 ? (
-          <div className="col-span-full p-8 text-center text-gray-500 dark:text-gray-400">{t('accounts.noAccounts')}</div>
-        ) : (
-          accounts.map((account) => (
-            <div key={account.id} className="relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
-              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      {/* Accounts Grid */}
+      {accounts.length === 0 ? (
+        <div className="card p-12 text-center">
+          <BanknotesIcon className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">
+            No accounts yet
+          </h3>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            {t('accounts.noAccounts')}
+          </p>
+          <Link
+            to="/dashboard/accounts/new"
+            className="btn-primary"
+          >
+            <PlusIcon className="w-4 h-4 mr-2" />
+            Create your first account
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {accounts.map((account) => (
+            <div 
+              key={account.id} 
+              className="group relative card p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            >
+              {/* Action buttons */}
+              <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
                     handleShareAccount(account);
                   }}
-                  className="p-1 text-gray-400 hover:text-green-500 dark:text-gray-500 dark:hover:text-green-400 transition-colors duration-200"
-                  title={t('sharing.shareAccount')}
+                  className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200"
+                  title="Share account"
                 >
-                  <ShareIcon className="h-5 w-5" />
+                  <ShareIcon className="w-4 h-4" />
                 </button>
                 <Link
-                  to={`/accounts/${account.id}/edit`}
-                  className="p-1 text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 transition-colors duration-200"
-                  title={t('accounts.editAccount')}
+                  to={`/dashboard/accounts/${account.id}/edit`}
+                  className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
+                  title="Edit account"
                 >
-                  <PencilIcon className="h-5 w-5" />
+                  <PencilIcon className="w-4 h-4" />
                 </Link>
                 <button
                   onClick={(e) => {
@@ -198,42 +229,56 @@ export default function Accounts() {
                     handleDelete(account.id);
                   }}
                   disabled={deletingId === account.id}
-                  className="p-1 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors duration-200 disabled:opacity-50"
-                  title={t('accounts.deleteAccount')}
+                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 disabled:opacity-50"
+                  title="Delete account"
                 >
                   {deletingId === account.id ? (
-                    <svg className="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <TrashIcon className="h-5 w-5" />
+                    <TrashIcon className="w-4 h-4" />
                   )}
                 </button>
               </div>
-              <Link to={`/accounts/${account.id}/transactions`}>
-                <div className="flex items-center gap-2">
-                  <span
-                    className="inline-block w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
-                    style={{ backgroundColor: account.color || '#cccccc' }}
-                    title={account.color || '#cccccc'}
-                  ></span>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{account.name}</h3>
+
+              {/* Account content */}
+              <Link to={`/dashboard/accounts/${account.id}/transactions`} className="block">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
+                    style={{ backgroundColor: account.color }}
+                  >
+                    <BanknotesIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 truncate">
+                      {account.name}
+                    </h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Account Balance
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                  {new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  }).format(account.balance || 0)}
-                </p>
-                <div className="mt-4 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300">
-                  {t('accounts.viewTransactions')} &rarr;
+
+                <div className="mb-6">
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                    {formatCurrency(account.balance)}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                    <CurrencyDollarIcon className="w-4 h-4 mr-1" />
+                    View transactions
+                  </div>
+                  <div className="flex items-center text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+                    <EyeIcon className="w-4 h-4" />
+                  </div>
                 </div>
               </Link>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Share Account Modal */}
       {selectedAccount && (
