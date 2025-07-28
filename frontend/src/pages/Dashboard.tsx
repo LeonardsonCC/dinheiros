@@ -209,10 +209,7 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="p-6">
           {recentTransactions.length > 0 ? (
-            <SimpleTransactionsTable 
-              transactions={recentTransactions}
-              showPagination={false}
-            />
+            <SimpleTransactionsTable transactions={recentTransactions} />
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500 dark:text-gray-400">
