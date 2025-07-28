@@ -204,7 +204,7 @@ export default function Dashboard() {
         
         <div className="divide-y divide-slate-200 dark:divide-slate-700">
           {summary?.recentTransactions?.length ? (
-            summary.recentTransactions.map((transaction, index) => (
+            summary.recentTransactions.map((transaction) => (
               <div key={transaction.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
