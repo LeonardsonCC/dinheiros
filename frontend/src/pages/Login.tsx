@@ -54,7 +54,7 @@ export default function Login() {
     }
   };
 
-  const onGoogleSuccess = async (credentialResponse: any) => {
+  const onGoogleSuccess = async (credentialResponse: { credential?: string }) => {
     if (!credentialResponse.credential) {
       toast.error('Google login failed: No credential');
       return;
@@ -192,7 +192,7 @@ export default function Login() {
           </div>
 
           <p className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link
               to="/register"
               className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors"
