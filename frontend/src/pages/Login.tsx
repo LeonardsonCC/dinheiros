@@ -3,7 +3,6 @@ import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslation } from 'react-i18next';
 import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { GoogleLogin } from '@react-oauth/google';
 import { toast } from 'react-hot-toast';
@@ -21,7 +20,6 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
-  const { t } = useTranslation();
   const { login, isAuthenticated } = useAuth();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
