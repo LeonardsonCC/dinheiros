@@ -49,7 +49,7 @@ const Dashboard = () => {
           {t('dashboard.title') || 'Dashboard'}
         </h1>
         <p className="mt-2 text-slate-600 dark:text-slate-400">
-          Welcome back! Here's an overview of your financial status.
+          Welcome back! Here&apos;s an overview of your financial status.
         </p>
       </div>
 
