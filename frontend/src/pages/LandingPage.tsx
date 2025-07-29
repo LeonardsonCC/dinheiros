@@ -1,149 +1,213 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 import { 
+  BanknotesIcon, 
   ChartBarIcon, 
-  CurrencyDollarIcon, 
   ShareIcon, 
-  DocumentArrowUpIcon,
+  DocumentTextIcon,
   ShieldCheckIcon,
-  DevicePhoneMobileIcon
+  GlobeAltIcon,
+  ArrowRightIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
+import ThemeToggle from '../components/ThemeToggle';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
-export default function LandingPage() {
+const LandingPage = () => {
+  const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const features = [
     {
-      name: 'Account Management',
-      description: 'Create and manage multiple financial accounts with ease. Track balances and organize your finances.',
-      icon: CurrencyDollarIcon,
+      icon: BanknotesIcon,
+      title: 'Account Management',
+      description: 'Manage multiple bank accounts and track your finances in one place.',
+      gradient: 'from-blue-500 to-cyan-500'
     },
     {
-      name: 'Transaction Tracking',
-      description: 'Record and categorize all your transactions. Import data from bank statements and PDFs.',
-      icon: DocumentArrowUpIcon,
-    },
-    {
-      name: 'Smart Analytics',
-      description: 'Get insights into your spending patterns with detailed statistics and visual charts.',
       icon: ChartBarIcon,
+      title: 'Advanced Analytics',
+      description: 'Get detailed insights into your spending patterns and financial health.',
+      gradient: 'from-purple-500 to-pink-500'
     },
     {
-      name: 'Account Sharing',
-      description: 'Share accounts with family members or partners for collaborative financial management.',
       icon: ShareIcon,
+      title: 'Account Sharing',
+      description: 'Share accounts with family members and collaborate on finances.',
+      gradient: 'from-green-500 to-emerald-500'
     },
     {
-      name: 'Secure & Private',
-      description: 'Your financial data is protected with industry-standard security measures.',
+      icon: DocumentTextIcon,
+      title: 'PDF Import',
+      description: 'Import transactions directly from bank statements and PDFs.',
+      gradient: 'from-orange-500 to-red-500'
+    },
+    {
       icon: ShieldCheckIcon,
+      title: 'Secure & Private',
+      description: 'Your financial data is encrypted and stored securely.',
+      gradient: 'from-indigo-500 to-purple-500'
     },
     {
-      name: 'Mobile Friendly',
-      description: 'Access your finances anywhere with our responsive design that works on all devices.',
-      icon: DevicePhoneMobileIcon,
-    },
+      icon: GlobeAltIcon,
+      title: 'Multi-language',
+      description: 'Available in multiple languages with full localization support.',
+      gradient: 'from-teal-500 to-blue-500'
+    }
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-900">
-      {/* Hero section */}
-      <div className="relative isolate px-6 pt-14 lg:px-8">
-        <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
-          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-primary-400 to-primary-600 opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
-        </div>
-        
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
-              Take Control of Your
-              <span className="text-primary-600 dark:text-primary-400"> Finances</span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      {/* Header */}
+      <header className="relative z-10">
+        <nav className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg">D</span>
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                Dinheiros
+              </h1>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              <LanguageSwitcher />
+              <div className="hidden sm:flex items-center space-x-3">
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  {t('auth.login')}
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  {t('auth.register')}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-indigo-600/10 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-indigo-400/5" />
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-slate-200/50 dark:border-slate-700/50">
+              <SparklesIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Modern Financial Management
+              </span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                Take Control
+              </span>
+              <br />
+              <span className="text-slate-900 dark:text-white">
+                of Your Finances
+              </span>
             </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-              Dinheiros is your personal finance companion. Track expenses, manage accounts, 
-              analyze spending patterns, and share financial data with family members - all in one secure platform.
+            
+            <p className="text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+              Manage your accounts, track expenses, analyze spending patterns, and share financial data with family members - all in one secure platform.
             </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
               <Link
                 to="/register"
-                className="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-colors"
+                className="group inline-flex items-center space-x-2 px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
               >
-                Get Started
+                <span>Get Started Free</span>
+                <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
+              
               <Link
                 to="/login"
-                className="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                className="inline-flex items-center space-x-2 px-8 py-4 text-lg font-semibold text-slate-700 dark:text-slate-300 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 border border-slate-200/50 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600"
               >
-                Sign In <span aria-hidden="true">→</span>
+                <span>Sign In</span>
               </Link>
             </div>
           </div>
         </div>
-        
-        <div className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]">
-          <div className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-primary-400 to-primary-600 opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]" />
-        </div>
-      </div>
+      </section>
 
-      {/* Features section */}
-      <div className="py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base font-semibold leading-7 text-primary-600 dark:text-primary-400">
-              Everything you need
+      {/* Features Section */}
+      <section className="py-20 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
+              Everything You Need
             </h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-              Powerful financial management tools
-            </p>
-            <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-              From basic expense tracking to advanced analytics and account sharing, 
-              Dinheiros provides all the tools you need to manage your finances effectively.
+            <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+              Powerful features designed to make financial management simple and effective.
             </p>
           </div>
-          <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
-            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
-              {features.map((feature) => (
-                <div key={feature.name} className="relative pl-16">
-                  <dt className="text-base font-semibold leading-7 text-gray-900 dark:text-white">
-                    <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600">
-                      <feature.icon className="h-6 w-6 text-white" aria-hidden="true" />
-                    </div>
-                    {feature.name}
-                  </dt>
-                  <dd className="mt-2 text-base leading-7 text-gray-600 dark:text-gray-300">
-                    {feature.description}
-                  </dd>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="group p-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-200/50 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
+              >
+                <div className={`w-12 h-12 bg-gradient-to-r ${feature.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="w-6 h-6 text-white" />
                 </div>
-              ))}
-            </dl>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* CTA section */}
-      <div className="bg-primary-600 dark:bg-primary-700">
-        <div className="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Ready to take control?
+      {/* CTA Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-12 text-white">
+            <h2 className="text-4xl font-bold mb-4">
+              Ready to Get Started?
             </h2>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-primary-100">
-              Join thousands of users who have already transformed their financial management with Dinheiros.
+            <p className="text-xl mb-8 opacity-90">
+              Join thousands of users who trust Dinheiros with their financial management.
             </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link
-                to="/register"
-                className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-primary-600 shadow-sm hover:bg-primary-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
-              >
-                Create Account
-              </Link>
-              <Link
-                to="/login"
-                className="text-sm font-semibold leading-6 text-white hover:text-primary-100 transition-colors"
-              >
-                Already have an account? Sign in <span aria-hidden="true">→</span>
-              </Link>
-            </div>
+            <Link
+              to="/register"
+              className="inline-flex items-center space-x-2 px-8 py-4 text-lg font-semibold text-blue-600 bg-white rounded-xl hover:bg-slate-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <span>Create Your Account</span>
+              <ArrowRightIcon className="w-5 h-5" />
+            </Link>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 border-t border-slate-200/50 dark:border-slate-700/50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center space-x-6 text-sm text-slate-600 dark:text-slate-400">
+            <span>© 2024 Dinheiros. All rights reserved.</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
-}
+};
+
+export default LandingPage;
