@@ -4,7 +4,31 @@
 
 /* Custom styles */
 body {
-  @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+  @apply bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 text-gray-900 
+         dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 dark:text-gray-100;
+  background-attachment: fixed;
+}
+
+/* Glass morphism utilities */
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/20 dark:border-white/10;
+  }
+  
+  .glass-card {
+    @apply backdrop-blur-lg bg-white/30 dark:bg-black/20 border border-white/30 dark:border-white/10 
+           shadow-xl shadow-black/5 dark:shadow-black/20;
+  }
+  
+  .glass-button {
+    @apply backdrop-blur-sm bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 
+           hover:bg-white/20 dark:hover:bg-black/20 transition-all duration-300;
+  }
+  
+  .glass-input {
+    @apply backdrop-blur-sm bg-white/50 dark:bg-black/30 border border-white/30 dark:border-white/20
+           focus:bg-white/70 dark:focus:bg-black/40 placeholder-gray-500 dark:placeholder-gray-400;
+  }
 }
 
 /* Custom scrollbar */
@@ -33,16 +57,26 @@ input[type="number"],
 input[type="date"],
 select,
 textarea {
-  @apply block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100;
+  @apply block w-full px-3 py-2 glass-input rounded-lg shadow-sm 
+         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500/50 
+         sm:text-sm text-gray-900 dark:text-gray-100 
+         transition-all duration-300;
 }
 
 /* Buttons */
 .btn {
-  @apply inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
+  @apply inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600/90 
+         backdrop-blur-sm border border-primary-500/30 rounded-lg shadow-lg shadow-primary-500/25 
+         hover:bg-primary-700/90 hover:shadow-xl hover:shadow-primary-500/30 
+         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 
+         transition-all duration-300 animate-scale-in;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
+  @apply inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 
+         glass-button rounded-lg shadow-lg hover:shadow-xl 
+         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 
+         transition-all duration-300 animate-scale-in;
 }
 
 /* Alerts */
@@ -68,7 +102,7 @@ textarea {
 
 /* Card */
 .card {
-  @apply overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/20;
+  @apply overflow-hidden glass-card rounded-xl animate-fade-in;
 }
 
 /* Badge */

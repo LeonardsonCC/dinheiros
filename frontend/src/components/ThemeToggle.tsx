@@ -8,13 +8,13 @@ const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="flex items-center justify-center w-8 h-8 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+      className="flex items-center justify-center w-10 h-10 glass-button rounded-xl text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-300 animate-scale-in"
       title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
     >
       {theme === 'light' ? (
-        <MoonIcon className="w-5 h-5" />
+        <MoonIcon className="w-5 h-5 transition-transform duration-300 hover:rotate-12" />
       ) : (
-        <SunIcon className="w-5 h-5" />
+        <SunIcon className="w-5 h-5 transition-transform duration-300 hover:rotate-180" />
       )}
     </button>
   );
