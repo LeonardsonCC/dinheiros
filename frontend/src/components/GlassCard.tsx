@@ -1,12 +1,23 @@
 import React from 'react';
 
 interface GlassCardProps {
+  /** React nodes to render inside the card */
   children: React.ReactNode;
+  /** Additional CSS classes to apply */
   className?: string;
+  /** Visual style variant: 'default' (moderate glass), 'elevated' (strong glass), 'subtle' (light glass) */
   variant?: 'default' | 'elevated' | 'subtle';
+  /** Entry animation: 'fade-in' (default), 'slide-up', 'scale-in', 'none' */
   animation?: 'fade-in' | 'slide-up' | 'scale-in' | 'none';
 }
 
+/**
+ * A reusable card component with glassmorphism styling effects
+ * @param children - React nodes to render inside the card
+ * @param className - Additional CSS classes to apply
+ * @param variant - Visual style variant: 'default' (moderate glass), 'elevated' (strong glass), 'subtle' (light glass)
+ * @param animation - Entry animation: 'fade-in' (default), 'slide-up', 'scale-in', 'none'
+ */
 export default function GlassCard({ 
   children, 
   className = '', 

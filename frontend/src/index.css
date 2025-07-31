@@ -9,25 +9,56 @@ body {
   background-attachment: fixed;
 }
 
-/* Glass morphism utilities */
+/* Glass morphism utilities with performance-safe fallbacks */
 @layer utilities {
-  .glass {
-    @apply backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/20 dark:border-white/10;
-  }
-  
-  .glass-card {
-    @apply backdrop-blur-lg bg-white/30 dark:bg-black/20 border border-white/30 dark:border-white/10 
-           shadow-xl shadow-black/5 dark:shadow-black/20;
-  }
-  
-  .glass-button {
-    @apply backdrop-blur-sm bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 
-           hover:bg-white/20 dark:hover:bg-black/20 transition-all duration-300;
-  }
-  
+  /* Base fallback styles for browsers without backdrop-filter support */
+  .glass,
+  .glass-card,
+  .glass-button,
   .glass-input {
-    @apply backdrop-blur-sm bg-white/50 dark:bg-black/30 border border-white/30 dark:border-white/20
-           focus:bg-white/70 dark:focus:bg-black/40 placeholder-gray-500 dark:placeholder-gray-400;
+    @apply bg-white/40 dark:bg-black/40 border border-white/30 dark:border-white/20;
+  }
+
+  /* Enhanced glass effects only when backdrop-filter is supported */
+  @supports ((backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))) {
+    .glass {
+      @apply backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/20 dark:border-white/10;
+      -webkit-backdrop-filter: blur(12px);
+    }
+    
+    .glass-card {
+      @apply backdrop-blur-lg bg-white/30 dark:bg-black/20 border border-white/30 dark:border-white/10 
+             shadow-xl shadow-black/5 dark:shadow-black/20;
+      -webkit-backdrop-filter: blur(16px);
+    }
+    
+    .glass-button {
+      @apply backdrop-blur-sm bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 
+             hover:bg-white/20 dark:hover:bg-black/20 transition-all duration-300;
+      -webkit-backdrop-filter: blur(4px);
+    }
+    
+    .glass-input {
+      @apply backdrop-blur-sm bg-white/50 dark:bg-black/30 border border-white/30 dark:border-white/20
+             focus:bg-white/70 dark:focus:bg-black/40 placeholder-gray-500 dark:placeholder-gray-400;
+      -webkit-backdrop-filter: blur(4px);
+    }
+  }
+}
+
+/* Respect user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in,
+  .transition-all,
+  .transition-transform,
+  .hover\\:rotate-12,
+  .hover\\:rotate-180,
+  .hover\\:-translate-y-1 {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }
 
