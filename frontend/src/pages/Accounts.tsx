@@ -191,32 +191,39 @@ export default function Accounts() {
               }}
             >
               <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                <button
+                <GlassButton
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
                     handleShareAccount(account);
                   }}
-                  className="p-2 glass-button text-gray-400 hover:text-green-500 dark:text-gray-500 dark:hover:text-green-400 transition-colors duration-200 rounded-lg"
+                  variant="glass"
+                  size="sm"
+                  className="text-gray-400 hover:text-green-500 dark:text-gray-500 dark:hover:text-green-400"
                   title={t('sharing.shareAccount')}
                 >
                   <ShareIcon className="h-4 w-4" />
-                </button>
-                <Link
+                </GlassButton>
+                <GlassButton
+                  as={Link}
                   to={`/accounts/${account.id}/edit`}
-                  className="p-2 glass-button text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 transition-colors duration-200 rounded-lg"
+                  variant="glass"
+                  size="sm"
+                  className="text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400"
                   title={t('accounts.editAccount')}
                 >
                   <PencilIcon className="h-4 w-4" />
-                </Link>
-                <button
+                </GlassButton>
+                <GlassButton
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
                     handleDelete(account.id);
                   }}
                   disabled={deletingId === account.id}
-                  className="p-2 glass-button text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors duration-200 disabled:opacity-50 rounded-lg"
+                  variant="glass"
+                  size="sm"
+                  className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
                   title={t('accounts.deleteAccount')}
                 >
                   {deletingId === account.id ? (
@@ -227,7 +234,7 @@ export default function Accounts() {
                   ) : (
                     <TrashIcon className="h-4 w-4" />
                   )}
-                </button>
+                </GlassButton>
               </div>
               <Link to={`/accounts/${account.id}/transactions`} className="block p-6 h-full">
                 <div className="flex items-center gap-3 mb-4">

@@ -545,13 +545,13 @@ export default function ImportTransactions() {
                 </div>
               </div>
               <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
+                <GlassButton
                   onClick={() => setTransactions([])}
-                  className="glass-button px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:shadow-lg hover:shadow-black/10 dark:hover:shadow-black/30 rounded-lg transition-all duration-300"
+                  variant="secondary"
+                  size="md"
                 >
                   {t('importTransactions.cancel')}
-                </button>
+                </GlassButton>
                 <button
                   type="button"
                   onClick={handleSaveTransactions}

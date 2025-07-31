@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { PlusIcon, ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
@@ -12,6 +12,7 @@ import GlassButton from '../components/GlassButton';
 
 export default function Transactions() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { accountId: accountIdParam } = useParams<{ accountId: string }>();
   // Ensure accountId is a number
   const accountId = accountIdParam ? Number(accountIdParam) : null;
@@ -204,15 +205,16 @@ export default function Transactions() {
     <div className="min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <GlassButton
-            onClick={() => window.history.back()}
-            variant="glass"
-            size="sm"
-            className="mb-4"
-          >
-            <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-            {t('transactions.backToAccounts')}
-          </GlassButton>
+          <Link to="/accounts">
+            <GlassButton
+              variant="glass"
+              size="sm"
+              className="mb-4"
+            >
+              <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
+              {t('transactions.backToAccounts')}
+            </GlassButton>
+          </Link>
           
           <div className="flex items-center justify-between">
             <div className="animate-fade-in">
@@ -223,15 +225,16 @@ export default function Transactions() {
                 {formatCurrency(account?.balance || 0)}
               </div>
             </div>
-            <GlassButton
-              onClick={() => window.location.href = `/accounts/${accountId}/transactions/new`}
-              variant="primary"
-              size="lg"
-              className="animate-scale-in"
-            >
-              <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
-              {t('transactions.add')}
-            </GlassButton>
+            <Link to={`/accounts/${accountId}/transactions/new`}>
+              <GlassButton
+                variant="primary"
+                size="lg"
+                className="animate-scale-in"
+              >
+                <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
+                {t('transactions.add')}
+              </GlassButton>
+            </Link>
           </div>
         </div>
       <GlassCard variant="elevated" animation="slide-up" className="overflow-hidden">

@@ -9,6 +9,13 @@ body {
   background-attachment: fixed;
 }
 
+/* Avoid expensive repaints on small touch devices */
+@media (pointer: coarse) and (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
 /* Glass morphism utilities with performance-safe fallbacks */
 @layer utilities {
   /* Base fallback styles for browsers without backdrop-filter support */

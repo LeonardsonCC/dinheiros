@@ -111,12 +111,14 @@ export default function AcceptInvitation() {
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
                 {t('sharing.redirectingToAccounts')}
               </p>
-              <button
+              <GlassButton
                 onClick={handleGoToAccounts}
-                className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                variant="primary"
+                size="md"
+                className="mt-4 w-full"
               >
                 {t('sharing.goToAccounts')}
-              </button>
+              </GlassButton>
             </>
           )}
 
@@ -129,12 +131,14 @@ export default function AcceptInvitation() {
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                 {t('sharing.invitationExpiredMessage')}
               </p>
-              <button
+              <GlassButton
                 onClick={handleGoToAccounts}
-                className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                variant="primary"
+                size="md"
+                className="mt-4 w-full"
               >
                 {t('sharing.goToAccounts')}
-              </button>
+              </GlassButton>
             </>
           )}
 
@@ -148,23 +152,27 @@ export default function AcceptInvitation() {
                 {t('sharing.invitationErrorMessage')}
               </p>
               <div className="mt-4 space-y-2">
-                <button
+                <GlassButton
                   onClick={handleGoToAccounts}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  variant="primary"
+                  size="md"
+                  className="w-full"
                 >
                   {t('sharing.goToAccounts')}
-                </button>
-                <button
+                </GlassButton>
+                <GlassButton
                   onClick={handleGoToLogin}
-                  className="w-full glass-button px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:shadow-lg hover:shadow-black/10 dark:hover:shadow-black/30 rounded-lg transition-all duration-300"
+                  variant="glass"
+                  size="md"
+                  className="w-full"
                 >
                   {t('auth.login')}
-                </button>
+                </GlassButton>
               </div>
             </>
           )}
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 }

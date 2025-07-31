@@ -535,7 +535,7 @@ export default function AllTransactions() {
             {showFilters ? t('allTransactions.hideFilters') : t('allTransactions.showFilters')}
           </button>
           <GlassButton
-            onClick={() => window.location.href = '/accounts/transactions/new'}
+            onClick={() => navigate('/accounts/transactions/new')}
             variant="primary"
             size="md"
           >

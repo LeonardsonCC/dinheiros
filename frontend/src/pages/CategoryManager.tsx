@@ -113,13 +113,14 @@ export default function CategoryManager() {
             <option value="income">Income</option>
             <option value="expense">Expense</option>
           </select>
-          <button 
+          <GlassButton 
             type="submit" 
-            disabled={isLoading} 
-            className="glass-button bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-all duration-300"
+            disabled={isLoading}
+            variant="primary"
+            size="md"
           >
             Add Category
-          </button>
+          </GlassButton>
         </div>
           </form>
         </GlassCard>

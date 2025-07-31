@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { UserGroupIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
@@ -23,6 +23,7 @@ interface SharedAccount {
 
 export default function SharedAccounts() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<SharedAccount[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -85,7 +86,7 @@ export default function SharedAccounts() {
             </p>
             <div className="mt-6">
               <GlassButton
-                onClick={() => window.location.href = '/accounts'}
+                onClick={() => navigate('/accounts')}
                 variant="primary"
                 size="md"
               >
@@ -156,7 +157,7 @@ export default function SharedAccounts() {
 
         <div className="mt-8 text-center">
           <GlassButton
-            onClick={() => window.location.href = '/accounts'}
+            onClick={() => navigate('/accounts')}
             variant="glass"
             size="sm"
           >
