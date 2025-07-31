@@ -7,6 +7,8 @@ import TransactionsTable, { Transaction as TableTransaction } from '../component
 import Loading from '../components/Loading';
 import { useTranslation } from 'react-i18next';
 import type { AxiosError } from 'axios';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 export default function Transactions() {
   const { t } = useTranslation();
@@ -199,32 +201,41 @@ export default function Transactions() {
 
   // Use TransactionsTable for displaying transactions
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <Link
-          to="/accounts"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
-        >
-          <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-          {t('transactions.backToAccounts')}
-        </Link>
-        <div className="flex items-center justify-between mt-2">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {account?.name} {t('transactions.transactions')}
-          </h2>
-          <Link
-            to={`/accounts/${accountId}/transactions/new`}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
+    <div className="min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <GlassButton
+            onClick={() => window.history.back()}
+            variant="glass"
+            size="sm"
+            className="mb-4"
           >
-            <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
-            {t('transactions.add')}
-          </Link>
+            <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
+            {t('transactions.backToAccounts')}
+          </GlassButton>
+          
+          <div className="flex items-center justify-between">
+            <div className="animate-fade-in">
+              <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+                {account?.name} {t('transactions.transactions')}
+              </h2>
+              <div className="mt-2 text-xl font-semibold text-primary-600 dark:text-primary-400">
+                {formatCurrency(account?.balance || 0)}
+              </div>
+            </div>
+            <GlassButton
+              onClick={() => window.location.href = `/accounts/${accountId}/transactions/new`}
+              variant="primary"
+              size="lg"
+              className="animate-scale-in"
+            >
+              <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
+              {t('transactions.add')}
+            </GlassButton>
+          </div>
         </div>
-        <div className="mt-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
-          {formatCurrency(account?.balance || 0)}
-        </div>
-      </div>
-      <TransactionsTable
+      <GlassCard variant="elevated" animation="slide-up" className="overflow-hidden">
+        <TransactionsTable
         transactions={paginatedSortedTransactions}
         loading={loading}
         pagination={pagination}
@@ -253,7 +264,9 @@ export default function Transactions() {
             </button>
           </div>
         )}
-      />
+        />
+      </GlassCard>
+      </div>
     </div>
   );
 }

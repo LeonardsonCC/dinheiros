@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { categorizationRulesApi, categoriesApi } from '../services/api';
 import { toast } from 'react-hot-toast';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 interface Category {
   id: number;
@@ -195,12 +197,14 @@ export default function CategorizationRules() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Manage Categorization Rules</h2>
-      
-      {/* Add new rule form */}
-      <form onSubmit={handleAdd} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add New Rule</h3>
+    <div className="min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100 mb-8 animate-fade-in">Manage Categorization Rules</h2>
+        
+        {/* Add new rule form */}
+        <GlassCard variant="elevated" animation="slide-up" className="mb-8">
+          <form onSubmit={handleAdd} className="p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add New Rule</h3>
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <input
             type="text"
@@ -208,12 +212,12 @@ export default function CategorizationRules() {
             value={newName}
             onChange={e => setNewName(e.target.value)}
             required
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+            className="glass-input px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
           />
           <select
             value={newType}
             onChange={e => setNewType(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+            className="glass-input px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
           >
             <option value="regex">Regex</option>
           </select>
@@ -223,12 +227,12 @@ export default function CategorizationRules() {
             value={newValue}
             onChange={e => setNewValue(e.target.value)}
             required
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+            className="glass-input px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
           />
           <select
             value={newTransactionType}
             onChange={e => setNewTransactionType(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+            className="glass-input px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
           >
             <option value="expense">Expense</option>
             <option value="income">Income</option>
@@ -238,7 +242,7 @@ export default function CategorizationRules() {
             value={newCategoryDst}
             onChange={e => setNewCategoryDst(Number(e.target.value))}
             required
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+            className="glass-input px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
           >
             <option value={0}>Select category...</option>
             {getCategoriesByType(newTransactionType).map(category => (
@@ -258,17 +262,20 @@ export default function CategorizationRules() {
             <label htmlFor="newActive" className="text-gray-700 dark:text-gray-300">Active</label>
           </div>
         </div>
-        <button 
-          type="submit" 
-          disabled={isLoading} 
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
-        >
-          Add Rule
-        </button>
-      </form>
+            <GlassButton 
+              type="submit" 
+              disabled={isLoading} 
+              variant="primary"
+              size="md"
+              className="mt-4"
+            >
+              Add Rule
+            </GlassButton>
+          </form>
+        </GlassCard>
 
-      {/* Rules table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        {/* Rules table */}
+        <GlassCard variant="elevated" animation="slide-up" className="overflow-hidden">
         <table className="min-w-full">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
@@ -421,6 +428,7 @@ export default function CategorizationRules() {
             No categorization rules found. Add your first rule above.
           </div>
         )}
+        </GlassCard>
       </div>
     </div>
   );

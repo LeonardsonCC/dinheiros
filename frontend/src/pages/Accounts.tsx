@@ -6,6 +6,8 @@ import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
 import ShareAccountModal from '../components/ShareAccountModal';
 import { useTranslation } from 'react-i18next';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 interface Account {
   id: number | string;
@@ -145,51 +147,67 @@ export default function Accounts() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('accounts.title')}</h2>
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 animate-slide-up">{t('accounts.title')}</h2>
         <div className="flex gap-3">
-          <Link
+          <GlassButton
+            as={Link}
             to="/shared-accounts"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            variant="secondary"
+            size="md"
+            className="inline-flex items-center"
           >
             <UserGroupIcon className="w-5 h-5 mr-2 -ml-1" />
             {t('sharing.sharedWithMe')}
-          </Link>
-          <Link
+          </GlassButton>
+          <GlassButton
+            as={Link}
             to="/accounts/new"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
+            variant="primary"
+            size="md"
+            className="inline-flex items-center"
           >
             <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
             {t('accounts.addAccount')}
-          </Link>
+          </GlassButton>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {accounts.length === 0 ? (
-          <div className="col-span-full p-8 text-center text-gray-500 dark:text-gray-400">{t('accounts.noAccounts')}</div>
+          <GlassCard className="col-span-full" variant="subtle" animation="fade-in">
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">{t('accounts.noAccounts')}</div>
+          </GlassCard>
         ) : (
-          accounts.map((account) => (
-            <div key={account.id} className="relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 group">
-              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          accounts.map((account, index) => (
+            <GlassCard 
+              key={account.id} 
+              className="relative group cursor-pointer" 
+              variant="default" 
+              animation="slide-up"
+              style={{
+                animationDelay: `${index * 100}ms`
+              }}
+            >
+              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
                     handleShareAccount(account);
                   }}
-                  className="p-1 text-gray-400 hover:text-green-500 dark:text-gray-500 dark:hover:text-green-400 transition-colors duration-200"
+                  className="p-2 glass-button text-gray-400 hover:text-green-500 dark:text-gray-500 dark:hover:text-green-400 transition-colors duration-200 rounded-lg"
                   title={t('sharing.shareAccount')}
                 >
-                  <ShareIcon className="h-5 w-5" />
+                  <ShareIcon className="h-4 w-4" />
                 </button>
                 <Link
                   to={`/accounts/${account.id}/edit`}
-                  className="p-1 text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 transition-colors duration-200"
+                  className="p-2 glass-button text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 transition-colors duration-200 rounded-lg"
                   title={t('accounts.editAccount')}
                 >
-                  <PencilIcon className="h-5 w-5" />
+                  <PencilIcon className="h-4 w-4" />
                 </Link>
                 <button
                   onClick={(e) => {
@@ -198,39 +216,42 @@ export default function Accounts() {
                     handleDelete(account.id);
                   }}
                   disabled={deletingId === account.id}
-                  className="p-1 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors duration-200 disabled:opacity-50"
+                  className="p-2 glass-button text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors duration-200 disabled:opacity-50 rounded-lg"
                   title={t('accounts.deleteAccount')}
                 >
                   {deletingId === account.id ? (
-                    <svg className="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                   ) : (
-                    <TrashIcon className="h-5 w-5" />
+                    <TrashIcon className="h-4 w-4" />
                   )}
                 </button>
               </div>
-              <Link to={`/accounts/${account.id}/transactions`}>
-                <div className="flex items-center gap-2">
+              <Link to={`/accounts/${account.id}/transactions`} className="block p-6 h-full">
+                <div className="flex items-center gap-3 mb-4">
                   <span
-                    className="inline-block w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
+                    className="inline-block w-5 h-5 rounded-full border-2 border-white/20 shadow-lg"
                     style={{ backgroundColor: account.color || '#cccccc' }}
                     title={account.color || '#cccccc'}
                   ></span>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{account.name}</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">{account.name}</h3>
                 </div>
-                <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                   {new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'BRL',
                   }).format(account.balance || 0)}
                 </p>
-                <div className="mt-4 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300">
-                  {t('accounts.viewTransactions')} &rarr;
+                <div className="flex items-center text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 transition-colors duration-200">
+                  <span>{t('accounts.viewTransactions')}</span>
+                  <svg className="w-4 h-4 ml-2 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               </Link>
-            </div>
+            </GlassCard>
           ))
         )}
       </div>

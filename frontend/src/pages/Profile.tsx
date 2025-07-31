@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 // Schema for name update
 const nameSchema = z.object({
@@ -79,12 +81,14 @@ export default function Profile() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">{t('profile.title')}</h1>
-      
-      {/* Update Name Section */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('profile.updateName')}</h2>
+    <div className="flex items-center justify-center min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <div className="w-full max-w-2xl space-y-8">
+        <h1 className="text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100 animate-fade-in">{t('profile.title')}</h1>
+        
+        {/* Update Name Section */}
+        <GlassCard variant="elevated" animation="slide-up">
+          <div className="p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('profile.updateName')}</h2>
         <form onSubmit={handleNameSubmit(onNameSubmit)} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -94,7 +98,7 @@ export default function Profile() {
               type="text"
               id="name"
               {...registerName('name')}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
               disabled={isLoading}
               placeholder={t('profile.namePlaceholder')}
             />
@@ -103,20 +107,23 @@ export default function Profile() {
             )}
           </div>
           <div>
-            <button
+            <GlassButton
               type="submit"
               disabled={isLoading}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
+              variant="primary"
+              size="md"
             >
               {isLoading ? t('profile.updating') : t('profile.updateNameBtn')}
-            </button>
+            </GlassButton>
           </div>
         </form>
-      </div>
+          </div>
+        </GlassCard>
 
-      {/* Update Password Section */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('profile.changePassword')}</h2>
+        {/* Update Password Section */}
+        <GlassCard variant="elevated" animation="slide-up">
+          <div className="p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('profile.changePassword')}</h2>
         <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
           <div>
             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -126,7 +133,7 @@ export default function Profile() {
               type="password"
               id="currentPassword"
               {...registerPassword('currentPassword')}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
               disabled={isLoading}
               placeholder={t('profile.currentPasswordPlaceholder')}
             />
@@ -143,7 +150,7 @@ export default function Profile() {
               type="password"
               id="newPassword"
               {...registerPassword('newPassword')}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
               disabled={isLoading}
               placeholder={t('profile.newPasswordPlaceholder')}
             />
@@ -160,7 +167,7 @@ export default function Profile() {
               type="password"
               id="confirmPassword"
               {...registerPassword('confirmPassword')}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
               disabled={isLoading}
               placeholder={t('profile.confirmPasswordPlaceholder')}
             />
@@ -170,15 +177,18 @@ export default function Profile() {
           </div>
           
           <div>
-            <button
+            <GlassButton
               type="submit"
               disabled={isLoading}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
+              variant="primary"
+              size="md"
             >
               {isLoading ? t('profile.updating') : t('profile.updatePasswordBtn')}
-            </button>
+            </GlassButton>
           </div>
         </form>
+          </div>
+        </GlassCard>
       </div>
     </div>
   );

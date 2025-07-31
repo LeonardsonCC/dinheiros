@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 interface AxiosError {
   response?: {
@@ -58,9 +60,10 @@ export default function NewAccount() {
   };
 
   return (
-    <div className="p-6">
-      <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Add New Account</h2>
+    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <GlassCard className="w-full max-w-2xl" variant="elevated" animation="slide-up">
+        <div className="p-8">
+          <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100 mb-8 animate-fade-in">Add New Account</h2>
         <form onSubmit={onSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
@@ -72,7 +75,7 @@ export default function NewAccount() {
                 type="text"
                 name="name"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
               />
             </div>
 
@@ -82,7 +85,7 @@ export default function NewAccount() {
               </label>
               <select
                 id="type"
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                 name="type"
                 required
               >
@@ -103,7 +106,7 @@ export default function NewAccount() {
               id="initial_balance"
               type="number"
               step="0.01"
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+              className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
               name="initial_balance"
             />
           </div>
@@ -119,7 +122,7 @@ export default function NewAccount() {
                 type="text"
                 value={color}
                 onChange={e => setColor(e.target.value)}
-                className="mt-1 block w-32 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                className="glass-input mt-1 block w-32 px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                 placeholder="#cccccc"
                 maxLength={7}
                 pattern="#?[0-9A-Fa-f]{6}"
@@ -134,27 +137,30 @@ export default function NewAccount() {
                 tabIndex={-1}
               />
             </div>
-            {colorError && <div className="text-red-500 dark:text-red-400 text-xs mt-1">{colorError}</div>}
+            {colorError && <div className="text-red-500 dark:text-red-400 text-xs mt-1 animate-fade-in">{colorError}</div>}
           </div>
 
           <div className="flex justify-end space-x-3">
-            <button
+            <GlassButton
               type="button"
               onClick={() => navigate('/accounts')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              variant="secondary"
+              size="md"
             >
               Cancel
-            </button>
-            <button
+            </GlassButton>
+            <GlassButton
               type="submit"
               disabled={isLoading}
-              className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary-500 dark:hover:bg-primary-600"
+              variant="primary"
+              size="md"
             >
               {isLoading ? 'Saving...' : 'Save Account'}
-            </button>
+            </GlassButton>
           </div>
         </form>
-      </div>
+        </div>
+      </GlassCard>
     </div>
   );
 }

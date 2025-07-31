@@ -8,6 +8,8 @@ import CategoryManager from '../components/CategoryManager';
 import Loading from '../components/Loading';
 import DatePicker from '../components/DatePicker';
 import { useTranslation } from 'react-i18next';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 interface AxiosError {
   response?: {
@@ -425,22 +427,24 @@ export default function ImportTransactions() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-4"
-        >
-          <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-          {t('importTransactions.back')} {t('transactions.transactions')}
-        </button>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('importTransactions.title')}</h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          {t('importTransactions.uploadPdf')}
-        </p>
-      </div>
-      <div className="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
+    <div className="flex items-center justify-center min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <GlassCard className="w-full max-w-6xl" variant="elevated" animation="slide-up">
+        <div className="p-8">
+          <div className="mb-8">
+            <GlassButton
+              onClick={() => navigate(-1)}
+              variant="glass"
+              size="sm"
+              className="mb-4"
+            >
+              <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
+              {t('importTransactions.back')} {t('transactions.transactions')}
+            </GlassButton>
+            <h1 className="text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100 animate-fade-in">{t('importTransactions.title')}</h1>
+            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+              {t('importTransactions.uploadPdf')}
+            </p>
+          </div>
           {transactions.length > 0 ? (
             <div>
               <h2 className="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">{t('importTransactions.reviewEdit')}</h2>
@@ -544,7 +548,7 @@ export default function ImportTransactions() {
                 <button
                   type="button"
                   onClick={() => setTransactions([])}
-                  className="bg-white dark:bg-gray-700 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
+                  className="glass-button px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:shadow-lg hover:shadow-black/10 dark:hover:shadow-black/30 rounded-lg transition-all duration-300"
                 >
                   {t('importTransactions.cancel')}
                 </button>
@@ -567,7 +571,7 @@ export default function ImportTransactions() {
                 </label>
                 <select
                   id="extractor-select"
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                  className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                   value={selectedExtractor}
                   onChange={e => setSelectedExtractor(e.target.value)}
                   disabled={extractors.length === 0}
@@ -584,7 +588,7 @@ export default function ImportTransactions() {
                     {t('importTransactions.selectAccount')} <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                    className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                     value={selectedAccountId}
                     onChange={e => setSelectedAccountId(e.target.value)}
                     disabled={accountsLoading}
@@ -665,27 +669,27 @@ export default function ImportTransactions() {
                 </p>
               </div>
               <div className="flex justify-end space-x-3">
-                <button
+                <GlassButton
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="bg-white dark:bg-gray-700 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  variant="secondary"
+                  size="md"
                 >
                   {t('importTransactions.cancel')}
-                </button>
-                <button
+                </GlassButton>
+                <GlassButton
                   type="submit"
                   disabled={isLoading || !selectedFile}
-                  className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600 ${
-                    isLoading || !selectedFile ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  variant="primary"
+                  size="md"
                 >
                   {isLoading ? t('importTransactions.importing') : t('importTransactions.import')}
-                </button>
+                </GlassButton>
               </div>
             </form>
           )}
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 }

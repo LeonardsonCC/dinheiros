@@ -6,6 +6,8 @@ import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
 import { Category } from '../components/CategoryManager';
 import { useTranslation } from 'react-i18next';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 type TransactionType = 'income' | 'expense' | 'transfer';
 
@@ -215,51 +217,56 @@ export default function EditTransaction() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-        <span className="ml-4 text-gray-500 dark:text-gray-400">{t('editTransaction.loading')}</span>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <GlassCard variant="elevated" animation="scale-in" className="p-8">
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+            <span className="ml-4 text-gray-700 dark:text-gray-300">{t('editTransaction.loading')}</span>
+          </div>
+        </GlassCard>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6">
-            <div className="text-center">
-              <div className="text-red-500 text-5xl mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('editTransaction.errorTitle')}</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
-              >
-                {t('editTransaction.tryAgain')}
-              </button>
-            </div>
+      <div className="flex items-center justify-center min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+        <GlassCard variant="elevated" animation="scale-in" className="w-full max-w-md">
+          <div className="p-8 text-center">
+            <div className="text-red-500 text-5xl mb-4 animate-fade-in">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('editTransaction.errorTitle')}</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+            <GlassButton
+              onClick={() => window.location.reload()}
+              variant="primary"
+              size="md"
+            >
+              {t('editTransaction.tryAgain')}
+            </GlassButton>
           </div>
-        </div>
+        </GlassCard>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(`/accounts/${accountId}/transactions`)}
-            className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
-          >
-            <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-            {t('editTransaction.back')}
-          </button>
-          <h1 className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{t('editTransaction.title')}</h1>
-        </div>
+    <div className="flex items-center justify-center min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <GlassCard className="w-full max-w-4xl" variant="elevated" animation="slide-up">
+        <div className="p-8">
+          <div className="mb-8">
+            <GlassButton
+              onClick={() => navigate(`/accounts/${accountId}/transactions`)}
+              variant="glass"
+              size="sm"
+              className="mb-4"
+            >
+              <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
+              {t('editTransaction.back')}
+            </GlassButton>
+            <h1 className="text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100 animate-fade-in">{t('editTransaction.title')}</h1>
+          </div>
 
-        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {/* Transaction Type */}
               <div className="sm:col-span-2">
@@ -271,7 +278,7 @@ export default function EditTransaction() {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                  className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                   required
                 >
                   <option value="expense">{t('dashboard.expenses')}</option>
@@ -294,7 +301,7 @@ export default function EditTransaction() {
                     id="amount"
                     value={formData.amount}
                     onChange={handleChange}
-                    className="pl-8 pr-4 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                    className="glass-input pl-8 pr-4 py-3 block w-full rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300"
                     placeholder="0.00"
                     required
                   />
@@ -312,7 +319,7 @@ export default function EditTransaction() {
                   id="description"
                   value={formData.description}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                  className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                   required
                 />
               </div>
@@ -373,7 +380,7 @@ export default function EditTransaction() {
                   id="date"
                   value={dateInput}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                  className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                   required
                 />
               </div>
@@ -389,7 +396,7 @@ export default function EditTransaction() {
                     name="toAccountId"
                     value={formData.toAccountId}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                    className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                     required={formData.type === 'transfer'}
                   >
                     <option value="">{t('editTransaction.selectAccount')}</option>
@@ -405,25 +412,27 @@ export default function EditTransaction() {
               )}
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
+            <div className="flex justify-end space-x-3 pt-4">
+              <GlassButton
                 type="button"
                 onClick={() => navigate(`/accounts/${accountId}/transactions`)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                variant="secondary"
+                size="md"
               >
                 {t('editTransaction.cancel')}
-              </button>
-              <button
+              </GlassButton>
+              <GlassButton
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 dark:bg-primary-500 dark:hover:bg-primary-600"
+                variant="primary"
+                size="md"
               >
                 {submitting ? t('editTransaction.saving') : t('editTransaction.saveChanges')}
-              </button>
+              </GlassButton>
             </div>
           </form>
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 }

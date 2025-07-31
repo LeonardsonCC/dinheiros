@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 interface Category {
   id: number;
@@ -86,12 +88,14 @@ export default function CategoryManager() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Manage Categories</h2>
-      
-      {/* Add new category form */}
-      <form onSubmit={handleAdd} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add New Category</h3>
+    <div className="min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100 mb-8 animate-fade-in">Manage Categories</h2>
+        
+        {/* Add new category form */}
+        <GlassCard variant="elevated" animation="slide-up" className="mb-8">
+          <form onSubmit={handleAdd} className="p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add New Category</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input
             type="text"
@@ -99,12 +103,12 @@ export default function CategoryManager() {
             value={newName}
             onChange={e => setNewName(e.target.value)}
             required
-            className="border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+            className="glass-input px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
           />
           <select
             value={newType}
             onChange={e => setNewType(e.target.value as 'income' | 'expense')}
-            className="border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+            className="glass-input px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
           >
             <option value="income">Income</option>
             <option value="expense">Expense</option>
@@ -112,15 +116,16 @@ export default function CategoryManager() {
           <button 
             type="submit" 
             disabled={isLoading} 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
+            className="glass-button bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-all duration-300"
           >
             Add Category
           </button>
         </div>
-      </form>
+          </form>
+        </GlassCard>
 
-      {/* Categories table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        {/* Categories table */}
+        <GlassCard variant="elevated" animation="slide-up" className="overflow-hidden">
         <table className="min-w-full">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
@@ -137,7 +142,7 @@ export default function CategoryManager() {
                     <input
                       value={editName}
                       onChange={e => setEditName(e.target.value)}
-                      className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+                      className="glass-input px-3 py-2 w-full text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                     />
                   ) : (
                     <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{cat.name}</div>
@@ -148,7 +153,7 @@ export default function CategoryManager() {
                     <select
                       value={editType}
                       onChange={e => setEditType(e.target.value as 'income' | 'expense')}
-                      className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+                      className="glass-input px-3 py-2 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                     >
                       <option value="income">Income</option>
                       <option value="expense">Expense</option>
@@ -203,6 +208,7 @@ export default function CategoryManager() {
             No categories found. Add your first category above.
           </div>
         )}
+        </GlassCard>
       </div>
     </div>
   );

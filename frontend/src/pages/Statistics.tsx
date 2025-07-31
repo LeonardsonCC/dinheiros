@@ -6,6 +6,8 @@ import Loading from '../components/Loading';
 import DatePicker from '../components/DatePicker';
 import type { ChartData as ChartJSData, ChartOptions } from 'chart.js';
 import { useTheme } from '../contexts/ThemeContext';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 Chart.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Tooltip, Legend);
 
@@ -110,25 +112,26 @@ export default function Statistics() {
         <DatePicker label="End Date" value={endDate} onChange={setEndDate} />
         <button onClick={() => { setStartDate(""); setEndDate(""); }} className="ml-2 px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200">Clear</button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          {perDay && perDay.labels && perDay.labels.length > 0 ? <Line options={getChartOptions('Transactions Per Day')} data={perDay} /> : <div className="text-center text-gray-500 dark:text-gray-400">No data for Transactions Per Day</div>}
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          {spentAndGainedByDay && spentAndGainedByDay.labels && spentAndGainedByDay.labels.length > 0 ? (
-            <Bar options={getChartOptions('Amount Spent and Gained by Day')} data={spentAndGainedByDay} />
-          ) : (
-            <div className="text-center text-gray-500 dark:text-gray-400">No data for Amount Spent and Gained by Day</div>
-          )}
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          {byMonth && byMonth.labels && byMonth.labels.length > 0 ? <Bar options={getChartOptions('Amount Spent by Month')} data={byMonth} /> : <div className="text-center text-gray-500 dark:text-gray-400">No data for Amount Spent by Month</div>}
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          {byAccount && byAccount.labels && byAccount.labels.length > 0 ? <Doughnut options={getChartOptions('Amount Spent by Account')} data={byAccount} /> : <div className="text-center text-gray-500 dark:text-gray-400">No data for Amount Spent by Account</div>}
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          {byCategory && byCategory.labels && byCategory.labels.length > 0 ? <Pie options={getChartOptions('Amount Spent by Category')} data={byCategory} /> : <div className="text-center text-gray-500 dark:text-gray-400">No data for Amount Spent by Category</div>}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <GlassCard variant="default" animation="scale-in" className="p-6">
+            {perDay && perDay.labels && perDay.labels.length > 0 ? <Line options={getChartOptions('Transactions Per Day')} data={perDay} /> : <div className="text-center text-gray-500 dark:text-gray-400">No data for Transactions Per Day</div>}
+          </GlassCard>
+          <GlassCard variant="default" animation="scale-in" className="p-6">
+            {spentAndGainedByDay && spentAndGainedByDay.labels && spentAndGainedByDay.labels.length > 0 ? (
+              <Bar options={getChartOptions('Amount Spent and Gained by Day')} data={spentAndGainedByDay} />
+            ) : (
+              <div className="text-center text-gray-500 dark:text-gray-400">No data for Amount Spent and Gained by Day</div>
+            )}
+          </GlassCard>
+          <GlassCard variant="default" animation="scale-in" className="p-6">
+            {byMonth && byMonth.labels && byMonth.labels.length > 0 ? <Bar options={getChartOptions('Amount Spent by Month')} data={byMonth} /> : <div className="text-center text-gray-500 dark:text-gray-400">No data for Amount Spent by Month</div>}
+          </GlassCard>
+          <GlassCard variant="default" animation="scale-in" className="p-6">
+            {byAccount && byAccount.labels && byAccount.labels.length > 0 ? <Doughnut options={getChartOptions('Amount Spent by Account')} data={byAccount} /> : <div className="text-center text-gray-500 dark:text-gray-400">No data for Amount Spent by Account</div>}
+          </GlassCard>
+          <GlassCard variant="default" animation="scale-in" className="p-6">
+            {byCategory && byCategory.labels && byCategory.labels.length > 0 ? <Pie options={getChartOptions('Amount Spent by Category')} data={byCategory} /> : <div className="text-center text-gray-500 dark:text-gray-400">No data for Amount Spent by Category</div>}
+          </GlassCard>
         </div>
       </div>
     </div>

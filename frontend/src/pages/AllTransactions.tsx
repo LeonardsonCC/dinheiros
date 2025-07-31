@@ -8,6 +8,8 @@ import TransactionsTable from '../components/TransactionsTable';
 import Loading from '../components/Loading';
 import DatePicker from '../components/DatePicker';
 import { useTranslation } from 'react-i18next';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 // Type definitions
 interface Account {
@@ -179,7 +181,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                   <div className="relative">
                     <input
                       type="text"
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className="glass-input block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                       placeholder={t('allTransactions.search')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -510,7 +512,8 @@ export default function AllTransactions() {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{t('allTransactions.title')}</h1>
@@ -531,20 +534,22 @@ export default function AllTransactions() {
             <FunnelIcon className="-ml-1 mr-2 h-5 w-5 text-gray-400 dark:text-gray-500" />
             {showFilters ? t('allTransactions.hideFilters') : t('allTransactions.showFilters')}
           </button>
-          <Link
-            to="/accounts/transactions/new"
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+          <GlassButton
+            onClick={() => window.location.href = '/accounts/transactions/new'}
+            variant="primary"
+            size="md"
           >
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
             {t('allTransactions.addTransaction')}
-          </Link>
+          </GlassButton>
         </div>
       </div>
 
       {/* Filters */}
       {showFilters && (
-        <div className="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg p-6 relative" style={{ overflow: 'visible' }}>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('allTransactions.filters')}</h2>
+        <GlassCard className="mt-6" variant="elevated" animation="slide-up" style={{ overflow: 'visible' }}>
+          <div className="p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 animate-fade-in">{t('allTransactions.filters')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Description filter */}
             <div>
@@ -556,7 +561,7 @@ export default function AllTransactions() {
                 id="description"
                 value={filters.description}
                 onChange={(e) => handleFilterChange('description', e.target.value)}
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
                 placeholder={t('allTransactions.searchTransactions')}
               />
             </div>
@@ -627,7 +632,7 @@ export default function AllTransactions() {
                     type="number"
                     name="min-amount"
                     id="min-amount"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                    className="glass-input focus:ring-primary-500 focus:border-primary-500 block w-full pl-7 pr-12 sm:text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none transition-all duration-300"
                     placeholder="0.00"
                     value={filters.minAmount}
                     onChange={(e) => handleFilterChange('minAmount', e.target.value)}
@@ -643,7 +648,7 @@ export default function AllTransactions() {
                     type="number"
                     name="max-amount"
                     id="max-amount"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                    className="glass-input focus:ring-primary-500 focus:border-primary-500 block w-full pl-7 pr-12 sm:text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none transition-all duration-300"
                     placeholder="1000.00"
                     value={filters.maxAmount}
                     onChange={(e) => handleFilterChange('maxAmount', e.target.value)}
@@ -658,33 +663,36 @@ export default function AllTransactions() {
                 label={t('allTransactions.startDate')}
                 value={filters.startDate}
                 onChange={value => handleFilterChange('startDate', value ? value.slice(0, 10) : "")}
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
               />
               <DatePicker
                 label={t('allTransactions.endDate')}
                 value={filters.endDate}
                 onChange={value => handleFilterChange('endDate', value ? value.slice(0, 10) : "")}
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                className="glass-input mt-1 block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
               />
             </div>
 
             {/* Reset filters button */}
             <div className="flex items-end">
-              <button
+              <GlassButton
                 type="button"
                 onClick={resetFilters}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-500 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
+                variant="secondary"
+                size="md"
               >
                 <XMarkIcon className="-ml-1 mr-2 h-5 w-5" />
                 {t('allTransactions.resetAllFilters')}
-              </button>
+              </GlassButton>
             </div>
           </div>
-        </div>
+          </div>
+        </GlassCard>
       )}
 
       {/* Transactions Table */}
-      <TransactionsTable
+      <GlassCard className="mt-6" variant="elevated" animation="slide-up">
+        <TransactionsTable
         transactions={transactions}
         loading={tableLoading}
         pagination={pagination}
@@ -713,7 +721,9 @@ export default function AllTransactions() {
             </button>
           </div>
         )}
-      />
+        />
+      </GlassCard>
+      </div>
     </div>
   );
 }

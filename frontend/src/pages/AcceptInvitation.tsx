@@ -4,6 +4,8 @@ import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/out
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Loading from '../components/Loading';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 export default function AcceptInvitation() {
   const { t } = useTranslation();
@@ -73,9 +75,9 @@ export default function AcceptInvitation() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-md w-full space-y-8 p-8">
-          <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <GlassCard className="max-w-md w-full" variant="elevated" animation="scale-in">
+          <div className="p-8 text-center">
             <XCircleIcon className="mx-auto h-12 w-12 text-red-500" />
             <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-gray-100">
               {t('sharing.invalidInvitation')}
@@ -84,7 +86,7 @@ export default function AcceptInvitation() {
               {t('sharing.invalidInvitationMessage')}
             </p>
           </div>
-        </div>
+        </GlassCard>
       </div>
     );
   }
@@ -94,9 +96,9 @@ export default function AcceptInvitation() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div className="text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <GlassCard className="max-w-md w-full" variant="elevated" animation="scale-in">
+        <div className="p-8 text-center">
           {status === 'success' && (
             <>
               <CheckCircleIcon className="mx-auto h-12 w-12 text-green-500" />
@@ -154,7 +156,7 @@ export default function AcceptInvitation() {
                 </button>
                 <button
                   onClick={handleGoToLogin}
-                  className="w-full flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="w-full glass-button px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:shadow-lg hover:shadow-black/10 dark:hover:shadow-black/30 rounded-lg transition-all duration-300"
                 >
                   {t('auth.login')}
                 </button>

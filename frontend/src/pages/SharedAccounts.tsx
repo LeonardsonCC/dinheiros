@@ -5,6 +5,8 @@ import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
 import SharedAccountBadge from '../components/SharedAccountBadge';
 import { useTranslation } from 'react-i18next';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 interface SharedAccount {
   id: number;
@@ -60,44 +62,46 @@ export default function SharedAccounts() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
+    <div className="min-h-screen px-4 py-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center justify-center animate-fade-in">
             <UserGroupIcon className="h-8 w-8 mr-3 text-primary-600" />
             {t('sharing.sharedWithMe')}
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             {t('sharing.sharedAccountsDescription')}
           </p>
         </div>
-      </div>
 
-      {accounts.length === 0 ? (
-        <div className="text-center py-12">
-          <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
-            {t('sharing.noSharedAccounts')}
-          </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {t('sharing.noSharedAccountsMessage')}
-          </p>
-          <div className="mt-6">
-            <Link
-              to="/accounts"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              {t('sharing.viewMyAccounts')}
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {accounts.map((account) => (
-            <div
-              key={account.id}
-              className="relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 border-l-4 border-blue-500"
-            >
+        {accounts.length === 0 ? (
+          <GlassCard variant="elevated" animation="scale-in" className="text-center py-12">
+            <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">
+              {t('sharing.noSharedAccounts')}
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              {t('sharing.noSharedAccountsMessage')}
+            </p>
+            <div className="mt-6">
+              <GlassButton
+                onClick={() => window.location.href = '/accounts'}
+                variant="primary"
+                size="md"
+              >
+                {t('sharing.viewMyAccounts')}
+              </GlassButton>
+            </div>
+          </GlassCard>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {accounts.map((account) => (
+              <GlassCard
+                key={account.id}
+                variant="default"
+                animation="slide-up"
+                className="relative p-6 border-l-4 border-blue-500"
+              >
               <Link to={`/accounts/${account.id}/transactions`}>
                 <div className="flex items-center gap-2 mb-2">
                   <span
@@ -145,18 +149,20 @@ export default function SharedAccounts() {
                   {t('accounts.viewTransactions')} &rarr;
                 </div>
               </Link>
-            </div>
-          ))}
-        </div>
-      )}
+              </GlassCard>
+            ))}
+          </div>
+        )}
 
-      <div className="mt-8 text-center">
-        <Link
-          to="/accounts"
-          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
-        >
-          ← {t('sharing.backToMyAccounts')}
-        </Link>
+        <div className="mt-8 text-center">
+          <GlassButton
+            onClick={() => window.location.href = '/accounts'}
+            variant="glass"
+            size="sm"
+          >
+            ← {t('sharing.backToMyAccounts')}
+          </GlassButton>
+        </div>
       </div>
     </div>
   );

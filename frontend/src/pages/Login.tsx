@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
+import GlassCard from '../components/GlassCard';
+import GlassButton from '../components/GlassButton';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -65,80 +67,84 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gray-50 dark:bg-gray-900 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
-            Or{' '}
-            <Link
-              to="/register"
-              className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4 rounded-md shadow-sm">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                type="email"
-                autoComplete="email"
-                className="relative block w-full px-3 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
-              )}
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                className="relative block w-full px-3 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                {...register('password')}
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
-              )}
-            </div>
-          </div>
-
+    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:px-6 lg:px-8">
+      <GlassCard className="w-full max-w-md" variant="elevated" animation="scale-in">
+        <div className="p-8 space-y-8">
           <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md group hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
+            <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900 dark:text-gray-100 animate-fade-in">
+              Sign in to your account
+            </h2>
+            <p className="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
+              Or{' '}
+              <Link
+                to="/register"
+                className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors duration-200"
+              >
+                create a new account
+              </Link>
+            </p>
           </div>
-        </form>
-        <div className="flex flex-col items-center mt-4">
-          <span className="mb-2 text-gray-500 dark:text-gray-400">or</span>
-          <GoogleLogin
-            onSuccess={onGoogleSuccess}
-            onError={() => toast.error('Google login failed')}
-            useOneTap
-            width="100%"
-          />
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="email-address" className="sr-only">
+                  Email address
+                </label>
+                <input
+                  id="email-address"
+                  type="email"
+                  autoComplete="email"
+                  className="glass-input relative block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
+                  placeholder="Email address"
+                  {...register('email')}
+                />
+                {errors.email && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 animate-fade-in">{errors.email.message}</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="password" className="sr-only">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  className="glass-input relative block w-full px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-300"
+                  placeholder="Password"
+                  {...register('password')}
+                />
+                {errors.password && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 animate-fade-in">{errors.password.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <GlassButton
+                type="submit"
+                disabled={isLoading}
+                variant="primary"
+                size="lg"
+                className="w-full"
+              >
+                {isLoading ? 'Signing in...' : 'Sign in'}
+              </GlassButton>
+            </div>
+          </form>
+          <div className="flex flex-col items-center mt-6">
+            <span className="mb-4 text-gray-500 dark:text-gray-400">or</span>
+            <div className="w-full">
+              <GoogleLogin
+                onSuccess={onGoogleSuccess}
+                onError={() => toast.error('Google login failed')}
+                useOneTap
+                width="100%"
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 }
