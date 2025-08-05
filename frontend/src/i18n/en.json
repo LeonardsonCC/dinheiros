@@ -189,6 +189,28 @@
     "added": "Category added successfully",
     "failed": "Failed to add category"
   },
+  "statistics": {
+    "title": "Statistics & Analytics",
+    "loading": "Loading statistics...",
+    "dateRange": "Date Range",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "clearDates": "Clear Dates",
+    "noData": "No data available",
+    "charts": {
+      "transactionsPerDay": "Transactions Per Day",
+      "amountSpentAndGained": "Amount Spent and Gained by Day",
+      "amountByMonth": "Amount by Month",
+      "amountByAccount": "Amount by Account",
+      "amountByCategory": "Amount by Category"
+    },
+    "summary": {
+      "totalIncome": "Total Income",
+      "totalExpenses": "Total Expenses",
+      "netAmount": "Net Amount",
+      "transactionCount": "Total Transactions"
+    }
+  },
   "accounts": {
     "title": "Accounts",
     "addAccount": "Add Account",

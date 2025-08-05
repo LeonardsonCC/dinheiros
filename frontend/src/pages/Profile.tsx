@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { Button, Card, CardContent, CardHeader, CardTitle, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Input } from '@/components/ui';
 
 // Schema for name update
 const nameSchema = z.object({
@@ -30,22 +31,21 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(false);
   
   // Name form
-  const { 
-    register: registerName, 
-    handleSubmit: handleNameSubmit, 
-    formState: { errors: nameErrors } 
-  } = useForm<NameFormData>({
+  const nameForm = useForm<NameFormData>({
     resolver: zodResolver(nameSchema),
+    defaultValues: {
+      name: ''
+    }
   });
 
   // Password form
-  const { 
-    register: registerPassword, 
-    handleSubmit: handlePasswordSubmit, 
-    formState: { errors: passwordErrors },
-    reset: resetPasswordForm
-  } = useForm<PasswordFormData>({
+  const passwordForm = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    }
   });
 
   const onNameSubmit = async (data: NameFormData) => {
@@ -69,7 +69,7 @@ export default function Profile() {
         newPassword: data.newPassword,
       });
       toast.success(t('profile.passwordUpdated'));
-      resetPasswordForm();
+      passwordForm.reset();
     } catch (error) {
       console.error('Error updating password:', error);
       toast.error(t('profile.failedUpdatePassword'));
@@ -79,107 +79,115 @@ export default function Profile() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">{t('profile.title')}</h1>
+    <div className="container mx-auto py-8 space-y-8">
+      <h1 className="text-3xl font-bold tracking-tight">{t('profile.title')}</h1>
       
       {/* Update Name Section */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('profile.updateName')}</h2>
-        <form onSubmit={handleNameSubmit(onNameSubmit)} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('profile.name')}
-            </label>
-            <input
-              type="text"
-              id="name"
-              {...registerName('name')}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              disabled={isLoading}
-              placeholder={t('profile.namePlaceholder')}
-            />
-            {nameErrors.name && (
-              <p className="mt-1 text-sm text-red-600">{nameErrors.name.message}</p>
-            )}
-          </div>
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              {isLoading ? t('profile.updating') : t('profile.updateNameBtn')}
-            </button>
-          </div>
-        </form>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('profile.updateName')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...nameForm}>
+            <form onSubmit={nameForm.handleSubmit(onNameSubmit)} className="space-y-4">
+              <FormField
+                control={nameForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('profile.name')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder={t('profile.namePlaceholder')}
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? t('profile.updating') : t('profile.updateNameBtn')}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
 
       {/* Update Password Section */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('profile.changePassword')}</h2>
-        <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
-          <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('profile.currentPassword')}
-            </label>
-            <input
-              type="password"
-              id="currentPassword"
-              {...registerPassword('currentPassword')}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              disabled={isLoading}
-              placeholder={t('profile.currentPasswordPlaceholder')}
-            />
-            {passwordErrors.currentPassword && (
-              <p className="mt-1 text-sm text-red-600">{passwordErrors.currentPassword.message}</p>
-            )}
-          </div>
-          
-          <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('profile.newPassword')}
-            </label>
-            <input
-              type="password"
-              id="newPassword"
-              {...registerPassword('newPassword')}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              disabled={isLoading}
-              placeholder={t('profile.newPasswordPlaceholder')}
-            />
-            {passwordErrors.newPassword && (
-              <p className="mt-1 text-sm text-red-600">{passwordErrors.newPassword.message}</p>
-            )}
-          </div>
-          
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('profile.confirmPassword')}
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              {...registerPassword('confirmPassword')}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              disabled={isLoading}
-              placeholder={t('profile.confirmPasswordPlaceholder')}
-            />
-            {passwordErrors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">{passwordErrors.confirmPassword.message}</p>
-            )}
-          </div>
-          
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              {isLoading ? t('profile.updating') : t('profile.updatePasswordBtn')}
-            </button>
-          </div>
-        </form>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('profile.changePassword')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...passwordForm}>
+            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+              <FormField
+                control={passwordForm.control}
+                name="currentPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('profile.currentPassword')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder={t('profile.currentPasswordPlaceholder')}
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={passwordForm.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('profile.newPassword')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder={t('profile.newPasswordPlaceholder')}
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={passwordForm.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('profile.confirmPassword')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder={t('profile.confirmPasswordPlaceholder')}
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? t('profile.updating') : t('profile.updatePasswordBtn')}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

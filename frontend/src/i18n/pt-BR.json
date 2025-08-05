@@ -189,6 +189,28 @@
     "added": "Categoria adicionada com sucesso",
     "failed": "Falha ao adicionar categoria"
   },
+  "statistics": {
+    "title": "Estatísticas e Análises",
+    "loading": "Carregando estatísticas...",
+    "dateRange": "Período",
+    "startDate": "Data Inicial",
+    "endDate": "Data Final",
+    "clearDates": "Limpar Datas",
+    "noData": "Nenhum dado disponível",
+    "charts": {
+      "transactionsPerDay": "Transações por Dia",
+      "amountSpentAndGained": "Valores Gastos e Recebidos por Dia",
+      "amountByMonth": "Valores por Mês",
+      "amountByAccount": "Valores por Conta",
+      "amountByCategory": "Valores por Categoria"
+    },
+    "summary": {
+      "totalIncome": "Receita Total",
+      "totalExpenses": "Gastos Totais",
+      "netAmount": "Valor Líquido",
+      "transactionCount": "Total de Transações"
+    }
+  },
   "accounts": {
     "title": "Contas",
     "addAccount": "Adicionar Conta",

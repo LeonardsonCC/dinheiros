@@ -4,6 +4,7 @@ import { ArrowUpIcon, ArrowDownIcon, CurrencyDollarIcon } from '@heroicons/react
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import Loading from '../components/Loading';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 
 interface Summary {
   totalBalance: number;
@@ -50,151 +51,125 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('dashboard.title')}</h1>
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
       
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-5 mt-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Total Balance */}
-        <div className="overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-white bg-blue-500 rounded-md">
-                <CurrencyDollarIcon className="w-6 h-6" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{t('dashboard.totalBalance')}</dt>
-                  <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                      {summary ? formatCurrency(summary.totalBalance) : '$0.00'}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('dashboard.totalBalance')}</CardTitle>
+            <div className="flex items-center justify-center w-8 h-8 text-white bg-blue-500 rounded-md">
+              <CurrencyDollarIcon className="w-4 h-4" />
             </div>
-          </div>
-          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700">
-            <div className="text-sm">
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {summary ? formatCurrency(summary.totalBalance) : '$0.00'}
+            </div>
+            <CardDescription className="mt-2">
               <Link
                 to="/accounts"
-                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
+                className="text-primary hover:text-primary/80 underline-offset-4 hover:underline"
               >
                 {t('dashboard.viewAllAccounts')}
               </Link>
-            </div>
-          </div>
-        </div>
+            </CardDescription>
+          </CardContent>
+        </Card>
 
         {/* Income */}
-        <div className="overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-white bg-green-500 rounded-md">
-                <ArrowUpIcon className="w-6 h-6" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{t('dashboard.income')}</dt>
-                  <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                      {summary ? formatCurrency(summary.totalIncome) : '$0.00'}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('dashboard.income')}</CardTitle>
+            <div className="flex items-center justify-center w-8 h-8 text-white bg-green-500 rounded-md">
+              <ArrowUpIcon className="w-4 h-4" />
             </div>
-          </div>
-          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700">
-            <div className="text-sm">
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {summary ? formatCurrency(summary.totalIncome) : '$0.00'}
+            </div>
+            <CardDescription className="mt-2">
               <Link
                 to="/accounts/transactions?types=income"
-                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
+                className="text-primary hover:text-primary/80 underline-offset-4 hover:underline"
               >
                 {t('dashboard.viewAllIncome')}
               </Link>
-            </div>
-          </div>
-        </div>
+            </CardDescription>
+          </CardContent>
+        </Card>
 
         {/* Expenses */}
-        <div className="overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-white bg-red-500 rounded-md">
-                <ArrowDownIcon className="w-6 h-6" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{t('dashboard.expenses')}</dt>
-                  <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                      {summary ? formatCurrency(summary.totalExpenses) : '$0.00'}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('dashboard.expenses')}</CardTitle>
+            <div className="flex items-center justify-center w-8 h-8 text-white bg-red-500 rounded-md">
+              <ArrowDownIcon className="w-4 h-4" />
             </div>
-          </div>
-          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700">
-            <div className="text-sm">
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+              {summary ? formatCurrency(summary.totalExpenses) : '$0.00'}
+            </div>
+            <CardDescription className="mt-2">
               <Link
                 to="/accounts/transactions?types=expense"
-                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
+                className="text-primary hover:text-primary/80 underline-offset-4 hover:underline"
               >
                 {t('dashboard.viewAllExpenses')}
               </Link>
-            </div>
-          </div>
-        </div>
+            </CardDescription>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Transactions */}
-      <div className="mt-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('dashboard.recentTransactions')}</h2>
-          <Link
-            to="/accounts/transactions"
-            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
-          >
-            {t('dashboard.viewAll')}
-          </Link>
-        </div>
-        <div className="mt-4 overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md">
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-medium">{t('dashboard.recentTransactions')}</CardTitle>
+            <Link
+              to="/accounts/transactions"
+              className="text-sm font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline"
+            >
+              {t('dashboard.viewAll')}
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
             {summary?.recentTransactions?.length ? (
               summary.recentTransactions.map((transaction) => (
-                <li key={transaction.id}>
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">
-                        {transaction.description}
-                      </p>
-                      <p
-                        className={`text-sm font-medium ${
-                          transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                        }`}
-                      >
-                        {transaction.type === 'income' ? '+' : '-'}
-                        {formatCurrency(transaction.amount)}
-                      </p>
-                    </div>
-                    <div className="mt-2 sm:flex sm:justify-between">
-                      <p className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(transaction.date).toLocaleDateString()}
-                      </p>
-                    </div>
+                <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">
+                      {transaction.description}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </p>
                   </div>
-                </li>
+                  <p
+                    className={`text-sm font-medium ${
+                      transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                    }`}
+                  >
+                    {transaction.type === 'income' ? '+' : '-'}
+                    {formatCurrency(transaction.amount)}
+                  </p>
+                </div>
               ))
             ) : (
-              <li className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+              <div className="py-12 text-center text-muted-foreground">
                 {t('dashboard.noRecentTransactions')}
-              </li>
+              </div>
             )}
-          </ul>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
