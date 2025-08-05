@@ -8,6 +8,7 @@ import TransactionsTable from '../components/TransactionsTable';
 import Loading from '../components/Loading';
 import DatePicker from '../components/DatePicker';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '../lib/utils';
 
 // Type definitions
 interface Account {
@@ -470,10 +471,7 @@ export default function AllTransactions() {
     }).format(amount);
   };
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
+
 
   // Show loading state
   if (loading && transactions.length === 0) {

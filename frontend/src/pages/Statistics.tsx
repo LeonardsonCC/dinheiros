@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '../lib/utils';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -69,7 +70,20 @@ export default function Statistics() {
     if (!chartData || !chartData.labels || !chartData.datasets) return [];
     
     return chartData.labels.map((label: string, index: number) => {
-      const dataPoint: ChartDataPoint = { name: label, value: 0 };
+      // Try to format the label as a date if it looks like a date
+      let formattedLabel = label;
+      if (label && (label.includes('-') || label.includes('/'))) {
+        try {
+          const date = new Date(label);
+          if (!isNaN(date.getTime())) {
+            formattedLabel = formatDate(label);
+          }
+        } catch {
+          // If date parsing fails, keep original label
+        }
+      }
+      
+      const dataPoint: ChartDataPoint = { name: formattedLabel, value: 0 };
       
       chartData.datasets.forEach((dataset: any, datasetIndex: number) => {
         const value = dataset.data[index] || 0;
@@ -161,6 +175,22 @@ export default function Statistics() {
       style: 'currency',
       currency: 'USD'
     }).format(value);
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded shadow-lg">
+          <p className="font-medium">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }}>
+              {entry.name}: {typeof entry.value === 'number' ? formatCurrency(entry.value) : entry.value}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
   const clearDates = () => {
@@ -282,7 +312,7 @@ export default function Statistics() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                   <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
@@ -308,7 +338,7 @@ export default function Statistics() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                  <Tooltip content={<CustomTooltip />} />
                   <Legend />
                   <Bar dataKey="income" fill="#10b981" name="Income" />
                   <Bar dataKey="expense" fill="#ef4444" name="Expenses" />
@@ -336,7 +366,7 @@ export default function Statistics() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                  <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="value" fill="#3b82f6" />
                 </BarChart>
               </ResponsiveContainer>
@@ -369,10 +399,11 @@ export default function Statistics() {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                  {byAccount.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}                  </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                    {byAccount.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -398,7 +429,7 @@ export default function Statistics() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" />
                 <YAxis dataKey="name" type="category" width={100} />
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="value" fill="#8b5cf6" />
               </BarChart>
             </ResponsiveContainer>

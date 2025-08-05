@@ -564,6 +564,7 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 	var created []models.Transaction
 
 	g, _ := errgroup.WithContext(c.Request.Context())
+	g.SetLimit(5)
 
 	for _, t := range req.Transactions {
 		t := t // capture loop variable
@@ -810,4 +811,3 @@ func (h *TransactionHandler) ListExtractors(c *gin.Context) {
 	extractors := pdfextractors.ListExtractors()
 	c.JSON(http.StatusOK, gin.H{"extractors": extractors})
 }
-

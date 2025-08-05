@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import Loading from '../components/Loading';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import { formatDate } from '../lib/utils';
 
 interface Summary {
   totalBalance: number;
@@ -149,7 +150,7 @@ export default function Dashboard() {
                       {transaction.description}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(transaction.date).toLocaleDateString()}
+                      {formatDate(transaction.date)}
                     </p>
                   </div>
                   <p
