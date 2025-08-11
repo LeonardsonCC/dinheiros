@@ -209,8 +209,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     <Listbox.Option
                       key={option.id}
                       className={({ active }) =>
-                        `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                          active ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-900 dark:text-white' : 'text-gray-900 dark:text-gray-200'
+                        `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-900 dark:text-white' : 'text-gray-900 dark:text-gray-200'
                         }`
                       }
                       value={option.id}
@@ -264,7 +263,7 @@ export default function AllTransactions() {
   // Router hooks
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+
   // State management
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -285,10 +284,10 @@ export default function AllTransactions() {
     accountIds: searchParams.getAll('accountIds').map(Number).filter(id => !isNaN(id)),
     categoryIds: searchParams.getAll('categoryIds').map(Number).filter(id => !isNaN(id)),
   }), [searchParams]);
-  
+
   // Filters state
   const [filters, setFilters] = useState<FilterState>(initialFilters);
-  
+
   // Pagination state
   const [pagination, setPagination] = useState<PaginationState>({
     currentPage: 1,
@@ -296,7 +295,7 @@ export default function AllTransactions() {
     totalItems: 0,
     totalPages: 1,
   });
-  
+
   // Sort state
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Transaction;
@@ -318,16 +317,16 @@ export default function AllTransactions() {
         toast.error(t('allTransactions.failedLoadAccounts'));
       }
     };
-    
+
     fetchInitialData();
   }, []);
-  
+
   // Fetch transactions when filters, pagination, or sort changes
   const fetchTransactions = useCallback(async () => {
     try {
       if (!loading) setTableLoading(true);
       setLoading(true);
-      
+
       // Build query params
       const params = new URLSearchParams({
         page: pagination.currentPage.toString(),
@@ -335,20 +334,20 @@ export default function AllTransactions() {
         sort_by: sortConfig.key,
         sort_order: sortConfig.direction,
       });
-      
+
       // Add filters to params
       if (filters.description) params.append('description', filters.description);
       if (filters.minAmount) params.append('min_amount', filters.minAmount);
       if (filters.maxAmount) params.append('max_amount', filters.maxAmount);
       if (filters.startDate) params.append('start_date', filters.startDate);
       if (filters.endDate) params.append('end_date', filters.endDate);
-      
+
       filters.types.forEach(type => params.append('types', type));
       filters.accountIds.forEach(id => params.append('account_ids', id.toString()));
       filters.categoryIds.forEach(id => params.append('category_ids', id.toString()));
-      
+
       const response = await api.get(`/api/transactions?${params.toString()}`);
-      
+
       setTransactions(response.data.data);
       setPagination(prev => ({
         ...prev,
@@ -370,33 +369,33 @@ export default function AllTransactions() {
       setTableLoading(false);
     }
   }, [filters, pagination.currentPage, pagination.pageSize, sortConfig]);
-  
+
   // Fetch transactions when dependencies change
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
-  
+
   // Update URL search params when filters change
   useEffect(() => {
     const params = new URLSearchParams();
-    
+
     // Add filters to params if they have values
     if (filters.description) params.set('description', filters.description);
     if (filters.minAmount) params.set('minAmount', filters.minAmount);
     if (filters.maxAmount) params.set('maxAmount', filters.maxAmount);
     if (filters.startDate) params.set('startDate', filters.startDate);
     if (filters.endDate) params.set('endDate', filters.endDate);
-    
+
     // Handle array parameters
     params.delete('types');
     filters.types.forEach(type => params.append('types', type));
-    
+
     params.delete('accountIds');
     filters.accountIds.forEach(id => params.append('accountIds', id.toString()));
-    
+
     params.delete('categoryIds');
     filters.categoryIds.forEach(id => params.append('categoryIds', id.toString()));
-    
+
     // Update URL without causing a navigation
     navigate({ search: params.toString() }, { replace: true });
   }, [filters, navigate]);
@@ -413,7 +412,7 @@ export default function AllTransactions() {
       currentPage: 1,
     }));
   };
-  
+
   // Handle pagination
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -442,7 +441,7 @@ export default function AllTransactions() {
       direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
     }));
   };
-  
+
   // Reset all filters
   const resetFilters = () => {
     setFilters({
@@ -456,7 +455,7 @@ export default function AllTransactions() {
       categoryIds: [],
     });
   };
-  
+
   // Get sort indicator
   const getSortIndicator = (key: keyof Transaction) => {
     if (sortConfig.key !== key) return null;
@@ -541,7 +540,7 @@ export default function AllTransactions() {
 
       {/* Filters */}
       {showFilters && (
-        <div className="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg p-6 relative" style={{ overflow: 'visible' }}>
+        <div className="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg p-6 relative mb-6" style={{ overflow: 'visible' }}>
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('allTransactions.filters')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Description filter */}

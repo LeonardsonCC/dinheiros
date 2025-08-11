@@ -59,10 +59,10 @@ export default function CategoryManager() {
     }
     try {
       setIsLoading(true);
-      const res = await api.post('/api/categories', { 
-        name: newName.trim(), 
+      const res = await api.post('/api/categories', {
+        name: newName.trim(),
         description: newDescription.trim(),
-        type: newType 
+        type: newType
       });
       setCategories([...categories, res.data]);
       setNewName('');
@@ -113,10 +113,10 @@ export default function CategoryManager() {
     }
     try {
       setIsLoading(true);
-      const res = await api.put(`/api/categories/${editId}`, { 
-        name: editName.trim(), 
+      const res = await api.put(`/api/categories/${editId}`, {
+        name: editName.trim(),
         description: editDescription.trim(),
-        type: editType 
+        type: editType
       });
       setCategories(categories.map(c => (c.id === editId ? res.data : c)));
       setEditId(null);
@@ -134,9 +134,9 @@ export default function CategoryManager() {
         <TagIcon className="h-8 w-8 text-primary" />
         <h1 className="text-3xl font-bold tracking-tight">{t('categoryManager.categories')}</h1>
       </div>
-      
+
       {/* Add new category form */}
-      <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors">
+      <Card className="mb-6">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2">
             <PlusIcon className="h-5 w-5" />
@@ -262,17 +262,17 @@ export default function CategoryManager() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge 
+                          <Badge
                             variant={
-                              cat.type === 'income' ? 'default' : 
-                              cat.type === 'expense' ? 'secondary' : 
-                              'outline'
+                              cat.type === 'income' ? 'default' :
+                                cat.type === 'expense' ? 'secondary' :
+                                  'outline'
                             }
                             className="capitalize"
                           >
                             {cat.type === 'income' ? t('dashboard.income') :
-                             cat.type === 'expense' ? t('dashboard.expenses') :
-                             t('categoryManager.transfer')}
+                              cat.type === 'expense' ? t('dashboard.expenses') :
+                                t('categoryManager.transfer')}
                           </Badge>
                         )}
                       </TableCell>
@@ -335,7 +335,7 @@ export default function CategoryManager() {
               Delete Category
             </DialogTitle>
             <DialogDescription className="text-left">
-              Are you sure you want to delete the category <strong>&ldquo;{categoryToDelete?.name}&rdquo;</strong>? 
+              Are you sure you want to delete the category <strong>&ldquo;{categoryToDelete?.name}&rdquo;</strong>?
               This action cannot be undone and may affect existing transactions.
             </DialogDescription>
           </DialogHeader>
