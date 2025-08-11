@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,6 +6,7 @@ import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardContent, CardHeader, CardTitle, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Input } from '@/components/ui';
+import { User, Mail, Lock } from 'lucide-react';
 
 // Schema for name update
 const nameSchema = z.object({
@@ -26,9 +27,17 @@ const passwordSchema = z.object({
 
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
+interface UserData {
+  id: number;
+  name: string;
+  email: string;
+}
+
 export default function Profile() {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   
   // Name form
   const nameForm = useForm<NameFormData>({
@@ -48,10 +57,34 @@ export default function Profile() {
     }
   });
 
+  // Load user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setIsLoadingProfile(true);
+        const response = await api.get('/api/users/me');
+        const user = response.data;
+        setUserData(user);
+        
+        // Pre-fill the name form with current user name
+        nameForm.setValue('name', user.name);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        toast.error('Failed to load profile data');
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [nameForm]);
+
   const onNameSubmit = async (data: NameFormData) => {
     try {
       setIsLoading(true);
-      await api.patch('/api/users/me', { name: data.name });
+      const response = await api.patch('/api/users/me', { name: data.name });
+      const updatedUser = response.data;
+      setUserData(updatedUser);
       toast.success(t('profile.nameUpdated'));
     } catch (error) {
       console.error('Error updating name:', error);
@@ -78,14 +111,79 @@ export default function Profile() {
     }
   };
 
+  if (isLoadingProfile) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading profile...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg text-red-500">Failed to load profile data</div>
+        </div>
+      </div>
+    );
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .join('')
+      .substring(0, 2);
+  };
+
   return (
     <div className="container mx-auto py-8 space-y-8">
       <h1 className="text-3xl font-bold tracking-tight">{t('profile.title')}</h1>
       
+      {/* User Visualization Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Profile Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-6">
+            <div className="h-24 w-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">
+                {getInitials(userData.name)}
+              </span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Name:</span>
+                <span className="text-lg">{userData.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Email:</span>
+                <span className="text-lg">{userData.email}</span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                User ID: #{userData.id}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Update Name Section */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('profile.updateName')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            {t('profile.updateName')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...nameForm}>
@@ -119,7 +217,10 @@ export default function Profile() {
       {/* Update Password Section */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('profile.changePassword')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            {t('profile.changePassword')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...passwordForm}>
