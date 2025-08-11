@@ -290,5 +290,49 @@
     "hideFilters": "Ocultar filtros",
     "resetAllFilters": "Limpar todos os filtros",
     "type": "Tipo"
+  },
+  "landing": {
+    "hero": {
+      "title": "Tome Controle de Suas",
+      "titleHighlight": " Finanças",
+      "description": "Dinheiros é seu companheiro de finanças pessoais. Rastreie despesas, gerencie contas, analise padrões de gastos e compartilhe dados financeiros com membros da família - tudo em uma plataforma segura.",
+      "getStarted": "Começar",
+      "signIn": "Entrar"
+    },
+    "features": {
+      "sectionTitle": "Tudo que você precisa",
+      "title": "Ferramentas poderosas de gestão financeira",
+      "description": "Do rastreamento básico de despesas até análises avançadas e compartilhamento de contas, Dinheiros oferece todas as ferramentas que você precisa para gerenciar suas finanças efetivamente.",
+      "accountManagement": {
+        "name": "Gestão de Contas",
+        "description": "Crie e gerencie múltiplas contas financeiras com facilidade. Rastreie saldos e organize suas finanças."
+      },
+      "transactionTracking": {
+        "name": "Rastreamento de Transações",
+        "description": "Registre e categorize todas as suas transações. Importe dados de extratos bancários e PDFs."
+      },
+      "smartAnalytics": {
+        "name": "Análises Inteligentes",
+        "description": "Obtenha insights sobre seus padrões de gastos com estatísticas detalhadas e gráficos visuais."
+      },
+      "accountSharing": {
+        "name": "Compartilhamento de Contas",
+        "description": "Compartilhe contas com membros da família ou parceiros para gestão financeira colaborativa."
+      },
+      "securePrivate": {
+        "name": "Seguro e Privado",
+        "description": "Seus dados financeiros são protegidos com medidas de segurança padrão da indústria."
+      },
+      "mobileFriendly": {
+        "name": "Amigável para Mobile",
+        "description": "Acesse suas finanças em qualquer lugar com nosso design responsivo que funciona em todos os dispositivos."
+      }
+    },
+    "cta": {
+      "title": "Pronto para tomar controle?",
+      "description": "Junte-se a milhares de usuários que já transformaram sua gestão financeira com Dinheiros.",
+      "createAccount": "Criar Conta",
+      "alreadyHaveAccount": "Já tem uma conta? Entrar"
+    }
   }
 }

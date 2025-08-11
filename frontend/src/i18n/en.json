@@ -290,5 +290,49 @@
     "last": "Last",
     "previous": "Previous",
     "next": "Next"
+  },
+  "landing": {
+    "hero": {
+      "title": "Take Control of Your",
+      "titleHighlight": " Finances",
+      "description": "Dinheiros is your personal finance companion. Track expenses, manage accounts, analyze spending patterns, and share financial data with family members - all in one secure platform.",
+      "getStarted": "Get Started",
+      "signIn": "Sign In"
+    },
+    "features": {
+      "sectionTitle": "Everything you need",
+      "title": "Powerful financial management tools",
+      "description": "From basic expense tracking to advanced analytics and account sharing, Dinheiros provides all the tools you need to manage your finances effectively.",
+      "accountManagement": {
+        "name": "Account Management",
+        "description": "Create and manage multiple financial accounts with ease. Track balances and organize your finances."
+      },
+      "transactionTracking": {
+        "name": "Transaction Tracking",
+        "description": "Record and categorize all your transactions. Import data from bank statements and PDFs."
+      },
+      "smartAnalytics": {
+        "name": "Smart Analytics",
+        "description": "Get insights into your spending patterns with detailed statistics and visual charts."
+      },
+      "accountSharing": {
+        "name": "Account Sharing",
+        "description": "Share accounts with family members or partners for collaborative financial management."
+      },
+      "securePrivate": {
+        "name": "Secure & Private",
+        "description": "Your financial data is protected with industry-standard security measures."
+      },
+      "mobileFriendly": {
+        "name": "Mobile Friendly",
+        "description": "Access your finances anywhere with our responsive design that works on all devices."
+      }
+    },
+    "cta": {
+      "title": "Ready to take control?",
+      "description": "Join thousands of users who have already transformed their financial management with Dinheiros.",
+      "createAccount": "Create Account",
+      "alreadyHaveAccount": "Already have an account? Sign in"
+    }
   }
 }
