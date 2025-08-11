@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { XMarkIcon, UserPlusIcon, TrashIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '../lib/utils';
 
 interface ShareInvitation {
   id: number;
@@ -161,9 +162,7 @@ export default function ShareAccountModal({ isOpen, onClose, accountId, accountN
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
+
 
   if (!isOpen) return null;
 

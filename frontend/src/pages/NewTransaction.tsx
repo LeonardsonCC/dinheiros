@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
 import DatePicker from '../components/DatePicker';
 import { useTranslation } from 'react-i18next';
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Loading } from '@/components/ui';
 
 interface Account {
   id: number;
@@ -59,7 +60,6 @@ export default function NewTransaction() {
         setLoading(true);
         setError(null);
         
-        // Fetch accounts and categories in parallel
         const [accountsRes, categoriesRes] = await Promise.all([
           api.get('/api/accounts'),
           api.get('/api/categories')
@@ -67,7 +67,6 @@ export default function NewTransaction() {
         
         setAccounts(accountsRes.data.accounts);
         setAllCategories(categoriesRes.data);
-        // Initial filter based on default type ('expense')
         const filtered = categoriesRes.data.filter((cat: Category) => cat.type === 'expense');
         setFilteredCategories(filtered);
       } catch (error: unknown) {
@@ -86,14 +85,12 @@ export default function NewTransaction() {
     };
 
     fetchData();
-  }, [accountId]);
+  }, [accountId, t]);
 
-  // Update filtered categories when transaction type changes
   useEffect(() => {
     const filtered = allCategories.filter(cat => cat.type === formData.type);
     setFilteredCategories(filtered);
     
-    // Clear selected categories if they don't match the new type
     if (formData.categoryIds.length > 0) {
       const validCategoryIds = filtered.map(c => c.id);
       const newCategoryIds = formData.categoryIds.filter(id => validCategoryIds.includes(id));
@@ -124,21 +121,18 @@ export default function NewTransaction() {
     
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'accountId' ? value : value as TransactionType
+      [name]: value
     }));
   };
   
   const handleCategoryChange = (categoryId: number) => {
     setFormData(prev => {
-      // Create a new array to avoid mutating the state directly
       const newCategoryIds = [...prev.categoryIds];
       const index = newCategoryIds.indexOf(categoryId);
       
       if (index === -1) {
-        // Add the category ID if it's not already in the array
         newCategoryIds.push(categoryId);
       } else {
-        // Remove the category ID if it's already in the array
         newCategoryIds.splice(index, 1);
       }
       
@@ -190,224 +184,219 @@ export default function NewTransaction() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-        <span className="ml-4 text-gray-500 dark:text-gray-400">{t('newTransaction.loading')}</span>
-      </div>
-    );
+    return <Loading text={t('newTransaction.loading')} />;
   }
+
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6">
+      <div className="container mx-auto py-8">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-red-500 text-5xl mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('newTransaction.errorTitle')}</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
-              >
+              <CardTitle className="mb-2">{t('newTransaction.errorTitle')}</CardTitle>
+              <p className="text-muted-foreground mb-6">{error}</p>
+              <Button onClick={() => window.location.reload()}>
                 {t('newTransaction.tryAgain')}
-              </button>
+              </Button>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(accountId ? `/accounts/${accountId}/transactions` : '/accounts')}
-            className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
-          >
-            <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-            {t('newTransaction.back')}
-          </button>
-          <h1 className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{t('newTransaction.addNew')}</h1>
-        </div>
-        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <div className="container mx-auto py-8 space-y-6">
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(accountId ? `/accounts/${accountId}/transactions` : '/accounts')}
+          className="p-2"
+        >
+          <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
+          {t('newTransaction.back')}
+        </Button>
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('newTransaction.addNew')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              {/* Account Selection (only shown when accountId is not in URL) */}
               {!accountId && (
                 <div className="sm:col-span-2">
-                  <label htmlFor="accountId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="accountId" className="block text-sm font-medium mb-2">
                     {t('newTransaction.account')}
                   </label>
-                  <select
-                    id="accountId"
-                    name="accountId"
-                    value={formData.accountId}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                    required
-                  >
-                    <option value="">{t('newTransaction.account')}</option>
-                    {accounts.length > 0 ? accounts.map(account => (
-                      <option key={account.id} value={account.id.toString()}>
-                        {account.name}
-                      </option>
-                    )) : <option value="">{t('importTransactions.noAccounts')}</option>}
-                  </select>
+                  <Select value={formData.accountId} onValueChange={(value) => setFormData(prev => ({ ...prev, accountId: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('newTransaction.account')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.length > 0 ? accounts.map(account => (
+                        <SelectItem key={account.id} value={account.id.toString()}>
+                          {account.name}
+                        </SelectItem>
+                      )) : (
+                        <SelectItem value="" disabled>{t('importTransactions.noAccounts')}</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
-              {/* Transaction Type */}
+              
               <div className="sm:col-span-2">
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="type" className="block text-sm font-medium mb-2">
                   {t('newTransaction.transactionType')}
                 </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                  required
-                >
-                  <option value="expense">{t('dashboard.expenses')}</option>
-                  <option value="income">{t('dashboard.income')}</option>
-                  <option value="transfer">{t('categoryManager.transfer')}</option>
-                </select>
+                <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as TransactionType }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="expense">{t('dashboard.expenses')}</SelectItem>
+                    <SelectItem value="income">{t('dashboard.income')}</SelectItem>
+                    <SelectItem value="transfer">{t('categoryManager.transfer')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              {/* Amount */}
+
               <div className="sm:col-span-2">
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="amount" className="block text-sm font-medium mb-2">
                   {t('newTransaction.amount')}
                 </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    name="amount"
-                    id="amount"
-                    value={formData.amount}
-                    onChange={handleChange}
-                    className="pl-8 pr-4 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  name="amount"
+                  value={formData.amount}
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  required
+                />
               </div>
-              {/* Description */}
+              
               <div className="sm:col-span-2">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="description" className="block text-sm font-medium mb-2">
                   {t('newTransaction.description')}
                 </label>
-                <input
+                <Input
                   type="text"
                   name="description"
-                  id="description"
                   value={formData.description}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                  placeholder={t('newTransaction.description')}
                 />
               </div>
-              {/* Categories */}
+
               <div className="sm:col-span-2">
-                <CategoryManager
-                  initialType={formData.type}
-                  onCategoryAdded={(newCategory) => {
-                    setAllCategories(prev => [...prev, newCategory]);
-                    if (newCategory.type === formData.type) {
-                      setFilteredCategories(prev => [...prev, newCategory]);
-                      setFormData(prev => ({
-                        ...prev,
-                        categoryIds: [...prev.categoryIds, newCategory.id]
-                      }));
-                    }
-                  }}
-                />
-                {filteredCategories.length > 0 ? (
-                  <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {filteredCategories.map(category => (
-                      <div key={category.id} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id={`category-${category.id}`}
-                          checked={formData.categoryIds.includes(category.id)}
-                          onChange={() => handleCategoryChange(category.id)}
-                          className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
-                        />
-                        <label
-                          htmlFor={`category-${category.id}`}
-                          className="ml-2 block text-sm text-gray-700 dark:text-gray-300 truncate"
-                          title={category.description}
-                        >
-                          {category.name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    {t('newTransaction.categories')}
-                  </p>
-                )}
+                <label className="block text-sm font-medium mb-2">
+                  {t('newTransaction.categories')}
+                </label>
+                <div className="space-y-4">
+                  <CategoryManager
+                    initialType={formData.type}
+                    onCategoryAdded={(newCategory) => {
+                      setAllCategories(prev => [...prev, newCategory]);
+                      if (newCategory.type === formData.type) {
+                        setFilteredCategories(prev => [...prev, newCategory]);
+                        setFormData(prev => ({
+                          ...prev,
+                          categoryIds: [...prev.categoryIds, newCategory.id]
+                        }));
+                      }
+                    }}
+                  />
+                  {filteredCategories.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {filteredCategories.map(category => (
+                        <div key={category.id} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`category-${category.id}`}
+                            checked={formData.categoryIds.includes(category.id)}
+                            onChange={() => handleCategoryChange(category.id)}
+                            className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+                          />
+                          <label
+                            htmlFor={`category-${category.id}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 truncate"
+                            title={category.description}
+                          >
+                            {category.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {t('newTransaction.categories')}
+                    </p>
+                  )}
+                </div>
               </div>
-              {/* Date & Time */}
+              
               <div className="sm:col-span-2">
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="date" className="block text-sm font-medium mb-2">
                   {t('newTransaction.dateTime')}
                 </label>
                 <DatePicker
                   label=""
                   value={dateInput}
-                  onChange={setDateInput}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                  onChange={(value) => {
+                    setDateInput(value);
+                    const date = new Date(value);
+                    if (!isNaN(date.getTime())) {
+                      setFormData(prev => ({ ...prev, date: date.toISOString() }));
+                    }
+                  }}
                 />
               </div>
-              {/* To Account (only for transfers) */}
+              
               {formData.type === 'transfer' && (
                 <div className="sm:col-span-2">
-                  <label htmlFor="toAccountId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="toAccountId" className="block text-sm font-medium mb-2">
                     {t('newTransaction.toAccount')}
                   </label>
-                  <select
-                    id="toAccountId"
-                    name="toAccountId"
-                    value={formData.toAccountId}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                    required={formData.type === 'transfer'}
-                  >
-                    <option value="">{t('newTransaction.toAccount')}</option>
-                    {accounts.length > 0 ? accounts
-                      .filter(account => account.id !== accountId)
-                      .map(account => (
-                        <option key={account.id} value={account.id}>
-                          {account.name}
-                        </option>
-                      )): <option value="">{t('importTransactions.noAccounts')}</option>}
-                  </select>
+                  <Select value={formData.toAccountId} onValueChange={(value) => setFormData(prev => ({ ...prev, toAccountId: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('newTransaction.toAccount')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.length > 0 ? accounts
+                        .filter(account => account.id !== accountId)
+                        .map(account => (
+                          <SelectItem key={account.id} value={account.id.toString()}>
+                            {account.name}
+                          </SelectItem>
+                        )) : (
+                        <SelectItem value="" disabled>{t('importTransactions.noAccounts')}</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
             </div>
-            <div className="flex justify-end pt-4">
-              <button
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => navigate(accountId ? `/accounts/${accountId}/transactions` : '/accounts')}
-                className="bg-white dark:bg-gray-700 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 mr-3"
               >
                 {t('newTransaction.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary-500 dark:hover:bg-primary-600"
-              >
+              </Button>
+              <Button type="submit" disabled={submitting}>
                 {submitting ? t('newTransaction.saving') : t('newTransaction.save')}
-              </button>
+              </Button>
             </div>
           </form>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

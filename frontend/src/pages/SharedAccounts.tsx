@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
 import SharedAccountBadge from '../components/SharedAccountBadge';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '../lib/utils';
 
 interface SharedAccount {
   id: number;
@@ -51,9 +52,7 @@ export default function SharedAccounts() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
+
 
   if (loading) {
     return <Loading message={t('sharing.loadingSharedAccounts')} />;

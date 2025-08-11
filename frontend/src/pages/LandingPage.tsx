@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   ChartBarIcon, 
   CurrencyDollarIcon, 
@@ -7,43 +8,58 @@ import {
   ShieldCheckIcon,
   DevicePhoneMobileIcon
 } from '@heroicons/react/24/outline';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function LandingPage() {
+  const { t } = useTranslation();
+
   const features = [
     {
-      name: 'Account Management',
-      description: 'Create and manage multiple financial accounts with ease. Track balances and organize your finances.',
+      name: t('landing.features.accountManagement.name'),
+      description: t('landing.features.accountManagement.description'),
       icon: CurrencyDollarIcon,
     },
     {
-      name: 'Transaction Tracking',
-      description: 'Record and categorize all your transactions. Import data from bank statements and PDFs.',
+      name: t('landing.features.transactionTracking.name'),
+      description: t('landing.features.transactionTracking.description'),
       icon: DocumentArrowUpIcon,
     },
     {
-      name: 'Smart Analytics',
-      description: 'Get insights into your spending patterns with detailed statistics and visual charts.',
+      name: t('landing.features.smartAnalytics.name'),
+      description: t('landing.features.smartAnalytics.description'),
       icon: ChartBarIcon,
     },
     {
-      name: 'Account Sharing',
-      description: 'Share accounts with family members or partners for collaborative financial management.',
+      name: t('landing.features.accountSharing.name'),
+      description: t('landing.features.accountSharing.description'),
       icon: ShareIcon,
     },
     {
-      name: 'Secure & Private',
-      description: 'Your financial data is protected with industry-standard security measures.',
+      name: t('landing.features.securePrivate.name'),
+      description: t('landing.features.securePrivate.description'),
       icon: ShieldCheckIcon,
     },
     {
-      name: 'Mobile Friendly',
-      description: 'Access your finances anywhere with our responsive design that works on all devices.',
+      name: t('landing.features.mobileFriendly.name'),
+      description: t('landing.features.mobileFriendly.description'),
       icon: DevicePhoneMobileIcon,
     },
   ];
 
   return (
     <div className="bg-white dark:bg-gray-900">
+      {/* Header */}
+      <header className="absolute inset-x-0 top-0 z-50">
+        <nav className="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
+          <div className="flex lg:flex-1">
+            <span className="text-xl font-bold text-gray-900 dark:text-white">Dinheiros</span>
+          </div>
+          <div className="flex lg:flex-1 lg:justify-end items-center gap-4">
+            <LanguageSwitcher variant="header" showLabel={false} />
+          </div>
+        </nav>
+      </header>
+      
       {/* Hero section */}
       <div className="relative isolate px-6 pt-14 lg:px-8">
         <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
@@ -53,25 +69,24 @@ export default function LandingPage() {
         <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
-              Take Control of Your
-              <span className="text-primary-600 dark:text-primary-400"> Finances</span>
+              {t('landing.hero.title')}
+              <span className="text-primary-600 dark:text-primary-400">{t('landing.hero.titleHighlight')}</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-              Dinheiros is your personal finance companion. Track expenses, manage accounts, 
-              analyze spending patterns, and share financial data with family members - all in one secure platform.
+              {t('landing.hero.description')}
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link
                 to="/register"
                 className="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-colors"
               >
-                Get Started
+                {t('landing.hero.getStarted')}
               </Link>
               <Link
                 to="/login"
                 className="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
-                Sign In <span aria-hidden="true">→</span>
+                {t('landing.hero.signIn')} <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>
@@ -87,14 +102,13 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:text-center">
             <h2 className="text-base font-semibold leading-7 text-primary-600 dark:text-primary-400">
-              Everything you need
+              {t('landing.features.sectionTitle')}
             </h2>
             <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-              Powerful financial management tools
+              {t('landing.features.title')}
             </p>
             <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-              From basic expense tracking to advanced analytics and account sharing, 
-              Dinheiros provides all the tools you need to manage your finances effectively.
+              {t('landing.features.description')}
             </p>
           </div>
           <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
@@ -122,23 +136,23 @@ export default function LandingPage() {
         <div className="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Ready to take control?
+              {t('landing.cta.title')}
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-primary-100">
-              Join thousands of users who have already transformed their financial management with Dinheiros.
+              {t('landing.cta.description')}
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link
                 to="/register"
                 className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-primary-600 shadow-sm hover:bg-primary-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
               >
-                Create Account
+                {t('landing.cta.createAccount')}
               </Link>
               <Link
                 to="/login"
                 className="text-sm font-semibold leading-6 text-white hover:text-primary-100 transition-colors"
               >
-                Already have an account? Sign in <span aria-hidden="true">→</span>
+                {t('landing.cta.alreadyHaveAccount')} <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>

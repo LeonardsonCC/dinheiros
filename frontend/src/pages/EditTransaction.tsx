@@ -6,6 +6,12 @@ import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
 import { Category } from '../components/CategoryManager';
 import { useTranslation } from 'react-i18next';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Loading } from '../components/ui/loading';
 
 type TransactionType = 'income' | 'expense' | 'transfer';
 
@@ -214,105 +220,89 @@ export default function EditTransaction() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-        <span className="ml-4 text-gray-500 dark:text-gray-400">{t('editTransaction.loading')}</span>
-      </div>
-    );
+    return <Loading text={t('editTransaction.loading')} />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6">
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-red-500 text-5xl mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('editTransaction.errorTitle')}</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
-              >
+              <h2 className="text-xl font-semibold mb-2">{t('editTransaction.errorTitle')}</h2>
+              <p className="text-muted-foreground mb-6">{error}</p>
+              <Button onClick={() => window.location.reload()}>
                 {t('editTransaction.tryAgain')}
-              </button>
+              </Button>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(`/accounts/${accountId}/transactions`)}
-            className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
-          >
-            <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-            {t('editTransaction.back')}
-          </button>
-          <h1 className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{t('editTransaction.title')}</h1>
-        </div>
+    <div className="container mx-auto py-8">
+      <div className="mb-8">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(`/accounts/${accountId}/transactions`)}
+          className="mb-4"
+        >
+          <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
+          {t('editTransaction.back')}
+        </Button>
+        <h1 className="text-2xl font-bold">{t('editTransaction.title')}</h1>
+      </div>
 
-        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('editTransaction.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {/* Transaction Type */}
               <div className="sm:col-span-2">
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('editTransaction.type')}
-                </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                  required
-                >
-                  <option value="expense">{t('dashboard.expenses')}</option>
-                  <option value="income">{t('dashboard.income')}</option>
-                  <option value="transfer">{t('categoryManager.transfer')}</option>
-                </select>
+                <Label htmlFor="type">{t('editTransaction.type')}</Label>
+                <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as TransactionType }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="expense">{t('dashboard.expenses')}</SelectItem>
+                    <SelectItem value="income">{t('dashboard.income')}</SelectItem>
+                    <SelectItem value="transfer">{t('categoryManager.transfer')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Amount */}
               <div className="sm:col-span-2">
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('editTransaction.amount')}
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    name="amount"
-                    id="amount"
-                    value={formData.amount}
-                    onChange={handleChange}
-                    className="pl-8 pr-4 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
+                <Label htmlFor="amount">{t('editTransaction.amount')}</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  name="amount"
+                  id="amount"
+                  value={formData.amount}
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  required
+                />
               </div>
 
               {/* Description */}
               <div className="sm:col-span-2">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('editTransaction.description')}
-                </label>
-                <input
+                <Label htmlFor="description">{t('editTransaction.description')}</Label>
+                <Input
                   type="text"
                   name="description"
                   id="description"
                   value={formData.description}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   required
                 />
               </div>
@@ -355,25 +345,21 @@ export default function EditTransaction() {
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    {t('editTransaction.noCategories')}
-                  </p>
-                )}
-              </div>
+                 ) : (
+                   <p className="mt-1 text-sm text-muted-foreground">
+                     {t('editTransaction.noCategories')}
+                   </p>
+                 )}              </div>
 
               {/* Date & Time */}
               <div className="sm:col-span-2">
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('editTransaction.dateTime')}
-                </label>
-                <input
+                <Label htmlFor="date">{t('editTransaction.dateTime')}</Label>
+                <Input
                   type="datetime-local"
                   name="date"
                   id="date"
                   value={dateInput}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   required
                 />
               </div>
@@ -381,49 +367,46 @@ export default function EditTransaction() {
               {/* To Account (only shown for transfers) */}
               {formData.type === 'transfer' && (
                 <div className="sm:col-span-2">
-                  <label htmlFor="toAccountId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('editTransaction.transferToAccount')}
-                  </label>
-                  <select
-                    id="toAccountId"
-                    name="toAccountId"
-                    value={formData.toAccountId}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                    required={formData.type === 'transfer'}
+                  <Label htmlFor="toAccountId">{t('editTransaction.transferToAccount')}</Label>
+                  <Select 
+                    value={formData.toAccountId} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, toAccountId: value }))}
                   >
-                    <option value="">{t('editTransaction.selectAccount')}</option>
-                    {accounts
-                      .filter(account => account.id !== accountId)
-                      .map(account => (
-                        <option key={account.id} value={account.id}>
-                          {account.name}
-                        </option>
-                      ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('editTransaction.selectAccount')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts
+                        .filter(account => account.id !== accountId)
+                        .map(account => (
+                          <SelectItem key={account.id} value={account.id.toString()}>
+                            {account.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
+            <div className="flex justify-end space-x-3 pt-4 border-t">
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => navigate(`/accounts/${accountId}/transactions`)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
                 {t('editTransaction.cancel')}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 dark:bg-primary-500 dark:hover:bg-primary-600"
               >
                 {submitting ? t('editTransaction.saving') : t('editTransaction.saveChanges')}
-              </button>
+              </Button>
             </div>
           </form>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

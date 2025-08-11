@@ -642,15 +642,28 @@ func (s *transactionService) ApplyCategorizationRules(transactions []models.Tran
 
 		// Try to match each rule against the transaction description
 		for _, rule := range activeRules {
-			// Compile the regex pattern
-			pattern, err := regexp.Compile(rule.Value)
-			if err != nil {
-				// Skip invalid regex patterns
-				continue
+			var matches bool
+
+			// Apply different matching logic based on rule type
+			switch rule.Type {
+			case "exact":
+				// Exact string match (case-sensitive)
+				matches = rule.Value == transaction.Description
+			case "regex":
+				fallthrough
+			default:
+				// Compile the regex pattern
+				pattern, err := regexp.Compile(rule.Value)
+				if err != nil {
+					// Skip invalid regex patterns
+					continue
+				}
+				// Check if the description matches the regex pattern
+				matches = pattern.MatchString(transaction.Description)
 			}
 
-			// Check if the description matches the regex pattern
-			if pattern.MatchString(transaction.Description) {
+			// If we have a match, apply the categorization
+			if matches {
 				// Get the full category information
 				category, exists := categoryCache[rule.CategoryDst]
 				if !exists {

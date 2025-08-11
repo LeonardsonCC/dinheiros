@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { categorizationRulesApi, categoriesApi } from '../services/api';
 import { toast } from 'react-hot-toast';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Badge } from '../components/ui/badge';
+import { Checkbox } from '../components/ui/checkbox';
 
 interface Category {
   id: number;
@@ -24,7 +33,7 @@ export default function CategorizationRules() {
   const [rules, setRules] = useState<CategorizationRule[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [newName, setNewName] = useState('');
-  const [newType, setNewType] = useState('regex');
+  const [newType, setNewType] = useState('exact');
   const [newValue, setNewValue] = useState('');
   const [newTransactionType, setNewTransactionType] = useState('expense');
   const [newCategoryDst, setNewCategoryDst] = useState<number>(0);
@@ -32,11 +41,13 @@ export default function CategorizationRules() {
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
-  const [editType, setEditType] = useState('regex');
+  const [editType, setEditType] = useState('exact');
   const [editValue, setEditValue] = useState('');
   const [editTransactionType, setEditTransactionType] = useState('expense');
   const [editCategoryDst, setEditCategoryDst] = useState<number>(0);
   const [editActive, setEditActive] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ruleToDelete, setRuleToDelete] = useState<CategorizationRule | null>(null);
 
   const fetchCategories = async () => {
     try {
@@ -106,7 +117,7 @@ export default function CategorizationRules() {
       });
       setRules([...rules, res.data]);
       setNewName('');
-      setNewType('regex');
+      setNewType('exact');
       setNewValue('');
       setNewTransactionType('expense');
       setNewCategoryDst(categories.length > 0 ? categories[0].id : 0);
@@ -119,18 +130,25 @@ export default function CategorizationRules() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Delete this categorization rule?')) return;
+  const handleDelete = async () => {
+    if (!ruleToDelete) return;
     try {
       setIsLoading(true);
-      await categorizationRulesApi.delete(id);
-      setRules(rules.filter(r => r.id !== id));
+      await categorizationRulesApi.delete(ruleToDelete.id);
+      setRules(rules.filter(r => r.id !== ruleToDelete.id));
       toast.success('Categorization rule deleted');
+      setDeleteDialogOpen(false);
+      setRuleToDelete(null);
     } catch {
       toast.error('Failed to delete categorization rule');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const openDeleteDialog = (rule: CategorizationRule) => {
+    setRuleToDelete(rule);
+    setDeleteDialogOpen(true);
   };
 
   const startEdit = (rule: CategorizationRule) => {
@@ -195,233 +213,282 @@ export default function CategorizationRules() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Manage Categorization Rules</h2>
+    <div className="container mx-auto py-8">
+      <h2 className="text-2xl font-bold mb-6">Manage Categorization Rules</h2>
       
       {/* Add new rule form */}
-      <form onSubmit={handleAdd} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add New Rule</h3>
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          <input
-            type="text"
-            placeholder="Rule name"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            required
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-          />
-          <select
-            value={newType}
-            onChange={e => setNewType(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-          >
-            <option value="regex">Regex</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Pattern value"
-            value={newValue}
-            onChange={e => setNewValue(e.target.value)}
-            required
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-          />
-          <select
-            value={newTransactionType}
-            onChange={e => setNewTransactionType(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-          >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-            <option value="transfer">Transfer</option>
-          </select>
-          <select
-            value={newCategoryDst}
-            onChange={e => setNewCategoryDst(Number(e.target.value))}
-            required
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-          >
-            <option value={0}>Select category...</option>
-            {getCategoriesByType(newTransactionType).map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="newActive"
-              checked={newActive}
-              onChange={e => setNewActive(e.target.checked)}
-              className="rounded text-blue-600 focus:ring-blue-500"
-            />
-            <label htmlFor="newActive" className="text-gray-700 dark:text-gray-300">Active</label>
-          </div>
-        </div>
-        <button 
-          type="submit" 
-          disabled={isLoading} 
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
-        >
-          Add Rule
-        </button>
-      </form>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Add New Rule</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleAdd} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="ruleName">Rule Name</Label>
+                <Input
+                  id="ruleName"
+                  type="text"
+                  placeholder="Rule name"
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="ruleType">Type</Label>
+                <Select value={newType} onValueChange={setNewType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="regex">Regex</SelectItem>
+                    <SelectItem value="exact">Exact Match</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="ruleValue">Match Value</Label>
+                <Input
+                  id="ruleValue"
+                  type="text"
+                  placeholder={newType === 'exact' ? 'Exact text to match' : 'Regex pattern'}
+                  value={newValue}
+                  onChange={e => setNewValue(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="transactionType">Transaction Type</Label>
+                <Select value={newTransactionType} onValueChange={setNewTransactionType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="expense">Expense</SelectItem>
+                    <SelectItem value="income">Income</SelectItem>
+                    <SelectItem value="transfer">Transfer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Select value={newCategoryDst.toString()} onValueChange={(value) => setNewCategoryDst(Number(value))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getCategoriesByType(newTransactionType).map(category => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="newActive"
+                  checked={newActive}
+                  onCheckedChange={(checked) => setNewActive(checked === true)}
+                />
+                <Label htmlFor="newActive">Active</Label>
+              </div>
+            </div>
+            <Button type="submit" disabled={isLoading}>
+              Add Rule
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Rules table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Value</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Transaction Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {rules.map(rule => (
-              <tr key={rule.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editId === rule.id ? (
-                    <input
-                      value={editName}
-                      onChange={e => setEditName(e.target.value)}
-                      className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                    />
-                  ) : (
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{rule.name}</div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editId === rule.id ? (
-                    <select
-                      value={editType}
-                      onChange={e => setEditType(e.target.value)}
-                      className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                    >
-                      <option value="regex">Regex</option>
-                    </select>
-                  ) : (
-                    <div className="text-sm text-gray-900 dark:text-gray-300">{rule.type}</div>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  {editId === rule.id ? (
-                    <input
-                      value={editValue}
-                      onChange={e => setEditValue(e.target.value)}
-                      className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                    />
-                  ) : (
-                    <div className="text-sm text-gray-900 dark:text-gray-300 break-all">{rule.value}</div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editId === rule.id ? (
-                    <select
-                      value={editTransactionType}
-                      onChange={e => setEditTransactionType(e.target.value)}
-                      className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                    >
-                      <option value="expense">Expense</option>
-                      <option value="income">Income</option>
-                      <option value="transfer">Transfer</option>
-                    </select>
-                  ) : (
-                    <div className="text-sm text-gray-900 dark:text-gray-300">{rule.transaction_type ? rule.transaction_type.charAt(0).toUpperCase() + rule.transaction_type.slice(1) : 'All'}</div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editId === rule.id ? (
-                    <select
-                      value={editCategoryDst}
-                      onChange={e => setEditCategoryDst(Number(e.target.value))}
-                      className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                    >
-                      {getCategoriesByType(editTransactionType).map(category => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="text-sm text-gray-900 dark:text-gray-300">{getCategoryName(rule.category_dst)}</div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editId === rule.id ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={editActive}
-                        onChange={e => setEditActive(e.target.checked)}
-                        className="rounded text-blue-600 focus:ring-blue-500"
-                      />
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => toggleActive(rule)}
-                      disabled={isLoading}
-                      className={`px-2 py-1 text-xs rounded-full ${
-                        rule.active 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-200 dark:hover:bg-green-900' 
-                          : 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-200 dark:hover:bg-red-900'
-                      }`}
-                    >
-                      {rule.active ? 'Active' : 'Inactive'}
-                    </button>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editId === rule.id ? (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleEdit}
-                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600"
-                        disabled={isLoading}
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditId(null)}
-                        className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
-                        disabled={isLoading}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => startEdit(rule)}
-                        className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-600"
-                        disabled={isLoading}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(rule.id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600"
-                        disabled={isLoading}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {rules.length === 0 && !isLoading && (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            No categorization rules found. Add your first rule above.
-          </div>
-        )}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Categorization Rules</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {rules.length === 0 && !isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No categorization rules found. Add your first rule above.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Match Value</TableHead>
+                  <TableHead>Transaction Type</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rules.map(rule => (
+                  <TableRow key={rule.id}>
+                    <TableCell>
+                      {editId === rule.id ? (
+                        <Input
+                          value={editName}
+                          onChange={e => setEditName(e.target.value)}
+                          className="w-full"
+                        />
+                      ) : (
+                        <div className="font-medium">{rule.name}</div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editId === rule.id ? (
+                        <Select value={editType} onValueChange={setEditType}>
+                          <SelectTrigger className="w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="regex">Regex</SelectItem>
+                            <SelectItem value="exact">Exact Match</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge variant="outline">{rule.type}</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editId === rule.id ? (
+                        <Input
+                          value={editValue}
+                          onChange={e => setEditValue(e.target.value)}
+                          placeholder={editType === 'exact' ? 'Exact text to match' : 'Regex pattern'}
+                          className="w-full"
+                        />
+                      ) : (
+                        <div className="break-all font-mono text-sm">{rule.value}</div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editId === rule.id ? (
+                        <Select value={editTransactionType} onValueChange={setEditTransactionType}>
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="expense">Expense</SelectItem>
+                            <SelectItem value="income">Income</SelectItem>
+                            <SelectItem value="transfer">Transfer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge variant={rule.transaction_type === 'income' ? 'default' : 'secondary'}>
+                          {rule.transaction_type ? rule.transaction_type.charAt(0).toUpperCase() + rule.transaction_type.slice(1) : 'All'}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editId === rule.id ? (
+                        <Select value={editCategoryDst.toString()} onValueChange={(value) => setEditCategoryDst(Number(value))}>
+                          <SelectTrigger className="w-40">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getCategoriesByType(editTransactionType).map(category => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div>{getCategoryName(rule.category_dst)}</div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editId === rule.id ? (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={editActive}
+                            onCheckedChange={(checked) => setEditActive(checked === true)}
+                          />
+                          <Label>Active</Label>
+                        </div>
+                      ) : (
+                        <Button
+                          variant={rule.active ? "default" : "secondary"}
+                          size="sm"
+                          onClick={() => toggleActive(rule)}
+                          disabled={isLoading}
+                        >
+                          {rule.active ? 'Active' : 'Inactive'}
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editId === rule.id ? (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={handleEdit}
+                            disabled={isLoading}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditId(null)}
+                            disabled={isLoading}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => startEdit(rule)}
+                            disabled={isLoading}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => openDeleteDialog(rule)}
+                            disabled={isLoading}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Categorization Rule</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the rule &ldquo;{ruleToDelete?.name}&rdquo;? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 

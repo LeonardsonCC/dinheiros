@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import TransactionsTable, { Transaction as TableTransaction } from '../components/TransactionsTable';
 import Loading from '../components/Loading';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '../lib/utils';
 import type { AxiosError } from 'axios';
 
 export default function Transactions() {
@@ -233,7 +234,7 @@ export default function Transactions() {
         onSort={handleSort}
         getSortIndicator={getSortIndicator}
         formatCurrency={formatCurrency}
-        formatDate={(dateString: string) => new Date(dateString).toLocaleDateString()}
+        formatDate={formatDate}
         renderActions={(transaction) => (
           <div className="flex items-center space-x-3 justify-center">
             <Link

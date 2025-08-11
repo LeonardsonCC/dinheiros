@@ -1,9 +1,14 @@
-import { Fragment, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import { useState } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Textarea } from './ui/textarea';
 
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
@@ -72,10 +77,6 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
     }
   };
 
-  const openModal = () => {
-    setType(initialType)
-    setIsOpen(true)
-  };
   const closeModal = () => {
     setIsOpen(false);
     setName('');
@@ -84,133 +85,91 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
   };
 
   return (
-    <>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <div className="flex justify-between items-center mb-2">
         {buttonVariant === 'icon' ? (
-          <button
-            type="button"
-            onClick={openModal}
-            className={`p-1 rounded-full bg-primary-100 dark:bg-primary-900/50 hover:bg-primary-200 dark:hover:bg-primary-900 text-primary-700 dark:text-primary-200 ${buttonClassName || ''}`}
-            title={t('categoryManager.addCategory')}
-          >
-            <PlusIcon className="h-4 w-4" />
-          </button>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`p-1 rounded-full ${buttonClassName || ''}`}
+              title={t('categoryManager.addCategory')}
+            >
+              <PlusIcon className="h-4 w-4" />
+            </Button>
+          </DialogTrigger>
         ) : (
           <>
-            <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="block text-sm font-medium">
               {t('categoryManager.categories')}
             </span>
-            <button
-              type="button"
-              onClick={openModal}
-              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-primary-700 dark:text-primary-200 bg-primary-100 dark:bg-primary-900/50 hover:bg-primary-200 dark:hover:bg-primary-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <PlusIcon className="h-3.5 w-3.5 mr-1" />
-              {t('categoryManager.addCategory')}
-            </button>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <PlusIcon className="h-3.5 w-3.5 mr-1" />
+                {t('categoryManager.addCategory')}
+              </Button>
+            </DialogTrigger>
           </>
         )}
       </div>
 
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25 dark:bg-opacity-50" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
-                  >
-                    {t('categoryManager.addNew')}
-                  </Dialog.Title>
-                  <div className="mt-4">
-                    <form onSubmit={handleSubmit}>
-                      <div className="mb-4">
-                        <label htmlFor="category-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t('categoryManager.name')} *
-                        </label>
-                        <input
-                          type="text"
-                          id="category-name"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                          placeholder={t('categoryManager.namePlaceholder')}
-                        />
-                      </div>
-                      <div className="mb-4">
-                        <label htmlFor="category-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t('categoryManager.description')}
-                        </label>
-                        <textarea
-                          id="category-description"
-                          rows={3}
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                          placeholder={t('categoryManager.descriptionPlaceholder')}
-                        />
-                      </div>
-                      <div className="mb-4">
-                        <label htmlFor="category-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t('categoryManager.type')} *
-                        </label>
-                        <select
-                          id="category-type"
-                          value={type}
-                          onChange={(e) => setType(e.target.value as TransactionType)}
-                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                        >
-                          <option value="expense">{t('dashboard.expenses')}</option>
-                          <option value="income">{t('dashboard.income')}</option>
-                          <option value="transfer">{t('categoryManager.transfer')}</option>
-                        </select>
-                      </div>
-                      <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:col-start-2 sm:text-sm disabled:opacity-50 dark:bg-primary-500 dark:hover:bg-primary-600"
-                        >
-                          {isSubmitting ? t('categoryManager.adding') : t('categoryManager.addCategory')}
-                        </button>
-                        <button
-                          type="button"
-                          className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                          onClick={closeModal}
-                        >
-                          {t('categoryManager.cancel')}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t('categoryManager.addNew')}</DialogTitle>
+          <DialogDescription>
+            Create a new category for organizing your transactions.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="category-name">
+              {t('categoryManager.name')} *
+            </Label>
+            <Input
+              id="category-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('categoryManager.namePlaceholder')}
+              required
+            />
           </div>
-        </Dialog>
-      </Transition>
-    </>
+          <div>
+            <Label htmlFor="category-description">
+              {t('categoryManager.description')}
+            </Label>
+            <Textarea
+              id="category-description"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('categoryManager.descriptionPlaceholder')}
+            />
+          </div>
+          <div>
+            <Label htmlFor="category-type">
+              {t('categoryManager.type')} *
+            </Label>
+            <Select value={type} onValueChange={(value) => setType(value as TransactionType)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="expense">{t('dashboard.expenses')}</SelectItem>
+                <SelectItem value="income">{t('dashboard.income')}</SelectItem>
+                <SelectItem value="transfer">{t('categoryManager.transfer')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? t('categoryManager.adding') : t('categoryManager.addCategory')}
+            </Button>
+            <Button type="button" variant="outline" onClick={closeModal}>
+              {t('categoryManager.cancel')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -286,7 +286,7 @@ func TestTransactionRepository_FindByUserID_WithFilters(t *testing.T) {
 	// Test filter by amount range
 	minAmount := 75.0
 	maxAmount := 150.0
-	foundTransactions, total, err = repo.FindByUserID(user.ID, nil, nil, nil, "", &minAmount, &maxAmount, nil, nil, 0, 0)
+	foundTransactions, _, err = repo.FindByUserID(user.ID, nil, nil, nil, "", &minAmount, &maxAmount, nil, nil, 0, 0)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -296,7 +296,7 @@ func TestTransactionRepository_FindByUserID_WithFilters(t *testing.T) {
 	}
 
 	// Test filter by description
-	foundTransactions, total, err = repo.FindByUserID(user.ID, nil, nil, nil, "Food", nil, nil, nil, nil, 0, 0)
+	foundTransactions, _, err = repo.FindByUserID(user.ID, nil, nil, nil, "Food", nil, nil, nil, nil, 0, 0)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -307,7 +307,7 @@ func TestTransactionRepository_FindByUserID_WithFilters(t *testing.T) {
 
 	// Test filter by account ID
 	accountIDs := []uint{account.ID}
-	foundTransactions, total, err = repo.FindByUserID(user.ID, nil, accountIDs, nil, "", nil, nil, nil, nil, 0, 0)
+	foundTransactions, _, err = repo.FindByUserID(user.ID, nil, accountIDs, nil, "", nil, nil, nil, nil, 0, 0)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}

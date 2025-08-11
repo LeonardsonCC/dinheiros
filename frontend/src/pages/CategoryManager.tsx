@@ -1,21 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Badge } from '../components/ui/badge';
+import { Textarea } from '../components/ui/textarea';
+import { PlusIcon, PencilIcon, TrashIcon, TagIcon } from '@heroicons/react/24/outline';
+import { Loading } from '../components/ui/loading';
 
 interface Category {
   id: number;
   name: string;
-  type: 'income' | 'expense';
+  description?: string;
+  type: 'income' | 'expense' | 'transfer';
 }
 
 export default function CategoryManager() {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [newName, setNewName] = useState('');
-  const [newType, setNewType] = useState<'income' | 'expense'>('income');
+  const [newDescription, setNewDescription] = useState('');
+  const [newType, setNewType] = useState<'income' | 'expense' | 'transfer'>('expense');
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
-  const [editType, setEditType] = useState<'income' | 'expense'>('income');
+  const [editDescription, setEditDescription] = useState('');
+  const [editType, setEditType] = useState<'income' | 'expense' | 'transfer'>('expense');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
   const fetchCategories = async () => {
     try {
@@ -23,7 +41,7 @@ export default function CategoryManager() {
       const res = await api.get('/api/categories');
       setCategories(res.data);
     } catch (err) {
-      toast.error('Failed to fetch categories');
+      toast.error(t('categoryManager.failed'));
     } finally {
       setIsLoading(false);
     }
@@ -35,27 +53,38 @@ export default function CategoryManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newName.trim()) {
+      toast.error(t('categoryManager.nameRequired'));
+      return;
+    }
     try {
       setIsLoading(true);
-      const res = await api.post('/api/categories', { name: newName, type: newType });
+      const res = await api.post('/api/categories', { 
+        name: newName.trim(), 
+        description: newDescription.trim(),
+        type: newType 
+      });
       setCategories([...categories, res.data]);
       setNewName('');
-      setNewType('income');
-      toast.success('Category added');
+      setNewDescription('');
+      setNewType('expense');
+      toast.success(t('categoryManager.added'));
     } catch {
-      toast.error('Failed to add category');
+      toast.error(t('categoryManager.failed'));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Delete this category?')) return;
+  const handleDelete = async () => {
+    if (!categoryToDelete) return;
     try {
       setIsLoading(true);
-      await api.delete(`/api/categories/${id}`);
-      setCategories(categories.filter(c => c.id !== id));
-      toast.success('Category deleted');
+      await api.delete(`/api/categories/${categoryToDelete.id}`);
+      setCategories(categories.filter(c => c.id !== categoryToDelete.id));
+      toast.success('Category deleted successfully');
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
     } catch {
       toast.error('Failed to delete category');
     } finally {
@@ -63,21 +92,35 @@ export default function CategoryManager() {
     }
   };
 
+  const openDeleteDialog = (category: Category) => {
+    setCategoryToDelete(category);
+    setDeleteDialogOpen(true);
+  };
+
   const startEdit = (cat: Category) => {
     setEditId(cat.id);
     setEditName(cat.name);
+    setEditDescription(cat.description || '');
     setEditType(cat.type);
   };
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editId === null) return;
+    if (!editName.trim()) {
+      toast.error(t('categoryManager.nameRequired'));
+      return;
+    }
     try {
       setIsLoading(true);
-      const res = await api.put(`/api/categories/${editId}`, { name: editName, type: editType });
+      const res = await api.put(`/api/categories/${editId}`, { 
+        name: editName.trim(), 
+        description: editDescription.trim(),
+        type: editType 
+      });
       setCategories(categories.map(c => (c.id === editId ? res.data : c)));
       setEditId(null);
-      toast.success('Category updated');
+      toast.success('Category updated successfully');
     } catch {
       toast.error('Failed to update category');
     } finally {
@@ -86,124 +129,226 @@ export default function CategoryManager() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Manage Categories</h2>
+    <div className="container mx-auto py-8 space-y-6">
+      <div className="flex items-center gap-3">
+        <TagIcon className="h-8 w-8 text-primary" />
+        <h1 className="text-3xl font-bold tracking-tight">{t('categoryManager.categories')}</h1>
+      </div>
       
       {/* Add new category form */}
-      <form onSubmit={handleAdd} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add New Category</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input
-            type="text"
-            placeholder="Category name"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            required
-            className="border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-          />
-          <select
-            value={newType}
-            onChange={e => setNewType(e.target.value as 'income' | 'expense')}
-            className="border rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-          >
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-          <button 
-            type="submit" 
-            disabled={isLoading} 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
-          >
-            Add Category
-          </button>
-        </div>
-      </form>
+      <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2">
+            <PlusIcon className="h-5 w-5" />
+            {t('categoryManager.addNew')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleAdd} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="categoryName">{t('categoryManager.name')} *</Label>
+                <Input
+                  id="categoryName"
+                  type="text"
+                  placeholder={t('categoryManager.namePlaceholder')}
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="categoryType">{t('categoryManager.type')} *</Label>
+                <Select value={newType} onValueChange={(value) => setNewType(value as 'income' | 'expense' | 'transfer')}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="expense">{t('dashboard.expenses')}</SelectItem>
+                    <SelectItem value="income">{t('dashboard.income')}</SelectItem>
+                    <SelectItem value="transfer">{t('categoryManager.transfer')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="categoryDescription">{t('categoryManager.description')}</Label>
+              <Textarea
+                id="categoryDescription"
+                placeholder={t('categoryManager.descriptionPlaceholder')}
+                value={newDescription}
+                onChange={e => setNewDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              {isLoading ? t('categoryManager.adding') : t('categoryManager.addCategory')}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Categories table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {categories.map(cat => (
-              <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editId === cat.id ? (
-                    <input
-                      value={editName}
-                      onChange={e => setEditName(e.target.value)}
-                      className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                    />
-                  ) : (
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{cat.name}</div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editId === cat.id ? (
-                    <select
-                      value={editType}
-                      onChange={e => setEditType(e.target.value as 'income' | 'expense')}
-                      className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                    >
-                      <option value="income">Income</option>
-                      <option value="expense">Expense</option>
-                    </select>
-                  ) : (
-                    <div className="text-sm text-gray-900 dark:text-gray-300">{cat.type.charAt(0).toUpperCase() + cat.type.slice(1)}</div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editId === cat.id ? (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleEdit}
-                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600"
-                        disabled={isLoading}
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditId(null)}
-                        className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
-                        disabled={isLoading}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => startEdit(cat)}
-                        className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-600"
-                        disabled={isLoading}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(cat.id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600"
-                        disabled={isLoading}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {categories.length === 0 && !isLoading && (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            No categories found. Add your first category above.
-          </div>
-        )}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TagIcon className="h-5 w-5" />
+            {t('categoryManager.categories')} ({categories.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loading />
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="text-center py-12">
+              <TagIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg mb-2">No categories found</p>
+              <p className="text-sm text-muted-foreground">Add your first category above to get started.</p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[40%]">Name</TableHead>
+                    <TableHead className="w-[30%]">Description</TableHead>
+                    <TableHead className="w-[15%]">Type</TableHead>
+                    <TableHead className="w-[15%] text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categories.map(cat => (
+                    <TableRow key={cat.id} className="hover:bg-muted/50">
+                      <TableCell>
+                        {editId === cat.id ? (
+                          <Input
+                            value={editName}
+                            onChange={e => setEditName(e.target.value)}
+                            className="w-full"
+                            placeholder={t('categoryManager.namePlaceholder')}
+                          />
+                        ) : (
+                          <div className="font-medium">{cat.name}</div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editId === cat.id ? (
+                          <Textarea
+                            value={editDescription}
+                            onChange={e => setEditDescription(e.target.value)}
+                            className="w-full min-h-[60px]"
+                            placeholder={t('categoryManager.descriptionPlaceholder')}
+                            rows={2}
+                          />
+                        ) : (
+                          <div className="text-sm text-muted-foreground">
+                            {cat.description || 'No description'}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editId === cat.id ? (
+                          <Select value={editType} onValueChange={(value) => setEditType(value as 'income' | 'expense' | 'transfer')}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="expense">{t('dashboard.expenses')}</SelectItem>
+                              <SelectItem value="income">{t('dashboard.income')}</SelectItem>
+                              <SelectItem value="transfer">{t('categoryManager.transfer')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge 
+                            variant={
+                              cat.type === 'income' ? 'default' : 
+                              cat.type === 'expense' ? 'secondary' : 
+                              'outline'
+                            }
+                            className="capitalize"
+                          >
+                            {cat.type === 'income' ? t('dashboard.income') :
+                             cat.type === 'expense' ? t('dashboard.expenses') :
+                             t('categoryManager.transfer')}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {editId === cat.id ? (
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              size="sm"
+                              onClick={handleEdit}
+                              disabled={isLoading}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditId(null)}
+                              disabled={isLoading}
+                            >
+                              {t('categoryManager.cancel')}
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEdit(cat)}
+                              disabled={isLoading}
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => openDeleteDialog(cat)}
+                              disabled={isLoading}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <TrashIcon className="h-5 w-5 text-destructive" />
+              Delete Category
+            </DialogTitle>
+            <DialogDescription className="text-left">
+              Are you sure you want to delete the category <strong>&ldquo;{categoryToDelete?.name}&rdquo;</strong>? 
+              This action cannot be undone and may affect existing transactions.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isLoading}>
+              {t('categoryManager.cancel')}
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
+              {isLoading ? 'Deleting...' : 'Delete Category'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

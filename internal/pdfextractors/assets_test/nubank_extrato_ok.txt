@@ -43,7 +43,7 @@ XXXXX-X
 Total de saídas
 - 336,72
 Transferência enviada pelo Pix
-Juliana Pereira Alves Ltda - 01.697.073/0002-28 -
+John Doe Company Ltda - 01.234.567/0001-89 -
 CC UNICRED CENTRO-SUL LTDA - UNICRED
 CENTRO-SUL Agência: 1406 Conta: 565987-6
 256,40
@@ -61,7 +61,7 @@ M4 PRODUTOS E SERVICOS LTDA - 09.614.276
 Total de saídas
 - 360,00
 Transferência enviada pelo Pix
-Susane Aguiar dos Santos - •••.730.250-•• - Nubank
+Jane Smith Santos - •••.123.456-•• - Nubank
 (0260) Agência: 1 Conta: 62214475-5
 360,00
 Tem alguma dúvida? Mande uma mensagem para nosso time de atendimento pelo chat do app ou ligue 4020 0185 (capitais e regiões
@@ -86,7 +86,7 @@ VALORES EM R$
 Total de saídas
 - 25,29
 Transferência enviada pelo Pix
-Ana Carolina Costa Barros Sotovia - •••.265.518-•• -
+Maria Silva Costa - •••.789.012-•• -
 ITAÚ UNIBANCO S.A. (0341) Agência: 7643 Conta:
 11719-0
 25,29
@@ -99,14 +99,14 @@ Pagamento de fatura
 Total de entradas
 + 100,00
 Reembolso recebido pelo Pix
-Silvana Silva da Rosa Prates - •••.803.759-•• - NU
+Carlos Oliveira Rosa - •••.345.678-•• - NU
 PAGAMENTOS - IP (0260) Agência: 1 Conta:
 63775042-4
 100,00
 Total de saídas
 - 100,00
 Transferência enviada pelo Pix
-Silvana Silva da Rosa Prates - •••.803.759-•• - NU
+Carlos Oliveira Rosa - •••.345.678-•• - NU
 PAGAMENTOS - IP (0260) Agência: 1 Conta:
 63775042-4
 100,00
@@ -114,14 +114,14 @@ PAGAMENTOS - IP (0260) Agência: 1 Conta:
 Total de saídas
 - 100,00
 Transferência enviada pelo Pix
-Maria Eduarda Hillesheim - •••.440.779-•• - PICPAY
+Pedro Santos Hillesheim - •••.901.234-•• - PICPAY
 (0380) Agência: 1 Conta: 50909442-2
 100,00
 19 JUN 2025
 Total de saídas
 - 15,00
 Transferência enviada pelo Pix
-Anna Carolina Prates Furtado - •••.853.199-•• -
+Ana Costa Prates - •••.567.890-•• -
 COOP SICREDI SUL SC Agência: 2604 Conta:
 95936-4
 15,00
