@@ -1,0 +1,32 @@
+# Go files and directories (not needed for frontend deployment)
+*.go
+go.mod
+go.sum
+cmd/
+internal/
+config/
+scripts/
+
+# Docker files
+docker-compose.yml
+docker-compose.ghcr.yml
+Dockerfile
+
+# Environment files
+.env
+.env.local
+
+# Database files
+*.db
+*.sqlite3
+
+# Documentation and other non-frontend files
+docs/
+README.md
+AGENTS.md
+Makefile
+
+# Frontend development files
+frontend/node_modules/
+frontend/.env
+frontend/.env.local

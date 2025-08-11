@@ -9,7 +9,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId="1042630940956-jbtm700eqmcggj86h6fdq3dbrseka4vg.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "1042630940956-jbtm700eqmcggj86h6fdq3dbrseka4vg.apps.googleusercontent.com"}>
       <BrowserRouter
         future={{
           v7_startTransition: true,
