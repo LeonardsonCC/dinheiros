@@ -171,7 +171,9 @@
     "first": "First",
     "last": "Last",
     "showing": "Showing {{from}} to {{to}} of {{total}} results",
-    "size": "Size:"
+    "size": "Size:",
+    "page": "Page",
+    "of": "of"
   },
   "categoryManager": {
     "categories": "Categories",

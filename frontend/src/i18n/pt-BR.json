@@ -171,7 +171,9 @@
     "first": "Primeira",
     "last": "Última",
     "showing": "Mostrando {{from}} a {{to}} de {{total}} resultados",
-    "size": "Tamanho:"
+    "size": "Tamanho:",
+    "page": "Página",
+    "of": "de"
   },
   "categoryManager": {
     "categories": "Categorias",

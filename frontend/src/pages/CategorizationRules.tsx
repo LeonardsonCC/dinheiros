@@ -33,7 +33,7 @@ export default function CategorizationRules() {
   const [rules, setRules] = useState<CategorizationRule[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [newName, setNewName] = useState('');
-  const [newType, setNewType] = useState('regex');
+  const [newType, setNewType] = useState('exact');
   const [newValue, setNewValue] = useState('');
   const [newTransactionType, setNewTransactionType] = useState('expense');
   const [newCategoryDst, setNewCategoryDst] = useState<number>(0);
@@ -41,7 +41,7 @@ export default function CategorizationRules() {
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
-  const [editType, setEditType] = useState('regex');
+  const [editType, setEditType] = useState('exact');
   const [editValue, setEditValue] = useState('');
   const [editTransactionType, setEditTransactionType] = useState('expense');
   const [editCategoryDst, setEditCategoryDst] = useState<number>(0);
@@ -117,7 +117,7 @@ export default function CategorizationRules() {
       });
       setRules([...rules, res.data]);
       setNewName('');
-      setNewType('regex');
+      setNewType('exact');
       setNewValue('');
       setNewTransactionType('expense');
       setNewCategoryDst(categories.length > 0 ? categories[0].id : 0);
@@ -243,15 +243,16 @@ export default function CategorizationRules() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="regex">Regex</SelectItem>
+                    <SelectItem value="exact">Exact Match</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="ruleValue">Pattern Value</Label>
+                <Label htmlFor="ruleValue">Match Value</Label>
                 <Input
                   id="ruleValue"
                   type="text"
-                  placeholder="Pattern value"
+                  placeholder={newType === 'exact' ? 'Exact text to match' : 'Regex pattern'}
                   value={newValue}
                   onChange={e => setNewValue(e.target.value)}
                   required
@@ -317,7 +318,7 @@ export default function CategorizationRules() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Value</TableHead>
+                  <TableHead>Match Value</TableHead>
                   <TableHead>Transaction Type</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Status</TableHead>
@@ -346,6 +347,7 @@ export default function CategorizationRules() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="regex">Regex</SelectItem>
+                            <SelectItem value="exact">Exact Match</SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
@@ -357,6 +359,7 @@ export default function CategorizationRules() {
                         <Input
                           value={editValue}
                           onChange={e => setEditValue(e.target.value)}
+                          placeholder={editType === 'exact' ? 'Exact text to match' : 'Regex pattern'}
                           className="w-full"
                         />
                       ) : (
