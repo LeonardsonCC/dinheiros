@@ -4,9 +4,10 @@ import { cn } from '@/lib/utils';
 interface CustomNavLinkProps extends NavLinkProps {
   icon?: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
+  onClick?: () => void;
 }
 
-export function NavLink({ icon: Icon, children, className, ...props }: CustomNavLinkProps) {
+export function NavLink({ icon: Icon, children, className, onClick, ...props }: CustomNavLinkProps) {
   return (
     <RouterNavLink
       className={({ isActive }) => cn(
@@ -16,6 +17,7 @@ export function NavLink({ icon: Icon, children, className, ...props }: CustomNav
           : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
         className
       )}
+      onClick={onClick}
       {...props}
     >
       {({ isActive }) => (
