@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -13,8 +14,13 @@ type AccountService interface {
 	CreateAccount(account *models.Account) error
 	GetAccountByID(id uint, userID uint) (*models.Account, error)
 	GetAccountsByUserID(userID uint) ([]models.Account, error)
+	GetAccountsByUserIDIncludingDeleted(userID uint) ([]models.Account, error)
+	GetAccountsByUserIDIncludingShared(userID uint) ([]models.Account, error)
+	GetAccountsByUserIDIncludingSharedAndDeleted(userID uint) ([]models.Account, error)
+	GetAccountsWithOwnershipInfo(userID uint, includeDeleted bool, includeShared bool) ([]dto.AccountResponse, error)
 	UpdateAccount(id uint, userID uint, req *dto.UpdateAccountRequest) (*models.Account, error)
 	DeleteAccount(id uint, userID uint) error
+	ReactivateAccount(id uint, userID uint) error
 }
 
 type accountService struct {
@@ -108,8 +114,28 @@ func (s *accountService) GetAccountsByUserID(userID uint) ([]models.Account, err
 	return s.repo.FindByUserID(userID)
 }
 
+func (s *accountService) GetAccountsByUserIDIncludingDeleted(userID uint) ([]models.Account, error) {
+	return s.repo.FindByUserIDIncludingDeleted(userID)
+}
+
+func (s *accountService) GetAccountsByUserIDIncludingShared(userID uint) ([]models.Account, error) {
+	return s.repo.FindByUserIDIncludingShared(userID)
+}
+
+func (s *accountService) GetAccountsByUserIDIncludingSharedAndDeleted(userID uint) ([]models.Account, error) {
+	return s.repo.FindByUserIDIncludingSharedAndDeleted(userID)
+}
+
 func (s *accountService) UpdateAccount(id uint, userID uint, req *dto.UpdateAccountRequest) (*models.Account, error) {
-	// First verify the account belongs to the user
+	// First verify the account belongs to the user (only owners can update accounts)
+	isOwner, err := s.repo.IsOwner(id, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !isOwner {
+		return nil, errors.New("only account owners can update accounts")
+	}
+
 	existing, err := s.repo.FindByID(id, userID)
 	if err != nil {
 		return nil, err
@@ -130,6 +156,15 @@ func (s *accountService) UpdateAccount(id uint, userID uint, req *dto.UpdateAcco
 }
 
 func (s *accountService) DeleteAccount(id uint, userID uint) error {
+	// Only account owners can delete accounts
+	isOwner, err := s.repo.IsOwner(id, userID)
+	if err != nil {
+		return err
+	}
+	if !isOwner {
+		return errors.New("only account owners can delete accounts")
+	}
+
 	// Start a transaction to ensure data consistency
 	tx := s.repo.Begin()
 	if tx.Error != nil {
@@ -157,13 +192,88 @@ func (s *accountService) DeleteAccount(id uint, userID uint) error {
 		return err
 	}
 
-	// Delete the account (using hard delete for now, can be changed to soft delete if needed)
+	// Soft delete the account
 	accountRepoTx := s.repo.WithTx(tx)
-	err = accountRepoTx.Delete(id, userID)
+	err = accountRepoTx.SoftDelete(id, userID)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
 	return tx.Commit().Error
+}
+
+func (s *accountService) ReactivateAccount(id uint, userID uint) error {
+	// Only account owners can reactivate accounts
+	isOwner, err := s.repo.IsOwner(id, userID)
+	if err != nil {
+		return err
+	}
+	if !isOwner {
+		return errors.New("only account owners can reactivate accounts")
+	}
+
+	// Start a transaction to ensure data consistency
+	tx := s.repo.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Reactivate the account
+	accountRepoTx := s.repo.WithTx(tx)
+	err = accountRepoTx.Reactivate(id, userID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Reactivate all transactions associated with this account
+	transactionRepoTx := s.transactionRepo.WithTx(tx)
+	err = transactionRepoTx.ReactivateByAccountID(id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
+func (s *accountService) GetAccountsWithOwnershipInfo(userID uint, includeDeleted bool, includeShared bool) ([]dto.AccountResponse, error) {
+	var accounts []models.Account
+	var err error
+
+	if includeDeleted && includeShared {
+		accounts, err = s.repo.FindByUserIDIncludingSharedAndDeleted(userID)
+	} else if includeDeleted {
+		accounts, err = s.repo.FindByUserIDIncludingDeleted(userID)
+	} else if includeShared {
+		accounts, err = s.repo.FindByUserIDIncludingShared(userID)
+	} else {
+		accounts, err = s.repo.FindByUserID(userID)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	responses := make([]dto.AccountResponse, len(accounts))
+	for i, account := range accounts {
+		// Check if user owns this account
+		isOwner := account.UserID == userID
+		ownerName := ""
+		if !isOwner {
+			// Get owner name for shared accounts
+			ownerName = account.User.Name
+		}
+
+		responses[i] = dto.ToAccountResponseWithOwnership(&account, isOwner, ownerName)
+	}
+
+	return responses, nil
 }

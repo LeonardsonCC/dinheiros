@@ -79,14 +79,18 @@ func (h *AccountHandler) GetAccounts(c *gin.Context) {
 		return
 	}
 
-	accounts, err := h.accountService.GetAccountsByUserID(user.(uint))
+	// Check if we should include deleted accounts and shared accounts
+	includeDeleted := c.Query("include_deleted") == "true"
+	includeShared := c.Query("include_shared") != "false" // Default to true
+
+	accounts, err := h.accountService.GetAccountsWithOwnershipInfo(user.(uint), includeDeleted, includeShared)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching accounts"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"accounts": dto.ToAccountResponseList(accounts),
+		"accounts": accounts,
 	})
 }
 
@@ -163,5 +167,28 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Account deleted successfully",
+	})
+}
+
+func (h *AccountHandler) ReactivateAccount(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	accountID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+		return
+	}
+
+	if err := h.accountService.ReactivateAccount(uint(accountID), user.(uint)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error reactivating account"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Account reactivated successfully",
 	})
 }

@@ -79,7 +79,7 @@ func (s *transactionService) CreateTransaction(
 	categoryIDs []uint,
 	date time.Time,
 ) (*models.Transaction, error) {
-	// Verify account exists and belongs to user
+	// Verify account exists and user has access (owner or shared)
 	_, err := s.accountRepo.FindByID(accountID, userID)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (s *transactionService) CreateTransferTransaction(userID uint, fromAccountI
 	if fromAccountID == toAccountID {
 		return nil, nil, errors.ErrSameAccountTransfer
 	}
-	// Verify accounts exist and belong to user
+	// Verify accounts exist and user has access (owner or shared)
 	if _, err := s.accountRepo.FindByID(fromAccountID, userID); err != nil {
 		return nil, nil, errors.ErrFromAccountNotFound
 	}
@@ -165,8 +165,7 @@ func (s *transactionService) CreateTransferTransaction(userID uint, fromAccountI
 		ToAccountID: &fromAccountID,
 	}
 
-	err := s.transactionRepo.CreateInBatch([]*models.Transaction{expenseTx, incomeTx})
-	if err != nil {
+	if err := s.transactionRepo.CreateInBatch([]*models.Transaction{expenseTx, incomeTx}); err != nil {
 		return nil, nil, err
 	}
 
@@ -187,7 +186,7 @@ func (s *transactionService) GetTransactionByID(userID uint, transactionID uint)
 }
 
 func (s *transactionService) GetTransactionsByAccountID(userID uint, accountID uint) ([]models.Transaction, error) {
-	// Verify account exists and belongs to user
+	// Verify account exists and user has access (owner or shared)
 	if _, err := s.accountRepo.FindByID(accountID, userID); err != nil {
 		return nil, err
 	}
@@ -259,8 +258,14 @@ func (s *transactionService) ListTransactions(
 }
 
 func (s *transactionService) UpdateTransaction(userID uint, transaction *models.Transaction) error {
-	// Verify transaction exists and belongs to user
+	// Verify transaction exists and user has access to the account
 	existingTx, err := s.transactionRepo.FindByID(transaction.ID, userID)
+	if err != nil {
+		return err
+	}
+
+	// Verify user has access to the account (owner or shared)
+	_, err = s.accountRepo.FindByID(existingTx.AccountID, userID)
 	if err != nil {
 		return err
 	}
@@ -300,8 +305,14 @@ func (s *transactionService) UpdateTransaction(userID uint, transaction *models.
 }
 
 func (s *transactionService) DeleteTransaction(userID uint, transactionID uint) error {
-	// Verify transaction exists and belongs to user
+	// Verify transaction exists and user has access to the account
 	transaction, err := s.transactionRepo.FindByID(transactionID, userID)
+	if err != nil {
+		return err
+	}
+
+	// Verify user has access to the account (owner or shared)
+	_, err = s.accountRepo.FindByID(transaction.AccountID, userID)
 	if err != nil {
 		return err
 	}
@@ -591,6 +602,12 @@ func (s *transactionService) GetAmountSpentAndGainedByDayWithRange(userID uint, 
 }
 
 func (s *transactionService) ExtractTransactionsFromPDFWithExtractorAndRules(filePath string, accountID uint, userID uint, extractor string, categorizationRuleService CategorizationRuleService) ([]models.Transaction, error) {
+	// Verify user has access to the account (owner or shared)
+	_, err := s.accountRepo.FindByID(accountID, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	var ext pdfextractors.PDFExtractor
 	if extractor != "" {
 		ext = pdfextractors.GetExtractorByName(extractor)

@@ -64,6 +64,7 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 					account.GET("", container.AccountHandler.GetAccount)
 					account.PUT("", container.AccountHandler.UpdateAccount)
 					account.DELETE("", container.AccountHandler.DeleteAccount)
+					account.POST("/reactivate", container.AccountHandler.ReactivateAccount)
 
 					// Account sharing routes
 					shares := account.Group("/shares")

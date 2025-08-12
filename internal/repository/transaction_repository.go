@@ -31,6 +31,7 @@ type TransactionRepository interface {
 	Update(transaction *models.Transaction) error
 	Delete(id uint, userID uint) error
 	SoftDeleteByAccountID(accountID uint) error
+	ReactivateByAccountID(accountID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
 	AssociateCategories(transactionID uint, categoryIDs []uint) error
 
@@ -61,7 +62,7 @@ func (r *transactionRepository) FindByID(id uint, userID uint) (*models.Transact
 	var transaction models.Transaction
 	err := r.db.Preload("Categories").
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
-		Where("transactions.id = ? AND accounts.user_id = ?", id, userID).
+		Where("transactions.id = ? AND (accounts.user_id = ? OR accounts.id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?))", id, userID, userID).
 		First(&transaction).Error
 
 	if err != nil {
@@ -104,10 +105,10 @@ func (r *transactionRepository) FindByUserID(
 	var transactions []models.Transaction
 	var total int64
 
-	// Start building the query
+	// Start building the query - include transactions from owned accounts OR shared accounts
 	tx := r.db.Model(&models.Transaction{}).
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
-		Where("accounts.user_id = ?", userID)
+		Where("accounts.user_id = ? OR accounts.id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?)", userID, userID)
 
 	// Apply filters
 	if len(transactionTypes) > 0 {
@@ -198,6 +199,12 @@ func (r *transactionRepository) SoftDeleteByAccountID(accountID uint) error {
 	// Soft delete all transactions for the given account ID
 	// GORM will automatically set the deleted_at timestamp when using Delete()
 	return r.db.Where("account_id = ?", accountID).Delete(&models.Transaction{}).Error
+}
+
+func (r *transactionRepository) ReactivateByAccountID(accountID uint) error {
+	// Reactivate all soft-deleted transactions for the given account ID
+	// by setting deleted_at to NULL
+	return r.db.Unscoped().Model(&models.Transaction{}).Where("account_id = ? AND deleted_at IS NOT NULL", accountID).Update("deleted_at", nil).Error
 }
 
 // Begin starts a new transaction

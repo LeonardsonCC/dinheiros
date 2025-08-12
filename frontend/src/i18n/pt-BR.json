@@ -223,7 +223,16 @@
     "deleted": "Conta excluída com sucesso",
     "failedDelete": "Falha ao excluir conta",
     "loading": "Carregando contas...",
-    "viewTransactions": "Ver transações"
+    "viewTransactions": "Ver transações",
+    "showInactive": "Mostrar Inativas",
+    "hideInactive": "Ocultar Inativas",
+    "inactive": "Inativa",
+    "shared": "Compartilhada",
+    "ownedBy": "por {{owner}}",
+    "reactivateAccount": "Reativar conta",
+    "confirmReactivate": "Tem certeza que deseja reativar esta conta? Isso também reativará todas as transações associadas.",
+    "reactivated": "Conta reativada com sucesso",
+    "failedReactivate": "Falha ao reativar conta"
   },
   "profile": {
     "title": "Configurações de Perfil",

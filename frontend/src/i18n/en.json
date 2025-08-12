@@ -223,7 +223,16 @@
     "deleted": "Account deleted successfully",
     "failedDelete": "Failed to delete account",
     "loading": "Loading accounts...",
-    "viewTransactions": "View transactions"
+    "viewTransactions": "View transactions",
+    "showInactive": "Show Inactive",
+    "hideInactive": "Hide Inactive",
+    "inactive": "Inactive",
+    "shared": "Shared",
+    "ownedBy": "by {{owner}}",
+    "reactivateAccount": "Reactivate account",
+    "confirmReactivate": "Are you sure you want to reactivate this account? This will also reactivate all associated transactions.",
+    "reactivated": "Account reactivated successfully",
+    "failedReactivate": "Failed to reactivate account"
   },
   "profile": {
     "title": "Profile Settings",

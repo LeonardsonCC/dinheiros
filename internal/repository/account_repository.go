@@ -13,8 +13,15 @@ type AccountRepository interface {
 	FindByID(id uint, userID uint) (*models.Account, error)
 	FindByIDWithoutUserCheck(id uint) (*models.Account, error)
 	FindByUserID(userID uint) ([]models.Account, error)
+	FindByUserIDIncludingDeleted(userID uint) ([]models.Account, error)
+	FindByUserIDIncludingShared(userID uint) ([]models.Account, error)
+	FindByUserIDIncludingSharedAndDeleted(userID uint) ([]models.Account, error)
+	HasAccess(accountID uint, userID uint) (bool, error)
+	IsOwner(accountID uint, userID uint) (bool, error)
 	Update(account *models.Account) error
 	Delete(id uint, userID uint) error
+	SoftDelete(id uint, userID uint) error
+	Reactivate(id uint, userID uint) error
 	UpdateBalance(accountID uint, amount float64) error
 
 	// Transaction management
@@ -45,7 +52,11 @@ func (r *accountRepository) Create(account *models.Account) error {
 
 func (r *accountRepository) FindByID(id uint, userID uint) (*models.Account, error) {
 	var account models.Account
-	err := r.db.Where("id = ? AND user_id = ?", id, userID).First(&account).Error
+	// Check if user owns the account OR has shared access
+	err := r.db.Where(
+		"id = ? AND (user_id = ? OR id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?))",
+		id, userID, userID,
+	).First(&account).Error
 	if err != nil {
 		return nil, err
 	}
@@ -70,12 +81,74 @@ func (r *accountRepository) FindByUserID(userID uint) ([]models.Account, error) 
 	return accounts, nil
 }
 
+func (r *accountRepository) FindByUserIDIncludingDeleted(userID uint) ([]models.Account, error) {
+	var accounts []models.Account
+	err := r.db.Unscoped().Where("user_id = ?", userID).Find(&accounts).Error
+	if err != nil {
+		return nil, err
+	}
+	return accounts, nil
+}
+
+func (r *accountRepository) FindByUserIDIncludingShared(userID uint) ([]models.Account, error) {
+	var accounts []models.Account
+	// Get accounts owned by user OR shared with user
+	err := r.db.Preload("User").Where(
+		"user_id = ? OR id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?)",
+		userID, userID,
+	).Find(&accounts).Error
+	if err != nil {
+		return nil, err
+	}
+	return accounts, nil
+}
+
+func (r *accountRepository) FindByUserIDIncludingSharedAndDeleted(userID uint) ([]models.Account, error) {
+	var accounts []models.Account
+	// Get accounts owned by user OR shared with user (including soft deleted)
+	err := r.db.Unscoped().Preload("User").Where(
+		"user_id = ? OR id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?)",
+		userID, userID,
+	).Find(&accounts).Error
+	if err != nil {
+		return nil, err
+	}
+	return accounts, nil
+}
+
+func (r *accountRepository) HasAccess(accountID uint, userID uint) (bool, error) {
+	var count int64
+	// Check if user owns the account OR has shared access
+	err := r.db.Model(&models.Account{}).Where(
+		"id = ? AND (user_id = ? OR id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?))",
+		accountID, userID, userID,
+	).Count(&count).Error
+	return count > 0, err
+}
+
+func (r *accountRepository) IsOwner(accountID uint, userID uint) (bool, error) {
+	var count int64
+	// Check if user owns the account (not just shared access)
+	err := r.db.Model(&models.Account{}).Where("id = ? AND user_id = ?", accountID, userID).Count(&count).Error
+	return count > 0, err
+}
+
 func (r *accountRepository) Update(account *models.Account) error {
 	return r.db.Save(account).Error
 }
 
 func (r *accountRepository) Delete(id uint, userID uint) error {
+	return r.db.Where("id = ? AND user_id = ?", id, userID).Unscoped().Delete(&models.Account{}).Error
+}
+
+func (r *accountRepository) SoftDelete(id uint, userID uint) error {
+	// Only account owner can delete accounts
 	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Account{}).Error
+}
+
+func (r *accountRepository) Reactivate(id uint, userID uint) error {
+	// Only account owner can reactivate accounts
+	return r.db.Unscoped().Model(&models.Account{}).Where("id = ? AND user_id = ?", id, userID).Update("deleted_at", nil).Error
 }
 
 // UpdateBalance updates the balance of an account by adding the specified amount

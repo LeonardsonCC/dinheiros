@@ -22,6 +22,9 @@ type AccountResponse struct {
 	InitialBalance float64            `json:"initial_balance"`
 	Balance        float64            `json:"balance"`
 	Color          string             `json:"color"`
+	IsActive       bool               `json:"is_active"`
+	IsOwner        bool               `json:"is_owner"`
+	OwnerName      string             `json:"owner_name,omitempty"`
 }
 
 func ToAccountResponse(account *models.Account) AccountResponse {
@@ -32,6 +35,22 @@ func ToAccountResponse(account *models.Account) AccountResponse {
 		InitialBalance: account.InitialBalance,
 		Balance:        account.Balance,
 		Color:          account.Color,
+		IsActive:       account.DeletedAt.Time.IsZero(),
+		IsOwner:        true, // Default to true, will be overridden by service if needed
+	}
+}
+
+func ToAccountResponseWithOwnership(account *models.Account, isOwner bool, ownerName string) AccountResponse {
+	return AccountResponse{
+		ID:             account.ID,
+		Name:           account.Name,
+		Type:           account.Type,
+		InitialBalance: account.InitialBalance,
+		Balance:        account.Balance,
+		Color:          account.Color,
+		IsActive:       account.DeletedAt.Time.IsZero(),
+		IsOwner:        isOwner,
+		OwnerName:      ownerName,
 	}
 }
 
