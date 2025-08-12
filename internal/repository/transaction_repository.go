@@ -30,6 +30,7 @@ type TransactionRepository interface {
 	) ([]models.Transaction, int64, error)
 	Update(transaction *models.Transaction) error
 	Delete(id uint, userID uint) error
+	SoftDeleteByAccountID(accountID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
 	AssociateCategories(transactionID uint, categoryIDs []uint) error
 
@@ -191,6 +192,12 @@ func (r *transactionRepository) Delete(id uint, userID uint) error {
 
 	// Delete the transaction
 	return r.db.Delete(&models.Transaction{}, id).Error
+}
+
+func (r *transactionRepository) SoftDeleteByAccountID(accountID uint) error {
+	// Soft delete all transactions for the given account ID
+	// GORM will automatically set the deleted_at timestamp when using Delete()
+	return r.db.Where("account_id = ?", accountID).Delete(&models.Transaction{}).Error
 }
 
 // Begin starts a new transaction

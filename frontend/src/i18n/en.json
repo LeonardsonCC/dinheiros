@@ -334,5 +334,49 @@
       "createAccount": "Create Account",
       "alreadyHaveAccount": "Already have an account? Sign in"
     }
+  },
+  "login": {
+    "title": "Sign in to your account",
+    "subtitle": "Or",
+    "createNewAccount": "create a new account",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "orContinueWith": "Or continue with",
+    "loggedInSuccess": "Logged in successfully!",
+    "invalidCredentials": "Invalid email or password",
+    "googleLoginFailed": "Google login failed",
+    "googleLoginSuccess": "Logged in with Google!",
+    "googleLoginNoCredential": "Google login failed: No credential",
+    "validation": {
+      "invalidEmail": "Invalid email address",
+      "passwordMinLength": "Password must be at least 6 characters"
+    }
+  },
+  "register": {
+    "title": "Create a new account",
+    "subtitle": "Or",
+    "signInToAccount": "sign in to your account",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "createAccount": "Create Account",
+    "creatingAccount": "Creating account...",
+    "accountCreatedSuccess": "Account created successfully! Please log in.",
+    "registrationFailed": "Registration failed. Please try again.",
+    "validation": {
+      "nameMinLength": "Name must be at least 2 characters",
+      "invalidEmail": "Invalid email address",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "passwordsNoMatch": "Passwords don't match"
+    }
   }
 }

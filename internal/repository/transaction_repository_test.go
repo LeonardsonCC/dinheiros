@@ -607,3 +607,81 @@ func TestTransactionRepository_GetDashboardSummary(t *testing.T) {
 		}
 	}
 }
+
+func TestTransactionRepository_SoftDeleteByAccountID(t *testing.T) {
+	db, user, account, _ := setupTransactionTestDB(t)
+	repo := NewTransactionRepository(db)
+
+	// Create transactions for the account
+	transactions := []*models.Transaction{
+		{
+			Date:        time.Now(),
+			Amount:      100.00,
+			Type:        models.TransactionTypeExpense,
+			Description: "Transaction 1",
+			AccountID:   account.ID,
+		},
+		{
+			Date:        time.Now().Add(-24 * time.Hour),
+			Amount:      200.00,
+			Type:        models.TransactionTypeIncome,
+			Description: "Transaction 2",
+			AccountID:   account.ID,
+		},
+	}
+
+	for _, transaction := range transactions {
+		err := repo.Create(transaction)
+		if err != nil {
+			t.Fatalf("Failed to create transaction: %v", err)
+		}
+	}
+
+	// Verify transactions exist before soft delete
+	foundTransactions, _, err := repo.FindByUserID(user.ID, nil, []uint{account.ID}, nil, "", nil, nil, nil, nil, 0, 0)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if len(foundTransactions) != 2 {
+		t.Errorf("Expected 2 transactions before soft delete, got %d", len(foundTransactions))
+	}
+
+	// Perform soft delete
+	err = repo.SoftDeleteByAccountID(account.ID)
+	if err != nil {
+		t.Errorf("Expected no error on soft delete, got %v", err)
+	}
+
+	// Verify transactions are soft deleted (should not appear in normal queries)
+	foundTransactions, _, err = repo.FindByUserID(user.ID, nil, []uint{account.ID}, nil, "", nil, nil, nil, nil, 0, 0)
+	if err != nil {
+		t.Errorf("Expected no error after soft delete, got %v", err)
+	}
+
+	if len(foundTransactions) != 0 {
+		t.Errorf("Expected 0 transactions after soft delete, got %d", len(foundTransactions))
+	}
+
+	// Verify transactions still exist in database with deleted_at timestamp
+	var count int64
+	err = db.Unscoped().Model(&models.Transaction{}).Where("account_id = ?", account.ID).Count(&count).Error
+	if err != nil {
+		t.Fatalf("Failed to count soft deleted transactions: %v", err)
+	}
+
+	if count != 2 {
+		t.Errorf("Expected 2 soft deleted transactions in database, got %d", count)
+	}
+
+	// Verify transactions have deleted_at timestamp set
+	var softDeletedTransactions []models.Transaction
+	err = db.Unscoped().Where("account_id = ? AND deleted_at IS NOT NULL", account.ID).Find(&softDeletedTransactions).Error
+	if err != nil {
+		t.Fatalf("Failed to find soft deleted transactions: %v", err)
+	}
+
+	if len(softDeletedTransactions) != 2 {
+		t.Errorf("Expected 2 transactions with deleted_at set, got %d", len(softDeletedTransactions))
+	}
+}

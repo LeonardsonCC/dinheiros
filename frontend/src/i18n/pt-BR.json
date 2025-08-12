@@ -334,5 +334,49 @@
       "createAccount": "Criar Conta",
       "alreadyHaveAccount": "Já tem uma conta? Entrar"
     }
+  },
+  "login": {
+    "title": "Entre na sua conta",
+    "subtitle": "Ou",
+    "createNewAccount": "crie uma nova conta",
+    "email": "Email",
+    "emailPlaceholder": "Digite seu email",
+    "password": "Senha",
+    "passwordPlaceholder": "Digite sua senha",
+    "signIn": "Entrar",
+    "signingIn": "Entrando...",
+    "orContinueWith": "Ou continue com",
+    "loggedInSuccess": "Login realizado com sucesso!",
+    "invalidCredentials": "Email ou senha inválidos",
+    "googleLoginFailed": "Login com Google falhou",
+    "googleLoginSuccess": "Login realizado com Google!",
+    "googleLoginNoCredential": "Login com Google falhou: Sem credencial",
+    "validation": {
+      "invalidEmail": "Endereço de email inválido",
+      "passwordMinLength": "Senha deve ter pelo menos 6 caracteres"
+    }
+  },
+  "register": {
+    "title": "Crie uma nova conta",
+    "subtitle": "Ou",
+    "signInToAccount": "entre na sua conta",
+    "fullName": "Nome Completo",
+    "fullNamePlaceholder": "Digite seu nome completo",
+    "email": "Email",
+    "emailPlaceholder": "Digite seu email",
+    "password": "Senha",
+    "passwordPlaceholder": "Digite sua senha",
+    "confirmPassword": "Confirmar Senha",
+    "confirmPasswordPlaceholder": "Confirme sua senha",
+    "createAccount": "Criar Conta",
+    "creatingAccount": "Criando conta...",
+    "accountCreatedSuccess": "Conta criada com sucesso! Faça login.",
+    "registrationFailed": "Falha no registro. Tente novamente.",
+    "validation": {
+      "nameMinLength": "Nome deve ter pelo menos 2 caracteres",
+      "invalidEmail": "Endereço de email inválido",
+      "passwordMinLength": "Senha deve ter pelo menos 6 caracteres",
+      "passwordsNoMatch": "Senhas não coincidem"
+    }
   }
 }

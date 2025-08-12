@@ -130,5 +130,40 @@ func (s *accountService) UpdateAccount(id uint, userID uint, req *dto.UpdateAcco
 }
 
 func (s *accountService) DeleteAccount(id uint, userID uint) error {
-	return s.repo.Delete(id, userID)
+	// Start a transaction to ensure data consistency
+	tx := s.repo.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// First verify the account belongs to the user
+	account, err := s.repo.FindByID(id, userID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Soft delete all transactions associated with this account
+	transactionRepoTx := s.transactionRepo.WithTx(tx)
+	err = transactionRepoTx.SoftDeleteByAccountID(account.ID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Delete the account (using hard delete for now, can be changed to soft delete if needed)
+	accountRepoTx := s.repo.WithTx(tx)
+	err = accountRepoTx.Delete(id, userID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }

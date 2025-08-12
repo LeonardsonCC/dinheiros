@@ -3,27 +3,30 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Input } from '@/components/ui';
-
-const registerSchema = z
-  .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  });
-
-type RegisterFormData = z.infer<typeof registerSchema>;
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function Register() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+
+  const registerSchema = z
+    .object({
+      name: z.string().min(2, t('register.validation.nameMinLength')),
+      email: z.string().email(t('register.validation.invalidEmail')),
+      password: z.string().min(6, t('register.validation.passwordMinLength')),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t('register.validation.passwordsNoMatch'),
+      path: ['confirmPassword'],
+    });
+
+  type RegisterFormData = z.infer<typeof registerSchema>;
   
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -44,10 +47,10 @@ export default function Register() {
         password: data.password,
       });
       
-      toast.success('Account created successfully! Please log in.');
+      toast.success(t('register.accountCreatedSuccess'));
       navigate('/login');
     } catch (error) {
-      toast.error('Registration failed. Please try again.');
+      toast.error(t('register.registrationFailed'));
       console.error('Registration error:', error);
     } finally {
       setIsLoading(false);
@@ -56,16 +59,19 @@ export default function Register() {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-12">
+      <div className="fixed top-4 right-4 z-10">
+        <LanguageSwitcher variant="header" showLabel={false} />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Create a new account</CardTitle>
+          <CardTitle className="text-2xl text-center">{t('register.title')}</CardTitle>
           <CardDescription className="text-center">
-            Or{' '}
+            {t('register.subtitle')}{' '}
             <Link
               to="/login"
               className="font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline"
             >
-              sign in to your account
+              {t('register.signInToAccount')}
             </Link>
           </CardDescription>
         </CardHeader>
@@ -77,11 +83,11 @@ export default function Register() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>{t('register.fullName')}</FormLabel>
                     <FormControl>
                       <Input
                         type="text"
-                        placeholder="Enter your full name"
+                        placeholder={t('register.fullNamePlaceholder')}
                         autoComplete="name"
                         {...field}
                       />
@@ -95,11 +101,11 @@ export default function Register() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('register.email')}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder={t('register.emailPlaceholder')}
                         autoComplete="email"
                         {...field}
                       />
@@ -113,11 +119,11 @@ export default function Register() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('register.password')}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Enter your password"
+                        placeholder={t('register.passwordPlaceholder')}
                         autoComplete="new-password"
                         {...field}
                       />
@@ -131,11 +137,11 @@ export default function Register() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>{t('register.confirmPassword')}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Confirm your password"
+                        placeholder={t('register.confirmPasswordPlaceholder')}
                         autoComplete="new-password"
                         {...field}
                       />
@@ -145,7 +151,7 @@ export default function Register() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Creating account...' : 'Create Account'}
+                {isLoading ? t('register.creatingAccount') : t('register.createAccount')}
               </Button>
             </form>
           </Form>
