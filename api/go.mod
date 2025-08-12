@@ -1,6 +1,6 @@
 module github.com/LeonardsonCC/dinheiros/api
 
-go 1.21
+go 1.24
 
 replace github.com/LeonardsonCC/dinheiros => ../
 
