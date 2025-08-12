@@ -60,16 +60,34 @@ func (r *transactionRepository) CreateInBatch(transactions []*models.Transaction
 
 func (r *transactionRepository) FindByID(id uint, userID uint) (*models.Transaction, error) {
 	var transaction models.Transaction
+	// First try to find by direct account ownership
 	err := r.db.Preload("Categories").
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
-		Where("transactions.id = ? AND (accounts.user_id = ? OR accounts.id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?))", id, userID, userID).
+		Where("transactions.id = ? AND accounts.user_id = ?", id, userID).
 		First(&transaction).Error
-
-	if err != nil {
-		return nil, err
+	
+	if err == nil {
+		return &transaction, nil
+	}
+	
+	// If not found by ownership, check if user has shared access
+	// This will only work if account_shares table exists
+	var count int64
+	shareCheckErr := r.db.Table("account_shares").Where("shared_user_id = ?", userID).Count(&count).Error
+	if shareCheckErr == nil {
+		// Try to find transaction where user has shared access to the account
+		err = r.db.Preload("Categories").
+			Joins("JOIN accounts ON accounts.id = transactions.account_id").
+			Joins("JOIN account_shares ON account_shares.account_id = accounts.id").
+			Where("transactions.id = ? AND account_shares.shared_user_id = ?", id, userID).
+			First(&transaction).Error
+		if err == nil {
+			return &transaction, nil
+		}
 	}
 
-	return &transaction, nil
+	// Return the original error (not found)
+	return nil, err
 }
 
 func (r *transactionRepository) FindByAccountID(accountID uint, userID uint) ([]models.Transaction, error) {
@@ -105,10 +123,17 @@ func (r *transactionRepository) FindByUserID(
 	var transactions []models.Transaction
 	var total int64
 
-	// Start building the query - include transactions from owned accounts OR shared accounts
+	// Start building the query - include transactions from owned accounts and shared accounts
 	tx := r.db.Model(&models.Transaction{}).
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
-		Where("accounts.user_id = ? OR accounts.id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?)", userID, userID)
+		Where("accounts.user_id = ?", userID)
+	
+	// Try to include shared accounts if account_shares table exists
+	var sharedAccountIDs []uint
+	shareCheckErr := r.db.Table("account_shares").Where("shared_user_id = ?", userID).Pluck("account_id", &sharedAccountIDs)
+	if shareCheckErr == nil && len(sharedAccountIDs) > 0 {
+		tx = tx.Or("accounts.id IN ?", sharedAccountIDs)
+	}
 
 	// Apply filters
 	if len(transactionTypes) > 0 {

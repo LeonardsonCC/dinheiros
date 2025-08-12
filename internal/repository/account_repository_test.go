@@ -15,7 +15,7 @@ func setupAccountTestDB(t *testing.T) (*gorm.DB, *models.User) {
 	}
 
 	// Auto migrate the schema
-	err = db.AutoMigrate(&models.User{}, &models.Account{}, &models.Category{}, &models.Transaction{})
+	err = db.AutoMigrate(&models.User{}, &models.Account{}, &models.Category{}, &models.Transaction{}, &models.AccountShare{}, &models.ShareInvitation{})
 	if err != nil {
 		t.Fatalf("Failed to migrate test database: %v", err)
 	}

@@ -81,7 +81,7 @@ export default function Accounts() {
         
         // Process the accounts data to ensure consistent structure
         const processedAccounts: ProcessedAccount[] = accountsData
-          .map(account => {
+          .map((account): ProcessedAccount | null => {
             // Handle different ID field names
             const accountId = account.id || account._id || account.ID;
             if (!accountId) return null;

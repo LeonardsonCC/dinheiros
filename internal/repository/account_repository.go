@@ -52,15 +52,27 @@ func (r *accountRepository) Create(account *models.Account) error {
 
 func (r *accountRepository) FindByID(id uint, userID uint) (*models.Account, error) {
 	var account models.Account
-	// Check if user owns the account OR has shared access
-	err := r.db.Where(
-		"id = ? AND (user_id = ? OR id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?))",
-		id, userID, userID,
-	).First(&account).Error
-	if err != nil {
-		return nil, err
+	// First try to find by direct ownership
+	err := r.db.Where("id = ? AND user_id = ?", id, userID).First(&account).Error
+	if err == nil {
+		return &account, nil
 	}
-	return &account, nil
+	
+	// If not found by ownership, check if user has shared access
+	// This will only work if account_shares table exists
+	var count int64
+	shareCheckErr := r.db.Table("account_shares").Where("account_id = ? AND shared_user_id = ?", id, userID).Count(&count).Error
+	if shareCheckErr == nil && count > 0 {
+		// User has shared access, get the account without user restriction
+		err = r.db.Where("id = ?", id).First(&account).Error
+		if err != nil {
+			return nil, err
+		}
+		return &account, nil
+	}
+	
+	// Return the original error (not found)
+	return nil, err
 }
 
 func (r *accountRepository) FindByIDWithoutUserCheck(id uint) (*models.Account, error) {
@@ -92,38 +104,70 @@ func (r *accountRepository) FindByUserIDIncludingDeleted(userID uint) ([]models.
 
 func (r *accountRepository) FindByUserIDIncludingShared(userID uint) ([]models.Account, error) {
 	var accounts []models.Account
-	// Get accounts owned by user OR shared with user
-	err := r.db.Preload("User").Where(
-		"user_id = ? OR id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?)",
-		userID, userID,
-	).Find(&accounts).Error
+	// Get accounts owned by user
+	err := r.db.Preload("User").Where("user_id = ?", userID).Find(&accounts).Error
 	if err != nil {
 		return nil, err
 	}
+	
+	// Try to get shared accounts if account_shares table exists
+	var sharedAccounts []models.Account
+	shareCheckErr := r.db.Table("account_shares").Where("shared_user_id = ?", userID).Select("account_id").Error
+	if shareCheckErr == nil {
+		// Get the actual shared accounts
+		var accountIDs []uint
+		r.db.Table("account_shares").Where("shared_user_id = ?", userID).Pluck("account_id", &accountIDs)
+		if len(accountIDs) > 0 {
+			r.db.Preload("User").Where("id IN ?", accountIDs).Find(&sharedAccounts)
+			accounts = append(accounts, sharedAccounts...)
+		}
+	}
+	
 	return accounts, nil
 }
 
 func (r *accountRepository) FindByUserIDIncludingSharedAndDeleted(userID uint) ([]models.Account, error) {
 	var accounts []models.Account
-	// Get accounts owned by user OR shared with user (including soft deleted)
-	err := r.db.Unscoped().Preload("User").Where(
-		"user_id = ? OR id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?)",
-		userID, userID,
-	).Find(&accounts).Error
+	// Get accounts owned by user (including soft deleted)
+	err := r.db.Unscoped().Preload("User").Where("user_id = ?", userID).Find(&accounts).Error
 	if err != nil {
 		return nil, err
 	}
+	
+	// Try to get shared accounts if account_shares table exists
+	var sharedAccounts []models.Account
+	shareCheckErr := r.db.Table("account_shares").Where("shared_user_id = ?", userID).Select("account_id").Error
+	if shareCheckErr == nil {
+		// Get the actual shared accounts (including soft deleted)
+		var accountIDs []uint
+		r.db.Table("account_shares").Where("shared_user_id = ?", userID).Pluck("account_id", &accountIDs)
+		if len(accountIDs) > 0 {
+			r.db.Unscoped().Preload("User").Where("id IN ?", accountIDs).Find(&sharedAccounts)
+			accounts = append(accounts, sharedAccounts...)
+		}
+	}
+	
 	return accounts, nil
 }
 
 func (r *accountRepository) HasAccess(accountID uint, userID uint) (bool, error) {
+	// First check direct ownership
 	var count int64
-	// Check if user owns the account OR has shared access
-	err := r.db.Model(&models.Account{}).Where(
-		"id = ? AND (user_id = ? OR id IN (SELECT account_id FROM account_shares WHERE shared_user_id = ?))",
-		accountID, userID, userID,
-	).Count(&count).Error
-	return count > 0, err
+	err := r.db.Model(&models.Account{}).Where("id = ? AND user_id = ?", accountID, userID).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	if count > 0 {
+		return true, nil
+	}
+	
+	// Check shared access if account_shares table exists
+	shareCheckErr := r.db.Table("account_shares").Where("account_id = ? AND shared_user_id = ?", accountID, userID).Count(&count).Error
+	if shareCheckErr == nil && count > 0 {
+		return true, nil
+	}
+	
+	return false, nil
 }
 
 func (r *accountRepository) IsOwner(accountID uint, userID uint) (bool, error) {
