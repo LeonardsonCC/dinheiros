@@ -1,6 +1,6 @@
 module github.com/LeonardsonCC/dinheiros
 
-go 1.24.3
+go 1.20
 
 require (
 	github.com/gin-gonic/gin v1.10.1

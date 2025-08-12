@@ -1,11 +1,11 @@
 # Go files and directories (not needed for frontend deployment)
-*.go
-go.mod
-go.sum
-cmd/
-internal/
-config/
-scripts/
+# *.go
+# go.mod
+# go.sum
+# cmd/
+# internal/
+# config/
+# scripts/
 
 # Docker files
 docker-compose.yml

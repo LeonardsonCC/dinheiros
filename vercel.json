@@ -4,6 +4,9 @@
   "devCommand": "cd frontend && npm run dev",
   "installCommand": "cd frontend && npm ci",
   "framework": "vite",
+  "functions": {
+    "api/index.go": {}
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
