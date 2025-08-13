@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
@@ -36,6 +36,7 @@ interface TransactionReviewTableProps {
   onToggleAll: () => void;
   onAddCategory: (name: string, type: string, transactionIndex?: number) => Promise<Category | null>;
   onCategoryAdded: (cat: Category, idx: number) => void;
+  onCreateCategorizationRule?: (description: string, type: string, categoryIds: number[]) => Promise<void>;
 }
 
 export default function TransactionReviewTable({
@@ -46,11 +47,18 @@ export default function TransactionReviewTable({
   onToggleAll,
   onAddCategory,
   onCategoryAdded,
+  onCreateCategorizationRule,
 }: TransactionReviewTableProps) {
   const { t } = useTranslation();
 
   const getFilteredCategories = (type: string) => {
     return categories.filter(cat => !type || cat.type === type);
+  };
+
+  const handleCreateRule = async (description: string, type: string, categoryIds: number[]) => {
+    if (onCreateCategorizationRule && categoryIds.length > 0) {
+      await onCreateCategorizationRule(description, type, categoryIds);
+    }
   };
 
   return (
@@ -63,6 +71,7 @@ export default function TransactionReviewTable({
             <TableHead>{t('transactionsTable.description')}</TableHead>
             <TableHead className="text-right">{t('transactionsTable.amount')}</TableHead>
             <TableHead>{t('transactionsTable.categories')}</TableHead>
+            <TableHead>{t('importTransactions.actions')}</TableHead>
             <TableHead
               className="text-center cursor-pointer select-none"
               onClick={onToggleAll}
@@ -145,6 +154,25 @@ export default function TransactionReviewTable({
                     buttonVariant="icon"
                     buttonClassName="ml-1"
                   />
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  {onCreateCategorizationRule && Array.isArray(tx.categoryIds) && tx.categoryIds.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCreateRule(
+                        typeof tx.description === 'string' ? tx.description : '',
+                        typeof tx.type === 'string' ? tx.type : 'expense',
+                        Array.isArray(tx.categoryIds) ? tx.categoryIds : []
+                      )}
+                      disabled={!!tx.ignored}
+                      title={t('importTransactions.createRule')}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
               <TableCell className="text-center">

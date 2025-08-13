@@ -37,7 +37,11 @@
     "pdfLimit": "PDF up to 10MB",
     "removeFile": "Remove file",
     "extractor": "Extractor",
-    "selectExtractor": "Select an extractor"
+    "selectExtractor": "Select an extractor",
+    "actions": "Actions",
+    "createRule": "Create exact match rule",
+    "ruleCreated": "Categorization rule created and applied to matching transactions",
+    "ruleCreateFailed": "Failed to create categorization rule"
   },
   "transactions": {
     "add": "Add Transaction",

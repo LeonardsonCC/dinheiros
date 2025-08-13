@@ -17,6 +17,7 @@ import { useTransactions } from '../hooks/useTransactions';
 import { useImportTransactions } from '../hooks/useImportTransactions';
 import { useImportData } from '../hooks/useImportData';
 import { validateImportForm } from '../lib/importUtils';
+import { categorizationRulesApi } from '../services/api';
 
 export default function ImportTransactions() {
   const { t } = useTranslation();
@@ -88,6 +89,39 @@ export default function ImportTransactions() {
     ));
   };
 
+  const handleCreateCategorizationRule = async (description: string, type: string, categoryIds: number[]) => {
+    if (!description || categoryIds.length === 0) {
+      toast.error(t('importTransactions.ruleCreateFailed'));
+      return;
+    }
+
+    try {
+      await categorizationRulesApi.create({
+        name: `Auto-rule for: ${description}`,
+        type: 'exact',
+        value: description,
+        transaction_type: type,
+        category_dst: categoryIds[0],
+        active: true
+      });
+
+      let appliedCount = 0;
+      setTransactions(prev => prev.map(tx => {
+        if (typeof tx.description === 'string' && tx.description === description && 
+            typeof tx.type === 'string' && tx.type === type) {
+          appliedCount++;
+          return { ...tx, categoryIds: categoryIds };
+        }
+        return tx;
+      }));
+
+      toast.success(`${t('importTransactions.ruleCreated')} (${appliedCount} ${appliedCount === 1 ? 'transaction' : 'transactions'})`);
+    } catch (error) {
+      console.error('Failed to create categorization rule:', error);
+      toast.error(t('importTransactions.ruleCreateFailed'));
+    }
+  };
+
   if (isLoading || accountsLoading) {
     return <Loading message={t('importTransactions.loading')} />;
   }
@@ -136,6 +170,7 @@ export default function ImportTransactions() {
                 onToggleAll={toggleAllTransactions}
                 onAddCategory={handleAddCategory}
                 onCategoryAdded={handleCategoryAdded}
+                onCreateCategorizationRule={handleCreateCategorizationRule}
               />
               <div className="flex justify-end space-x-3 mt-6">
                 <Button

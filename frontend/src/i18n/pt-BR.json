@@ -37,7 +37,11 @@
     "pdfLimit": "PDF de até 10MB",
     "removeFile": "Remover arquivo",
     "extractor": "Extrator",
-    "selectExtractor": "Selecione um extrator"
+    "selectExtractor": "Selecione um extrator",
+    "actions": "Ações",
+    "createRule": "Criar regra de correspondência exata",
+    "ruleCreated": "Regra de categorização criada e aplicada às transações correspondentes",
+    "ruleCreateFailed": "Falha ao criar regra de categorização"
   },
   "transactions": {
     "add": "Adicionar Transação",
