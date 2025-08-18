@@ -2,6 +2,8 @@
 FROM golang:1.24.3-alpine AS builder
 WORKDIR /app
 
+RUN apk add gcc musl-dev
+
 # Copy go.mod and go.sum
 COPY go.mod go.sum ./
 # Download all dependencies.
