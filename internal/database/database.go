@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/LeonardsonCC/dinheiros/config"
@@ -26,7 +27,7 @@ func InitDB(cfg *config.Config) error {
 	case "sqlite3":
 		fallthrough
 	default:
-		// dialector = sqlite.Open(cfg.DBPath)
+		dialector = sqlite.Open(cfg.DBPath)
 	}
 
 	DB, err = gorm.Open(dialector, &gorm.Config{
