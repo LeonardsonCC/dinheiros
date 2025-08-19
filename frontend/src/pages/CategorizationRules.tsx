@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Badge } from '../components/ui/badge';
 import { Checkbox } from '../components/ui/checkbox';
+import { SparklesIcon } from '@heroicons/react/24/outline';
 
 interface Category {
   id: number;
@@ -215,9 +216,12 @@ export default function CategorizationRules() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <h2 className="text-2xl font-bold mb-6">{t('categorizationRules.title')}</h2>
-      
+    <div className="container mx-auto py-8 space-y-6">
+      <div className="flex items-center gap-3">
+        <SparklesIcon className="h-8 w-8 text-primary" />
+        <h1 className="text-3xl font-bold tracking-tight">{t('categorizationRules.title')}</h1>
+      </div>
+
       {/* Add new rule form */}
       <Card className="mb-6">
         <CardHeader>
@@ -419,9 +423,9 @@ export default function CategorizationRules() {
                           size="sm"
                           onClick={() => toggleActive(rule)}
                           disabled={isLoading}
-                          >
-                            {rule.active ? t('categorizationRules.statusLabels.active') : t('categorizationRules.statusLabels.inactive')}
-                          </Button>
+                        >
+                          {rule.active ? t('categorizationRules.statusLabels.active') : t('categorizationRules.statusLabels.inactive')}
+                        </Button>
                       )}
                     </TableCell>
                     <TableCell>

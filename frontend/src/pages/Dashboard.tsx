@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpIcon, ArrowDownIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { ArrowUpIcon, ArrowDownIcon, CurrencyDollarIcon, HomeIcon } from '@heroicons/react/24/outline';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import Loading from '../components/Loading';
@@ -48,8 +48,11 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
-      
+      <div className="flex items-center gap-3">
+        <HomeIcon className="h-8 w-8 text-primary" />
+        <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Total Balance */}
@@ -149,9 +152,8 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <p
-                    className={`text-sm font-medium ${
-                      transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                    }`}
+                    className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      }`}
                   >
                     {transaction.type === 'income' ? '+' : '-'}
                     {formatCurrency(transaction.amount)}
