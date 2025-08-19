@@ -474,7 +474,7 @@ export default function AllTransactions() {
 
   // Show loading state
   if (loading && transactions.length === 0) {
-    return <Loading message="Loading transactions..." />;
+    return <Loading message={t('transactionsTable.loading')} />;
   }
 
   // Handle delete transaction
