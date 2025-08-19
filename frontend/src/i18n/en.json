@@ -391,5 +391,37 @@
       "passwordMinLength": "Password must be at least 6 characters",
       "passwordsNoMatch": "Passwords don't match"
     }
+  },
+  "editAccount": {
+    "title": "Edit Account",
+    "backToAccounts": "Back to accounts",
+    "accountName": "Account Name",
+    "accountType": "Account Type",
+    "currentBalance": "Current Balance",
+    "balanceHelp": "Balance cannot be edited directly. Use transactions to modify the balance.",
+    "accountColor": "Account Color",
+    "saveAccount": "Save account",
+    "accountTypes": {
+      "checking": "Checking Account",
+      "savings": "Savings Account",
+      "investment": "Investment",
+      "credit_card": "Credit Card",
+      "cash": "Cash"
+    },
+    "validationErrors": {
+      "invalidHexColor": "Please enter a valid hex color (e.g. #AABBCC)"
+    },
+    "messages": {
+      "loadingAccount": "Loading account...",
+      "accountNotFound": "Account not found",
+      "failedToLoad": "Failed to load account",
+      "updated": "Account updated successfully!",
+      "failedToUpdate": "Failed to update account"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "saving": "Saving",
+    "save": "Save"
   }
 }

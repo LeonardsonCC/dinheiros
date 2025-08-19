@@ -8,6 +8,7 @@ import Loading from '../components/Loading';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../lib/utils';
 import type { AxiosError } from 'axios';
+import { Button } from '@/components/ui';
 
 export default function Transactions() {
   const { t } = useTranslation();
@@ -52,11 +53,11 @@ export default function Transactions() {
           const accountUrl = `/api/accounts/${accountId}`;
           const accountRes = await api.get(accountUrl);
           setAccount(accountRes.data);
-          
+
           // Then fetch transactions
           const transactionsUrl = `/api/accounts/${accountId}/transactions`;
           const transactionsRes = await api.get(transactionsUrl);
-          
+
           if (transactionsRes.data) {
             setTransactions(transactionsRes.data);
           } else {
@@ -119,21 +120,21 @@ export default function Transactions() {
     try {
       setDeletingId(transactionId);
       await api.delete(`/api/accounts/${accountId}/transactions/${transactionId}`);
-      
+
       // Update the transactions list by removing the deleted transaction
       setTransactions(transactions.filter(tx => tx.id !== transactionId));
-      
+
       // Update the account balance
       if (account) {
         const deletedTransaction = transactions.find(tx => tx.id === transactionId);
         if (deletedTransaction) {
           const amount = deletedTransaction.amount;
-          const newBalance = account.balance + 
+          const newBalance = account.balance +
             (deletedTransaction.type === 'expense' ? amount : -amount);
           setAccount({ ...account, balance: newBalance });
         }
       }
-      
+
       toast.success('Transaction deleted successfully');
     } catch (err: unknown) {
       let errorMessage = 'Failed to delete transaction';
@@ -213,13 +214,15 @@ export default function Transactions() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {account?.name} {t('transactions.transactions')}
           </h2>
-          <Link
-            to={`/accounts/${accountId}/transactions/new`}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
-          >
-            <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
-            {t('transactions.add')}
-          </Link>
+          <Button asChild>
+            <Link
+              to={`/accounts/${accountId}/transactions/new`}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
+            >
+              <PlusIcon className="w-5 h-5 mr-2 -ml-1" />
+              {t('transactions.add')}
+            </Link>
+          </Button>
         </div>
         <div className="mt-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
           {formatCurrency(account?.balance || 0)}

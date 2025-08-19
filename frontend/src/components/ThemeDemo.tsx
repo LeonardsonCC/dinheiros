@@ -4,14 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export function ThemeDemo() {
-  const { theme, colorTheme } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Theme Demo</CardTitle>
         <CardDescription>
-          Current theme: {theme} mode with {colorTheme} color scheme
+          Current theme: {theme} mode
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -23,9 +23,6 @@ export function ThemeDemo() {
             <Button variant="secondary" size="sm">Secondary</Button>
             <Button variant="outline" size="sm">Outline</Button>
             <Button variant="destructive" size="sm">Destructive</Button>
-            <Button variant="success" size="sm">Success</Button>
-            <Button variant="warning" size="sm">Warning</Button>
-            <Button variant="info" size="sm">Info</Button>
             <Button variant="ghost" size="sm">Ghost</Button>
             <Button variant="link" size="sm">Link</Button>
           </div>
@@ -37,26 +34,11 @@ export function ThemeDemo() {
           <div className="flex flex-wrap gap-2">
             <Badge className="bg-primary text-primary-foreground">Primary</Badge>
             <Badge className="bg-secondary text-secondary-foreground">Secondary</Badge>
-            <Badge className="bg-success text-success-foreground">Success</Badge>
-            <Badge className="bg-warning text-warning-foreground">Warning</Badge>
+            <Badge className="bg-green-100 text-green-900 dark:bg-green-900 dark:text-green-100">Success</Badge>
+            <Badge className="bg-yellow-100 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100">Warning</Badge>
             <Badge className="bg-destructive text-destructive-foreground">Destructive</Badge>
-            <Badge className="bg-info text-info-foreground">Info</Badge>
+            <Badge className="bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100">Info</Badge>
             <Badge className="bg-accent text-accent-foreground">Accent</Badge>
-          </div>
-        </div>
-
-        {/* Color Scales */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium">Primary Color Scale</h4>
-          <div className="grid grid-cols-11 gap-1">
-            {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((shade) => (
-              <div
-                key={shade}
-                className={`aspect-square rounded text-xs flex items-center justify-center bg-primary-${shade} text-primary-${shade > 500 ? '50' : '950'}`}
-              >
-                {shade}
-              </div>
-            ))}
           </div>
         </div>
 
@@ -69,9 +51,9 @@ export function ThemeDemo() {
             <p className="text-primary">Primary colored text</p>
             <p className="text-secondary-foreground">Secondary text</p>
             <p className="text-destructive">Destructive/error text</p>
-            <p className="text-success">Success text</p>
-            <p className="text-warning">Warning text</p>
-            <p className="text-info">Info text</p>
+            <p className="text-green-600 dark:text-green-400">Success text</p>
+            <p className="text-yellow-600 dark:text-yellow-400">Warning text</p>
+            <p className="text-blue-600 dark:text-blue-400">Info text</p>
           </div>
         </div>
 

@@ -391,5 +391,37 @@
       "passwordMinLength": "Senha deve ter pelo menos 6 caracteres",
       "passwordsNoMatch": "Senhas não coincidem"
     }
+  },
+  "editAccount": {
+    "title": "Editar Conta",
+    "backToAccounts": "Voltar para contas",
+    "accountName": "Nome da Conta",
+    "accountType": "Tipo da Conta",
+    "currentBalance": "Saldo Atual",
+    "balanceHelp": "O saldo não pode ser editado diretamente. Use transações para modificar o saldo.",
+    "accountColor": "Cor da Conta",
+    "saveAccount": "Salvar conta",
+    "accountTypes": {
+      "checking": "Conta Corrente",
+      "savings": "Conta Poupança",
+      "investment": "Investimento",
+      "credit_card": "Cartão de Crédito",
+      "cash": "Dinheiro"
+    },
+    "validationErrors": {
+      "invalidHexColor": "Digite uma cor hexadecimal válida (ex: #AABBCC)"
+    },
+    "messages": {
+      "loadingAccount": "Carregando conta...",
+      "accountNotFound": "Conta não encontrada",
+      "failedToLoad": "Falha ao carregar conta",
+      "updated": "Conta atualizada com sucesso!",
+      "failedToUpdate": "Falha ao atualizar conta"
+    }
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "saving": "Salvando",
+    "save": "Salvar"
   }
 }

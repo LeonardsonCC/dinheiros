@@ -4,6 +4,8 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
+import { Button } from '@/components/ui';
+import { useTranslation } from 'react-i18next';
 
 interface AxiosError {
   response?: {
@@ -26,6 +28,8 @@ function isValidHexColor(color: string) {
 }
 
 export default function EditAccount() {
+  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const { accountId } = useParams<{ accountId: string }>();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +47,7 @@ export default function EditAccount() {
         setAccount(accountData);
         setColor(accountData.color || '#cccccc');
       } catch (error: unknown) {
-        let errorMessage = 'Failed to load account';
+        let errorMessage = t('editAccount.messages.failedToLoad');
         if (typeof error === 'object' && error !== null && 'response' in error) {
           const err = error as AxiosError;
           if (typeof err.response?.data?.message === 'string') {
@@ -69,7 +73,7 @@ export default function EditAccount() {
     const formData = new FormData(form);
     const colorValue = formData.get('color') as string;
     if (!isValidHexColor(colorValue)) {
-      setColorError('Please enter a valid hex color (e.g. #AABBCC)');
+      setColorError(t('editAccount.validationErrors.invalidHexColor'));
       return;
     }
     setColorError('');
@@ -81,10 +85,10 @@ export default function EditAccount() {
     try {
       setIsLoading(true);
       await api.put(`/api/accounts/${accountId}`, data);
-      toast.success('Account updated successfully!');
+      toast.success(t('editAccount.messages.updated'));
       navigate('/accounts');
     } catch (error: unknown) {
-      let errorMessage = 'Failed to update account';
+      let errorMessage = t('editAccount.messages.failedToUpdate');
       if (typeof error === 'object' && error !== null && 'response' in error) {
         const err = error as AxiosError;
         if (typeof err.response?.data?.message === 'string') {
@@ -99,11 +103,11 @@ export default function EditAccount() {
   };
 
   if (isFetching) {
-    return <Loading message="Loading account..." />;
+    return <Loading message={t('editAccount.messages.loadingAccount')} />;
   }
 
   if (!account) {
-    return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Account not found</div>;
+    return <div className="p-6 text-center text-gray-500 dark:text-gray-400">{t('editAccount.messages.accountNotFound')}</div>;
   }
 
   return (
@@ -115,15 +119,15 @@ export default function EditAccount() {
             className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
           >
             <ArrowLongLeftIcon className="w-4 h-4 mr-1" />
-            Back to Accounts
+            {t('editAccount.backToAccounts')}
           </button>
-          <h2 className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">Edit Account</h2>
+          <h2 className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{t('editAccount.title')}</h2>
         </div>
         <form onSubmit={onSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Account Name
+                {t('editAccount.accountName')}
               </label>
               <input
                 id="name"
@@ -137,7 +141,7 @@ export default function EditAccount() {
 
             <div>
               <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Account Type
+                {t('editAccount.accountType')}
               </label>
               <select
                 id="type"
@@ -146,18 +150,18 @@ export default function EditAccount() {
                 defaultValue={account.type}
                 required
               >
-                <option value="checking">Checking Account</option>
-                <option value="savings">Savings Account</option>
-                <option value="investment">Investment</option>
-                <option value="credit_card">Credit Card</option>
-                <option value="cash">Cash</option>
+                <option value="checking">{t('editAccount.accountTypes.checking')}</option>
+                <option value="savings">{t('editAccount.accountTypes.savings')}</option>
+                <option value="investment">{t('editAccount.accountTypes.investment')}</option>
+                <option value="credit_card">{t('editAccount.accountTypes.credit_card')}</option>
+                <option value="cash">{t('editAccount.accountTypes.cash')}</option>
               </select>
             </div>
           </div>
 
           <div>
             <label htmlFor="balance" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Current Balance
+              {t('editAccount.currentBalance')}
             </label>
             <input
               id="balance"
@@ -168,13 +172,13 @@ export default function EditAccount() {
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 shadow-sm sm:text-sm text-gray-500 dark:text-gray-400"
             />
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Balance cannot be edited directly. Use transactions to modify the balance.
+              {t('editAccount.balanceHelp')}
             </p>
           </div>
 
           <div>
             <label htmlFor="color" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Account Color
+              {t('editAccount.accountColor')}
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -202,20 +206,19 @@ export default function EditAccount() {
           </div>
 
           <div className="flex justify-end space-x-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => navigate('/accounts')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800"
             >
-              Cancel
-            </button>
-            <button
+              {t('common.cancel')}
+            </Button>
+            <Button
               type="submit"
               disabled={isLoading}
-              className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary-500 dark:hover:bg-primary-600"
             >
-              {isLoading ? 'Saving...' : 'Update Account'}
-            </button>
+              {isLoading ? t('common.saving') : t('editAccount.saveAccount')}
+            </Button>
           </div>
         </form>
       </div>
