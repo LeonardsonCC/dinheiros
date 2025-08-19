@@ -7,18 +7,17 @@ services:
       - .env
     networks:
       - dinheiros-network
+    restart: unless-stopped
 
   frontend:
     image: ghcr.io/leonardsoncc/dinheiros/frontend:latest
     ports:
-      - "9020:80"
+      - "80:80"
     depends_on:
       - backend
     networks:
       - dinheiros-network
-
-volumes:
-  postgres_data:
+    restart: unless-stopped
 
 networks:
   dinheiros-network:
