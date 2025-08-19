@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, Fragment, useRef, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { PlusIcon, FunnelIcon, XMarkIcon, CheckIcon, ChevronUpDownIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, FunnelIcon, XMarkIcon, CheckIcon, ChevronUpDownIcon, XCircleIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import { Listbox, Transition } from '@headlessui/react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
@@ -505,7 +505,10 @@ export default function AllTransactions() {
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{t('allTransactions.title')}</h1>
+          <div className="flex items-center gap-3">
+            <BanknotesIcon className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight">{t('allTransactions.title')}</h1>
+          </div>
           <p className="mt-2 text-sm text-gray-700 dark:text-gray-400">
             {t('allTransactions.subtitle', {
               from: pagination.currentPage * pagination.pageSize - pagination.pageSize + 1,

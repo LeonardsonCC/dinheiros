@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, PencilIcon, ShareIcon, UserGroupIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, PencilIcon, ShareIcon, UserGroupIcon, ArrowPathIcon, WalletIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
@@ -56,15 +56,15 @@ export default function Accounts() {
       try {
         const response = await api.get(`/api/accounts${showInactive ? '?include_deleted=true' : ''}`);
 
-        
+
         // Handle different possible response formats
         let accountsData: Account[] = [];
-        
+
         if (response.data) {
           // Case 1: Response has an 'accounts' array
           if (Array.isArray(response.data.accounts)) {
             accountsData = response.data.accounts;
-          } 
+          }
           // Case 2: Response has a 'data' array
           else if (Array.isArray(response.data.data)) {
             accountsData = response.data.data;
@@ -78,7 +78,7 @@ export default function Accounts() {
             accountsData = [response.data];
           }
         }
-        
+
         // Process the accounts data to ensure consistent structure
         const processedAccounts: ProcessedAccount[] = accountsData
           .map((account): ProcessedAccount | null => {
@@ -97,7 +97,7 @@ export default function Accounts() {
             };
           })
           .filter((account): account is ProcessedAccount => account !== null);
-        
+
         setAccounts(processedAccounts);
       } catch (error: unknown) {
         let errorMessage = 'Failed to load accounts';
@@ -125,7 +125,7 @@ export default function Accounts() {
     try {
       setDeletingId(accountId);
       await api.delete(`/api/accounts/${accountId}`);
-      
+
       // Remove the deleted account from the state
       setAccounts(accounts.filter(account => account.id !== accountId));
       toast.success(t('accounts.deleted'));
@@ -161,10 +161,10 @@ export default function Accounts() {
     try {
       setReactivatingId(accountId);
       await api.post(`/api/accounts/${accountId}/reactivate`);
-      
+
       // Update the account in the state
-      setAccounts(accounts.map(account => 
-        account.id === accountId 
+      setAccounts(accounts.map(account =>
+        account.id === accountId
           ? { ...account, isActive: true }
           : account
       ));
@@ -191,9 +191,12 @@ export default function Accounts() {
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">{t('accounts.title')}</h2>
+        <div className="flex items-center gap-3">
+          <WalletIcon className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight">{t('accounts.title')}</h1>
+        </div>
         <div className="flex gap-3">
-          <Button 
+          <Button
             variant="outline"
             onClick={() => setShowInactive(!showInactive)}
           >
