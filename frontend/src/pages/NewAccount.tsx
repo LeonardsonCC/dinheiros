@@ -6,6 +6,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Form, FormControl, Fo
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 
 interface AxiosError {
   response?: {
@@ -17,18 +18,24 @@ interface AxiosError {
 
 
 
-const accountSchema = z.object({
-  name: z.string().min(1, 'Account name is required'),
-  type: z.enum(['checking', 'savings', 'investment', 'credit_card', 'cash']),
-  initial_balance: z.string().optional(),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Please enter a valid hex color (e.g. #AABBCC)')
-});
-
-type AccountFormData = z.infer<typeof accountSchema>;
+type AccountFormData = {
+  name: string;
+  type: 'checking' | 'savings' | 'investment' | 'credit_card' | 'cash';
+  initial_balance?: string;
+  color: string;
+};
 
 export default function NewAccount() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+
+  const accountSchema = z.object({
+    name: z.string().min(1, t('newAccount.validationErrors.nameRequired')),
+    type: z.enum(['checking', 'savings', 'investment', 'credit_card', 'cash']),
+    initial_balance: z.string().optional(),
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, t('newAccount.validationErrors.invalidHexColor'))
+  });
 
   const form = useForm<AccountFormData>({
     resolver: zodResolver(accountSchema),
@@ -53,10 +60,10 @@ export default function NewAccount() {
     try {
       setIsLoading(true);
       await api.post('/api/accounts', payload);
-      toast.success('Account created successfully!');
+      toast.success(t('newAccount.messages.created'));
       navigate('/accounts');
     } catch (error: unknown) {
-      let errorMessage = 'Failed to create account';
+      let errorMessage = t('newAccount.messages.failedToCreate');
       if (typeof error === 'object' && error !== null && 'response' in error) {
         const err = error as AxiosError;
         if (typeof err.response?.data?.message === 'string') {
@@ -74,7 +81,7 @@ export default function NewAccount() {
     <div className="container mx-auto py-8">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Add New Account</CardTitle>
+          <CardTitle>{t('newAccount.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -85,9 +92,9 @@ export default function NewAccount() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Account Name</FormLabel>
+                      <FormLabel>{t('newAccount.accountName')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter account name" {...field} />
+                        <Input placeholder={t('newAccount.accountNamePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -99,7 +106,7 @@ export default function NewAccount() {
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Account Type</FormLabel>
+                      <FormLabel>{t('newAccount.accountType')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -107,11 +114,11 @@ export default function NewAccount() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="checking">Checking Account</SelectItem>
-                          <SelectItem value="savings">Savings Account</SelectItem>
-                          <SelectItem value="investment">Investment</SelectItem>
-                          <SelectItem value="credit_card">Credit Card</SelectItem>
-                          <SelectItem value="cash">Cash</SelectItem>
+                          <SelectItem value="checking">{t('newAccount.accountTypes.checking')}</SelectItem>
+                          <SelectItem value="savings">{t('newAccount.accountTypes.savings')}</SelectItem>
+                          <SelectItem value="investment">{t('newAccount.accountTypes.investment')}</SelectItem>
+                          <SelectItem value="credit_card">{t('newAccount.accountTypes.credit_card')}</SelectItem>
+                          <SelectItem value="cash">{t('newAccount.accountTypes.cash')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -125,12 +132,12 @@ export default function NewAccount() {
                 name="initial_balance"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Initial Balance</FormLabel>
+                    <FormLabel>{t('newAccount.initialBalance')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder="0.00"
+                        placeholder={t('newAccount.initialBalancePlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -144,12 +151,12 @@ export default function NewAccount() {
                 name="color"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Account Color</FormLabel>
+                    <FormLabel>{t('newAccount.accountColor')}</FormLabel>
                     <div className="flex items-center gap-3">
                       <FormControl>
                         <Input
                           type="text"
-                          placeholder="#cccccc"
+                          placeholder={t('newAccount.accountColorPlaceholder')}
                           maxLength={7}
                           className="w-32"
                           {...field}
@@ -174,10 +181,10 @@ export default function NewAccount() {
                   variant="outline"
                   onClick={() => navigate('/accounts')}
                 >
-                  Cancel
+                  {t('newAccount.cancel')}
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? 'Saving...' : 'Save Account'}
+                  {isLoading ? t('newAccount.saving') : t('newAccount.saveAccount')}
                 </Button>
               </div>
             </form>

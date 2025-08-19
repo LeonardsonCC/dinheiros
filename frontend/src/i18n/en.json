@@ -419,6 +419,34 @@
       "failedToUpdate": "Failed to update account"
     }
   },
+  "newAccount": {
+    "title": "Add New Account",
+    "accountName": "Account Name",
+    "accountNamePlaceholder": "Enter account name",
+    "accountType": "Account Type",
+    "initialBalance": "Initial Balance",
+    "initialBalancePlaceholder": "0.00",
+    "accountColor": "Account Color",
+    "accountColorPlaceholder": "#cccccc",
+    "saveAccount": "Save Account",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "accountTypes": {
+      "checking": "Checking Account",
+      "savings": "Savings Account",
+      "investment": "Investment",
+      "credit_card": "Credit Card",
+      "cash": "Cash"
+    },
+    "validationErrors": {
+      "nameRequired": "Account name is required",
+      "invalidHexColor": "Please enter a valid hex color (e.g. #AABBCC)"
+    },
+    "messages": {
+      "created": "Account created successfully!",
+      "failedToCreate": "Failed to create account"
+    }
+  },
   "common": {
     "cancel": "Cancel",
     "saving": "Saving",

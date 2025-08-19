@@ -419,6 +419,34 @@
       "failedToUpdate": "Falha ao atualizar conta"
     }
   },
+  "newAccount": {
+    "title": "Adicionar Nova Conta",
+    "accountName": "Nome da Conta",
+    "accountNamePlaceholder": "Digite o nome da conta",
+    "accountType": "Tipo da Conta",
+    "initialBalance": "Saldo Inicial",
+    "initialBalancePlaceholder": "0,00",
+    "accountColor": "Cor da Conta",
+    "accountColorPlaceholder": "#cccccc",
+    "saveAccount": "Salvar Conta",
+    "cancel": "Cancelar",
+    "saving": "Salvando...",
+    "accountTypes": {
+      "checking": "Conta Corrente",
+      "savings": "Conta Poupança",
+      "investment": "Investimento",
+      "credit_card": "Cartão de Crédito",
+      "cash": "Dinheiro"
+    },
+    "validationErrors": {
+      "nameRequired": "Nome da conta é obrigatório",
+      "invalidHexColor": "Digite uma cor hexadecimal válida (ex: #AABBCC)"
+    },
+    "messages": {
+      "created": "Conta criada com sucesso!",
+      "failedToCreate": "Falha ao criar conta"
+    }
+  },
   "common": {
     "cancel": "Cancelar",
     "saving": "Salvando",
