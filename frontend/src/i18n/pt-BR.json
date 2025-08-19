@@ -41,7 +41,34 @@
     "actions": "Ações",
     "createRule": "Criar regra de correspondência exata",
     "ruleCreated": "Regra de categorização criada e aplicada às transações correspondentes",
-    "ruleCreateFailed": "Falha ao criar regra de categorização"
+    "ruleCreateFailed": "Falha ao criar regra de categorização",
+    "selectAccountDescription": "Escolha a conta onde deseja importar as transações.",
+    "selectExtractorDescription": "Escolha o extrator que corresponde ao tipo do seu arquivo.",
+    "fileUploadDescription": "Envie um arquivo PDF contendo suas transações para extrair e importá-las.",
+    "reviewDescription": "Revise as transações extraídas antes de importá-las.",
+    "wizardDescription": "Siga os passos abaixo para importar transações dos seus extratos bancários.",
+    "uploadFile": "Enviar Arquivo",
+    "reviewTransactions": "Revisar Transações",
+    "selectExtractor": "Selecionar Extrator",
+    "processFile": "Processar Arquivo",
+    "processing": "Processando...",
+    "accountSelected": "Conta selecionada",
+    "extractorSelected": "Extrator selecionado",
+    "fileSelected": "Arquivo selecionado",
+    "supportedFormats": "Formatos suportados: Extratos bancários, faturas de cartão de crédito",
+    "toImport": "para importar",
+    "toIgnore": "para ignorar",
+    "transactionsReady": "transações prontas para importar",
+    "noTransactionsToImport": "Nenhuma transação para importar",
+    "transactions": "transações",
+    "noExtractors": "Nenhum extrator disponível",
+    "extractorDesc": {
+      "nubankCC": "Faturas de cartão de crédito Nubank",
+      "nubankExtrato": "Extratos de conta Nubank",
+      "caixaCC": "Faturas de cartão de crédito Caixa",
+      "caixaExtrato": "Extratos de conta Caixa",
+      "generic": "Extrator de documentos financeiros"
+    }
   },
   "transactions": {
     "add": "Adicionar Transação",
@@ -506,6 +533,9 @@
   "common": {
     "cancel": "Cancelar",
     "saving": "Salvando",
-    "save": "Salvar"
+    "save": "Salvar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "account": "Conta"
   }
 }

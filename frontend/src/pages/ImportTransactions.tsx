@@ -1,23 +1,21 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
-import TransactionReviewTable from '../components/TransactionReviewTable';
-import FileUploadForm from '../components/FileUploadForm';
+import ImportWizard from '../components/ImportWizard';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Card,
-  CardContent,
-  AccountSelector
-} from '../components/ui';
 import { useFileUpload } from '../hooks/useFileUpload';
 import { useTransactions } from '../hooks/useTransactions';
 import { useImportTransactions } from '../hooks/useImportTransactions';
 import { useImportData } from '../hooks/useImportData';
 import { validateImportForm } from '../lib/importUtils';
 import { categorizationRulesApi } from '../services/api';
+import {
+  AccountSelectionStep,
+  ExtractorSelectionStep,
+  FileUploadStep,
+  ReviewTransactionsStep
+} from '../components/ImportSteps';
 
 export default function ImportTransactions() {
   const { t } = useTranslation();
@@ -44,8 +42,7 @@ export default function ImportTransactions() {
     handleAddCategory 
   } = useImportData(urlAccountId, transactions, setTransactions);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleProcessFile = async () => {
     const accountId = selectedAccountId;
     
     const validation = validateImportForm(selectedFile, accountId);
@@ -122,92 +119,92 @@ export default function ImportTransactions() {
     }
   };
 
-  if (isLoading || accountsLoading) {
+  if (accountsLoading) {
     return <Loading message={t('importTransactions.loading')} />;
   }
 
-  if (!urlAccountId && !selectedAccountId) {
-    return (
-      <AccountSelector
-        accounts={accounts}
-        onAccountSelect={setSelectedAccountId}
-        onBack={() => navigate(-1)}
-        title={t('importTransactions.selectAccount')}
-        loading={accountsLoading}
-        emptyMessage={t('importTransactions.noAccounts')}
-        backText={t('importTransactions.back')}
-      />
-    );
-  }
+  // Build wizard steps
+  const steps = [
+    {
+      id: 'account',
+      title: t('importTransactions.selectAccount'),
+      description: t('importTransactions.selectAccountDescription', 'Choose the account where you want to import transactions.'),
+      component: (
+        <AccountSelectionStep
+          accounts={accounts}
+          selectedAccountId={selectedAccountId}
+          onAccountSelect={setSelectedAccountId}
+          loading={accountsLoading}
+        />
+      ),
+      isValid: !!selectedAccountId
+    },
+    {
+      id: 'extractor',
+      title: t('importTransactions.selectExtractor', 'Select Extractor'),
+      description: t('importTransactions.selectExtractorDescription', 'Choose the extractor that matches your file type.'),
+      component: (
+        <ExtractorSelectionStep
+          extractors={extractors}
+          selectedExtractor={selectedExtractor}
+          onExtractorSelect={setSelectedExtractor}
+        />
+      ),
+      isValid: !!selectedExtractor
+    },
+    {
+      id: 'upload',
+      title: t('importTransactions.uploadFile', 'Upload File'),
+      description: t('importTransactions.fileUploadDescription', 'Upload a PDF file containing your transactions to extract and import them.'),
+      component: (
+        <FileUploadStep
+          selectedFile={selectedFile}
+          fileError={fileError}
+          isLoading={isLoading}
+          onFileSelect={setSelectedFile}
+          onProcess={handleProcessFile}
+          validateFile={validateFile}
+        />
+      ),
+      isValid: transactions.length > 0
+    },
+    {
+      id: 'review',
+      title: t('importTransactions.reviewTransactions', 'Review Transactions'),
+      description: t('importTransactions.reviewDescription', 'Review the extracted transactions before importing them.'),
+      component: (
+        <ReviewTransactionsStep
+          transactions={transactions}
+          categories={categories}
+          saveLoading={saveLoading}
+          onTransactionChange={handleTransactionChange}
+          onToggleIgnore={toggleIgnoreTransaction}
+          onToggleAll={toggleAllTransactions}
+          onAddCategory={handleAddCategory}
+          onCategoryAdded={handleCategoryAdded}
+          onCreateCategorizationRule={handleCreateCategorizationRule}
+          onSave={handleSaveTransactions}
+          onCancel={() => setTransactions([])}
+        />
+      ),
+      isValid: transactions.length > 0
+    }
+  ];
 
   return (
     <div className="p-6">
       <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="mb-4 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          {t('importTransactions.back')} {t('transactions.transactions')}
-        </Button>
         <h1 className="text-2xl font-bold">{t('importTransactions.title')}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t('importTransactions.uploadPdf')}
+          {t('importTransactions.wizardDescription', 'Follow the steps below to import transactions from your bank statements.')}
         </p>
       </div>
-      <Card>
-        <CardContent className="p-6">
-          {transactions.length > 0 ? (
-            <div>
-              <h2 className="text-lg font-bold mb-4">{t('importTransactions.reviewEdit')}</h2>
-              <TransactionReviewTable
-                transactions={transactions}
-                categories={categories}
-                onTransactionChange={handleTransactionChange}
-                onToggleIgnore={toggleIgnoreTransaction}
-                onToggleAll={toggleAllTransactions}
-                onAddCategory={handleAddCategory}
-                onCategoryAdded={handleCategoryAdded}
-                onCreateCategorizationRule={handleCreateCategorizationRule}
-              />
-              <div className="flex justify-end space-x-3 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setTransactions([])}
-                >
-                  {t('importTransactions.cancel')}
-                </Button>
-                <Button
-                  onClick={handleSaveTransactions}
-                  disabled={saveLoading}
-                >
-                  {saveLoading ? t('importTransactions.importing') : t('importTransactions.save')}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <FileUploadForm
-              selectedFile={selectedFile}
-              fileError={fileError}
-              accounts={accounts}
-              accountsLoading={accountsLoading}
-              extractors={extractors}
-              selectedAccountId={selectedAccountId}
-              selectedExtractor={selectedExtractor}
-              urlAccountId={urlAccountId}
-              isLoading={isLoading}
-              onFileSelect={setSelectedFile}
-              onAccountSelect={setSelectedAccountId}
-              onExtractorSelect={setSelectedExtractor}
-              onSubmit={handleSubmit}
-              onCancel={() => navigate(-1)}
-              validateFile={validateFile}
-            />
-          )}
-        </CardContent>
-      </Card>
+      
+      <ImportWizard
+        steps={steps}
+        onBack={() => navigate(-1)}
+        backText={`${t('importTransactions.back')} ${t('transactions.transactions')}`}
+      />
     </div>
   );
 }

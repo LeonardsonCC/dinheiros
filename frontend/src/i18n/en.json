@@ -41,7 +41,34 @@
     "actions": "Actions",
     "createRule": "Create exact match rule",
     "ruleCreated": "Categorization rule created and applied to matching transactions",
-    "ruleCreateFailed": "Failed to create categorization rule"
+    "ruleCreateFailed": "Failed to create categorization rule",
+    "selectAccountDescription": "Choose the account where you want to import transactions.",
+    "selectExtractorDescription": "Choose the extractor that matches your file type.",
+    "fileUploadDescription": "Upload a PDF file containing your transactions to extract and import them.",
+    "reviewDescription": "Review the extracted transactions before importing them.",
+    "wizardDescription": "Follow the steps below to import transactions from your bank statements.",
+    "uploadFile": "Upload File",
+    "reviewTransactions": "Review Transactions",
+    "selectExtractor": "Select Extractor",
+    "processFile": "Process File",
+    "processing": "Processing...",
+    "accountSelected": "Account selected",
+    "extractorSelected": "Extractor selected",
+    "fileSelected": "File selected",
+    "supportedFormats": "Supported formats: Bank statements, credit card statements",
+    "toImport": "to import",
+    "toIgnore": "to ignore",
+    "transactionsReady": "transactions ready to import",
+    "noTransactionsToImport": "No transactions to import",
+    "transactions": "transactions",
+    "noExtractors": "No extractors available",
+    "extractorDesc": {
+      "nubankCC": "Nubank credit card statements",
+      "nubankExtrato": "Nubank account statements", 
+      "caixaCC": "Caixa credit card statements",
+      "caixaExtrato": "Caixa account statements",
+      "generic": "Financial document extractor"
+    }
   },
   "transactions": {
     "add": "Add Transaction",
@@ -506,6 +533,9 @@
   "common": {
     "cancel": "Cancel",
     "saving": "Saving",
-    "save": "Save"
+    "save": "Save",
+    "next": "Next",
+    "previous": "Previous",
+    "account": "Account"
   }
 }
