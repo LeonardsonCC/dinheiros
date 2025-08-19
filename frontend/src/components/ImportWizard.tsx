@@ -16,9 +16,15 @@ interface ImportWizardProps {
   steps: WizardStep[];
   onBack?: () => void;
   backText?: string;
+  summary?: {
+    accountName?: string;
+    extractorName?: string;
+    fileName?: string;
+    transactionCount?: number;
+  };
 }
 
-export default function ImportWizard({ steps, onBack, backText }: ImportWizardProps) {
+export default function ImportWizard({ steps, onBack, backText, summary }: ImportWizardProps) {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -113,6 +119,45 @@ export default function ImportWizard({ steps, onBack, backText }: ImportWizardPr
           ))}
         </div>
       </div>
+
+      {/* Selection Summary - only show after first step */}
+      {currentStep > 0 && summary && (
+        <Card className="bg-muted/30 border-muted">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                {t('importTransactions.selectionSummary', 'Your Selections')}
+              </h3>
+              <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                {summary.accountName && (
+                  <div className="flex items-center space-x-1">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    <span>{summary.accountName}</span>
+                  </div>
+                )}
+                {summary.extractorName && currentStep > 1 && (
+                  <div className="flex items-center space-x-1">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    <span>{summary.extractorName}</span>
+                  </div>
+                )}
+                {summary.fileName && currentStep > 2 && (
+                  <div className="flex items-center space-x-1">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    <span>{summary.fileName}</span>
+                  </div>
+                )}
+                {summary.transactionCount !== undefined && summary.transactionCount > 0 && currentStep > 2 && (
+                  <div className="flex items-center space-x-1">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span>{summary.transactionCount} {t('importTransactions.transactions', 'transactions')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Current Step Content */}
       <Card>

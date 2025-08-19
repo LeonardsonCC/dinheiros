@@ -80,13 +80,7 @@ export default function ReviewTransactionsStep({
       />
 
       <div className="flex justify-between items-center pt-4 border-t">
-        <Button
-          variant="outline"
-          onClick={onCancel}
-          disabled={saveLoading}
-        >
-          {t('importTransactions.cancel')}
-        </Button>
+        <div></div>
 
         <div className="flex space-x-3">
           <div className="text-sm text-muted-foreground self-center">

@@ -68,7 +68,8 @@
       "caixaCC": "Faturas de cartão de crédito Caixa",
       "caixaExtrato": "Extratos de conta Caixa",
       "generic": "Extrator de documentos financeiros"
-    }
+    },
+    "selectionSummary": "Suas Seleções"
   },
   "transactions": {
     "add": "Adicionar Transação",

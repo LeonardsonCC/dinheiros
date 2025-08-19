@@ -191,6 +191,17 @@ export default function ImportTransactions() {
     }
   ];
 
+  // Build summary data
+  const selectedAccount = accounts.find(acc => acc.id === selectedAccountId);
+  const selectedExtractorObj = extractors.find(ext => ext.name === selectedExtractor);
+  
+  const summary = {
+    accountName: selectedAccount?.name,
+    extractorName: selectedExtractorObj?.displayName,
+    fileName: selectedFile?.name,
+    transactionCount: transactions.length > 0 ? transactions.length : undefined
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -204,6 +215,7 @@ export default function ImportTransactions() {
         steps={steps}
         onBack={() => navigate(-1)}
         backText={`${t('importTransactions.back')} ${t('transactions.transactions')}`}
+        summary={summary}
       />
     </div>
   );

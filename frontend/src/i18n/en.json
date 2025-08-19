@@ -68,7 +68,8 @@
       "caixaCC": "Caixa credit card statements",
       "caixaExtrato": "Caixa account statements",
       "generic": "Financial document extractor"
-    }
+    },
+    "selectionSummary": "Your Selections"
   },
   "transactions": {
     "add": "Add Transaction",
