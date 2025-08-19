@@ -2,15 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/button';
 import TransactionReviewTable from '../TransactionReviewTable';
 
-interface Transaction {
-  id?: number;
-  description: string;
-  amount: number;
-  date: string;
-  type: string;
-  categoryIds: number[];
-  accountId: string;
-  ignore?: boolean;
+interface TransactionDraft {
+  [key: string]: unknown;
 }
 
 interface Category {
@@ -20,17 +13,16 @@ interface Category {
 }
 
 interface ReviewTransactionsStepProps {
-  transactions: Transaction[];
+  transactions: TransactionDraft[];
   categories: Category[];
   saveLoading: boolean;
-  onTransactionChange: (index: number, field: string, value: any) => void;
+  onTransactionChange: (index: number, field: string, value: unknown) => void;
   onToggleIgnore: (index: number) => void;
-  onToggleAll: (ignore: boolean) => void;
-  onAddCategory: (name: string, type: string) => Promise<{ id: number; name: string; type: string }>;
+  onToggleAll: () => void;
+  onAddCategory: (name: string, type: string, transactionIndex?: number) => Promise<Category | null>;
   onCategoryAdded: (category: { id: number; name: string; type: string }, index: number) => void;
-  onCreateCategorizationRule: (description: string, type: string, categoryIds: number[]) => void;
+  onCreateCategorizationRule: (description: string, type: string, categoryIds: number[]) => Promise<void>;
   onSave: () => void;
-  onCancel: () => void;
 }
 
 export default function ReviewTransactionsStep({
@@ -43,13 +35,12 @@ export default function ReviewTransactionsStep({
   onAddCategory,
   onCategoryAdded,
   onCreateCategorizationRule,
-  onSave,
-  onCancel
+  onSave
 }: ReviewTransactionsStepProps) {
   const { t } = useTranslation();
 
-  const transactionsToImport = transactions.filter(tx => !tx.ignore);
-  const transactionsToIgnore = transactions.filter(tx => tx.ignore);
+  const transactionsToImport = transactions.filter(tx => !tx.ignored);
+  const transactionsToIgnore = transactions.filter(tx => tx.ignored);
 
   return (
     <div className="space-y-4">

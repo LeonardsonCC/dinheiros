@@ -66,7 +66,7 @@ export default function Statistics() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  const transformChartData = (chartData: any): ChartDataPoint[] => {
+  const transformChartData = (chartData: { labels: string[], datasets: { label: string, data: number[] }[] }): ChartDataPoint[] => {
     if (!chartData || !chartData.labels || !chartData.datasets) return [];
     
     return chartData.labels.map((label: string, index: number) => {
@@ -85,7 +85,7 @@ export default function Statistics() {
       
       const dataPoint: ChartDataPoint = { name: formattedLabel, value: 0 };
       
-      chartData.datasets.forEach((dataset: any, datasetIndex: number) => {
+      chartData.datasets.forEach((dataset: { label: string, data: number[] }, datasetIndex: number) => {
         const value = dataset.data[index] || 0;
         if (datasetIndex === 0) {
           dataPoint.value = value;
@@ -107,7 +107,7 @@ export default function Statistics() {
     });
   };
 
-  const calculateSummary = (data: any[]): StatsSummary => {
+  const calculateSummary = (data: ChartDataPoint[]): StatsSummary => {
     let totalIncome = 0;
     let totalExpenses = 0;
     let transactionCount = 0;
@@ -172,12 +172,12 @@ export default function Statistics() {
 
 
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean, payload?: { name: string, value: number, color: string }[], label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded shadow-lg">
           <p className="font-medium">{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry: { name: string, value: number, color: string }, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {entry.name}: {typeof entry.value === 'number' ? formatCurrency(entry.value) : entry.value}
             </p>

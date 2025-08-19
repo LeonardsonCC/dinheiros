@@ -6,10 +6,7 @@ export interface MoneyInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'step' | 'onChange'> {
   value?: number | string
   onChange?: (value: number) => void
-  currency?: string
-  locale?: string
   allowNegative?: boolean
-  showSymbol?: boolean
 }
 
 const MoneyInput = React.forwardRef<HTMLInputElement, MoneyInputProps>(
@@ -17,10 +14,7 @@ const MoneyInput = React.forwardRef<HTMLInputElement, MoneyInputProps>(
     className,
     value,
     onChange,
-    currency = 'BRL',
-    locale = 'pt-BR',
     allowNegative = false,
-    showSymbol = false,
     placeholder = "0.00",
     min,
     ...props

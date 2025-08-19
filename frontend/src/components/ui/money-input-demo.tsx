@@ -41,8 +41,6 @@ export default function MoneyInputDemo() {
         <MoneyInput
           value={value}
           onChange={setValue}
-          currency="USD"
-          locale="en-US"
           placeholder="0.00"
         />
         <p className="text-sm text-gray-500 mt-1">

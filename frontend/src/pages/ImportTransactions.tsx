@@ -184,7 +184,6 @@ export default function ImportTransactions() {
           onCategoryAdded={handleCategoryAdded}
           onCreateCategorizationRule={handleCreateCategorizationRule}
           onSave={handleSaveTransactions}
-          onCancel={() => setTransactions([])}
         />
       ),
       isValid: transactions.length > 0
