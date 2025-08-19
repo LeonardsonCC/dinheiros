@@ -448,6 +448,61 @@
       "failedToCreate": "Falha ao criar conta"
     }
   },
+  "categorizationRules": {
+    "title": "Gerenciar Regras de Categorização",
+    "addNewRule": "Adicionar Nova Regra",
+    "ruleName": "Nome da Regra",
+    "ruleNamePlaceholder": "Nome da regra",
+    "type": "Tipo",
+    "matchValue": "Valor de Correspondência",
+    "exactMatchPlaceholder": "Texto exato para corresponder",
+    "regexPlaceholder": "Padrão regex",
+    "transactionType": "Tipo de Transação",
+    "category": "Categoria",
+    "selectCategory": "Selecionar categoria...",
+    "active": "Ativo",
+    "addRule": "Adicionar Regra",
+    "categorizationRules": "Regras de Categorização",
+    "noRulesFound": "Nenhuma regra de categorização encontrada. Adicione sua primeira regra acima.",
+    "name": "Nome",
+    "status": "Status",
+    "actions": "Ações",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "deleteRule": "Excluir Regra de Categorização",
+    "confirmDelete": "Tem certeza que deseja excluir a regra \"{ruleName}\"? Esta ação não pode ser desfeita.",
+    "ruleTypes": {
+      "regex": "Regex",
+      "exact": "Correspondência Exata"
+    },
+    "transactionTypes": {
+      "expense": "Despesa",
+      "income": "Receita",
+      "transfer": "Transferência"
+    },
+    "statusLabels": {
+      "active": "Ativo",
+      "inactive": "Inativo"
+    },
+    "messages": {
+      "fetchCategoriesFailed": "Falha ao buscar categorias",
+      "fetchRulesFailed": "Falha ao buscar regras de categorização",
+      "noCategoriesForType": "Nenhuma categoria disponível para este tipo de transação",
+      "selectCategoryRequired": "Selecione uma categoria",
+      "ruleAdded": "Regra de categorização adicionada",
+      "addRuleFailed": "Falha ao adicionar regra de categorização",
+      "ruleDeleted": "Regra de categorização excluída",
+      "deleteRuleFailed": "Falha ao excluir regra de categorização",
+      "ruleUpdated": "Regra de categorização atualizada",
+      "updateRuleFailed": "Falha ao atualizar regra de categorização",
+      "ruleActivated": "Regra ativada",
+      "ruleDeactivated": "Regra desativada",
+      "updateStatusFailed": "Falha ao atualizar status da regra"
+    },
+    "unknownCategory": "Categoria Desconhecida ({{categoryId}})"
+  },
   "common": {
     "cancel": "Cancelar",
     "saving": "Salvando",

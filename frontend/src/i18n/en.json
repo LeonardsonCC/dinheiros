@@ -448,6 +448,61 @@
       "failedToCreate": "Failed to create account"
     }
   },
+  "categorizationRules": {
+    "title": "Manage Categorization Rules",
+    "addNewRule": "Add New Rule",
+    "ruleName": "Rule Name",
+    "ruleNamePlaceholder": "Rule name",
+    "type": "Type",
+    "matchValue": "Match Value",
+    "exactMatchPlaceholder": "Exact text to match",
+    "regexPlaceholder": "Regex pattern",
+    "transactionType": "Transaction Type",
+    "category": "Category",
+    "selectCategory": "Select category...",
+    "active": "Active",
+    "addRule": "Add Rule",
+    "categorizationRules": "Categorization Rules",
+    "noRulesFound": "No categorization rules found. Add your first rule above.",
+    "name": "Name",
+    "status": "Status",
+    "actions": "Actions",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteRule": "Delete Categorization Rule",
+    "confirmDelete": "Are you sure you want to delete the rule \"{ruleName}\"? This action cannot be undone.",
+    "ruleTypes": {
+      "regex": "Regex",
+      "exact": "Exact Match"
+    },
+    "transactionTypes": {
+      "expense": "Expense",
+      "income": "Income",
+      "transfer": "Transfer"
+    },
+    "statusLabels": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "messages": {
+      "fetchCategoriesFailed": "Failed to fetch categories",
+      "fetchRulesFailed": "Failed to fetch categorization rules",
+      "noCategoriesForType": "No categories available for this transaction type",
+      "selectCategoryRequired": "Please select a category",
+      "ruleAdded": "Categorization rule added",
+      "addRuleFailed": "Failed to add categorization rule",
+      "ruleDeleted": "Categorization rule deleted",
+      "deleteRuleFailed": "Failed to delete categorization rule",
+      "ruleUpdated": "Categorization rule updated",
+      "updateRuleFailed": "Failed to update categorization rule",
+      "ruleActivated": "Rule activated",
+      "ruleDeactivated": "Rule deactivated",
+      "updateStatusFailed": "Failed to update rule status"
+    },
+    "unknownCategory": "Unknown Category ({{categoryId}})"
+  },
   "common": {
     "cancel": "Cancel",
     "saving": "Saving",

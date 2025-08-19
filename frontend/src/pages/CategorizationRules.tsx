@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { categorizationRulesApi, categoriesApi } from '../services/api';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -30,6 +31,7 @@ interface CategorizationRule {
 }
 
 export default function CategorizationRules() {
+  const { t } = useTranslation();
   const [rules, setRules] = useState<CategorizationRule[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [newName, setNewName] = useState('');
@@ -58,7 +60,7 @@ export default function CategorizationRules() {
       }
     } catch (err) {
       console.error('Failed to fetch categories:', err);
-      toast.error('Failed to fetch categories');
+      toast.error(t('categorizationRules.messages.fetchCategoriesFailed'));
     }
   };
 
@@ -68,7 +70,7 @@ export default function CategorizationRules() {
       const res = await categorizationRulesApi.list();
       setRules(res.data);
     } catch (err) {
-      toast.error('Failed to fetch categorization rules');
+      toast.error(t('categorizationRules.messages.fetchRulesFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -98,11 +100,11 @@ export default function CategorizationRules() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (getCategoriesByType(newTransactionType).length === 0) {
-      toast.error('No categories available for this transaction type');
+      toast.error(t('categorizationRules.messages.noCategoriesForType'));
       return;
     }
     if (newCategoryDst === 0) {
-      toast.error('Please select a category');
+      toast.error(t('categorizationRules.messages.selectCategoryRequired'));
       return;
     }
     try {
@@ -122,9 +124,9 @@ export default function CategorizationRules() {
       setNewTransactionType('expense');
       setNewCategoryDst(categories.length > 0 ? categories[0].id : 0);
       setNewActive(true);
-      toast.success('Categorization rule added');
+      toast.success(t('categorizationRules.messages.ruleAdded'));
     } catch {
-      toast.error('Failed to add categorization rule');
+      toast.error(t('categorizationRules.messages.addRuleFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -136,11 +138,11 @@ export default function CategorizationRules() {
       setIsLoading(true);
       await categorizationRulesApi.delete(ruleToDelete.id);
       setRules(rules.filter(r => r.id !== ruleToDelete.id));
-      toast.success('Categorization rule deleted');
+      toast.success(t('categorizationRules.messages.ruleDeleted'));
       setDeleteDialogOpen(false);
       setRuleToDelete(null);
     } catch {
-      toast.error('Failed to delete categorization rule');
+      toast.error(t('categorizationRules.messages.deleteRuleFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -164,12 +166,12 @@ export default function CategorizationRules() {
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (getCategoriesByType(editTransactionType).length === 0) {
-      toast.error('No categories available for this transaction type');
+      toast.error(t('categorizationRules.messages.noCategoriesForType'));
       return;
     }
     if (editId === null) return;
     if (editCategoryDst === 0) {
-      toast.error('Please select a category');
+      toast.error(t('categorizationRules.messages.selectCategoryRequired'));
       return;
     }
     try {
@@ -184,9 +186,9 @@ export default function CategorizationRules() {
       });
       setRules(rules.map(r => (r.id === editId ? res.data : r)));
       setEditId(null);
-      toast.success('Categorization rule updated');
+      toast.success(t('categorizationRules.messages.ruleUpdated'));
     } catch {
-      toast.error('Failed to update categorization rule');
+      toast.error(t('categorizationRules.messages.updateRuleFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -199,9 +201,9 @@ export default function CategorizationRules() {
         active: !rule.active,
       });
       setRules(rules.map(r => (r.id === rule.id ? res.data : r)));
-      toast.success(`Rule ${rule.active ? 'deactivated' : 'activated'}`);
+      toast.success(rule.active ? t('categorizationRules.messages.ruleDeactivated') : t('categorizationRules.messages.ruleActivated'));
     } catch {
-      toast.error('Failed to update rule status');
+      toast.error(t('categorizationRules.messages.updateStatusFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -209,73 +211,73 @@ export default function CategorizationRules() {
 
   const getCategoryName = (categoryId: number) => {
     const category = categories.find(c => c.id === categoryId);
-    return category ? category.name : `Unknown Category (${categoryId})`;
+    return category ? category.name : t('categorizationRules.unknownCategory', { categoryId });
   };
 
   return (
     <div className="container mx-auto py-8">
-      <h2 className="text-2xl font-bold mb-6">Manage Categorization Rules</h2>
+      <h2 className="text-2xl font-bold mb-6">{t('categorizationRules.title')}</h2>
       
       {/* Add new rule form */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Add New Rule</CardTitle>
+          <CardTitle>{t('categorizationRules.addNewRule')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAdd} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="ruleName">Rule Name</Label>
+                <Label htmlFor="ruleName">{t('categorizationRules.ruleName')}</Label>
                 <Input
                   id="ruleName"
                   type="text"
-                  placeholder="Rule name"
+                  placeholder={t('categorizationRules.ruleNamePlaceholder')}
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="ruleType">Type</Label>
+                <Label htmlFor="ruleType">{t('categorizationRules.type')}</Label>
                 <Select value={newType} onValueChange={setNewType}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="regex">Regex</SelectItem>
-                    <SelectItem value="exact">Exact Match</SelectItem>
+                    <SelectItem value="regex">{t('categorizationRules.ruleTypes.regex')}</SelectItem>
+                    <SelectItem value="exact">{t('categorizationRules.ruleTypes.exact')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="ruleValue">Match Value</Label>
+                <Label htmlFor="ruleValue">{t('categorizationRules.matchValue')}</Label>
                 <Input
                   id="ruleValue"
                   type="text"
-                  placeholder={newType === 'exact' ? 'Exact text to match' : 'Regex pattern'}
+                  placeholder={newType === 'exact' ? t('categorizationRules.exactMatchPlaceholder') : t('categorizationRules.regexPlaceholder')}
                   value={newValue}
                   onChange={e => setNewValue(e.target.value)}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="transactionType">Transaction Type</Label>
+                <Label htmlFor="transactionType">{t('categorizationRules.transactionType')}</Label>
                 <Select value={newTransactionType} onValueChange={setNewTransactionType}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="expense">Expense</SelectItem>
-                    <SelectItem value="income">Income</SelectItem>
-                    <SelectItem value="transfer">Transfer</SelectItem>
+                    <SelectItem value="expense">{t('categorizationRules.transactionTypes.expense')}</SelectItem>
+                    <SelectItem value="income">{t('categorizationRules.transactionTypes.income')}</SelectItem>
+                    <SelectItem value="transfer">{t('categorizationRules.transactionTypes.transfer')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">{t('categorizationRules.category')}</Label>
                 <Select value={newCategoryDst.toString()} onValueChange={(value) => setNewCategoryDst(Number(value))}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category..." />
+                    <SelectValue placeholder={t('categorizationRules.selectCategory')} />
                   </SelectTrigger>
                   <SelectContent>
                     {getCategoriesByType(newTransactionType).map(category => (
@@ -292,11 +294,11 @@ export default function CategorizationRules() {
                   checked={newActive}
                   onCheckedChange={(checked) => setNewActive(checked === true)}
                 />
-                <Label htmlFor="newActive">Active</Label>
+                <Label htmlFor="newActive">{t('categorizationRules.active')}</Label>
               </div>
             </div>
             <Button type="submit" disabled={isLoading}>
-              Add Rule
+              {t('categorizationRules.addRule')}
             </Button>
           </form>
         </CardContent>
@@ -305,24 +307,24 @@ export default function CategorizationRules() {
       {/* Rules table */}
       <Card>
         <CardHeader>
-          <CardTitle>Categorization Rules</CardTitle>
+          <CardTitle>{t('categorizationRules.categorizationRules')}</CardTitle>
         </CardHeader>
         <CardContent>
           {rules.length === 0 && !isLoading ? (
             <div className="text-center py-8 text-muted-foreground">
-              No categorization rules found. Add your first rule above.
+              {t('categorizationRules.noRulesFound')}
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Match Value</TableHead>
-                  <TableHead>Transaction Type</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t('categorizationRules.name')}</TableHead>
+                  <TableHead>{t('categorizationRules.type')}</TableHead>
+                  <TableHead>{t('categorizationRules.matchValue')}</TableHead>
+                  <TableHead>{t('categorizationRules.transactionType')}</TableHead>
+                  <TableHead>{t('categorizationRules.category')}</TableHead>
+                  <TableHead>{t('categorizationRules.status')}</TableHead>
+                  <TableHead>{t('categorizationRules.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -346,8 +348,8 @@ export default function CategorizationRules() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="regex">Regex</SelectItem>
-                            <SelectItem value="exact">Exact Match</SelectItem>
+                            <SelectItem value="regex">{t('categorizationRules.ruleTypes.regex')}</SelectItem>
+                            <SelectItem value="exact">{t('categorizationRules.ruleTypes.exact')}</SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
@@ -359,7 +361,7 @@ export default function CategorizationRules() {
                         <Input
                           value={editValue}
                           onChange={e => setEditValue(e.target.value)}
-                          placeholder={editType === 'exact' ? 'Exact text to match' : 'Regex pattern'}
+                          placeholder={editType === 'exact' ? t('categorizationRules.exactMatchPlaceholder') : t('categorizationRules.regexPlaceholder')}
                           className="w-full"
                         />
                       ) : (
@@ -373,9 +375,9 @@ export default function CategorizationRules() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="expense">Expense</SelectItem>
-                            <SelectItem value="income">Income</SelectItem>
-                            <SelectItem value="transfer">Transfer</SelectItem>
+                            <SelectItem value="expense">{t('categorizationRules.transactionTypes.expense')}</SelectItem>
+                            <SelectItem value="income">{t('categorizationRules.transactionTypes.income')}</SelectItem>
+                            <SelectItem value="transfer">{t('categorizationRules.transactionTypes.transfer')}</SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
@@ -409,7 +411,7 @@ export default function CategorizationRules() {
                             checked={editActive}
                             onCheckedChange={(checked) => setEditActive(checked === true)}
                           />
-                          <Label>Active</Label>
+                          <Label>{t('categorizationRules.active')}</Label>
                         </div>
                       ) : (
                         <Button
@@ -417,9 +419,9 @@ export default function CategorizationRules() {
                           size="sm"
                           onClick={() => toggleActive(rule)}
                           disabled={isLoading}
-                        >
-                          {rule.active ? 'Active' : 'Inactive'}
-                        </Button>
+                          >
+                            {rule.active ? t('categorizationRules.statusLabels.active') : t('categorizationRules.statusLabels.inactive')}
+                          </Button>
                       )}
                     </TableCell>
                     <TableCell>
@@ -430,7 +432,7 @@ export default function CategorizationRules() {
                             onClick={handleEdit}
                             disabled={isLoading}
                           >
-                            Save
+                            {t('categorizationRules.save')}
                           </Button>
                           <Button
                             size="sm"
@@ -438,7 +440,7 @@ export default function CategorizationRules() {
                             onClick={() => setEditId(null)}
                             disabled={isLoading}
                           >
-                            Cancel
+                            {t('categorizationRules.cancel')}
                           </Button>
                         </div>
                       ) : (
@@ -449,7 +451,7 @@ export default function CategorizationRules() {
                             onClick={() => startEdit(rule)}
                             disabled={isLoading}
                           >
-                            Edit
+                            {t('categorizationRules.edit')}
                           </Button>
                           <Button
                             size="sm"
@@ -457,7 +459,7 @@ export default function CategorizationRules() {
                             onClick={() => openDeleteDialog(rule)}
                             disabled={isLoading}
                           >
-                            Delete
+                            {t('categorizationRules.delete')}
                           </Button>
                         </div>
                       )}
@@ -474,17 +476,17 @@ export default function CategorizationRules() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Categorization Rule</DialogTitle>
+            <DialogTitle>{t('categorizationRules.deleteRule')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the rule &ldquo;{ruleToDelete?.name}&rdquo;? This action cannot be undone.
+              {t('categorizationRules.confirmDelete', { ruleName: ruleToDelete?.name })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
+              {t('categorizationRules.cancel')}
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
-              Delete
+              {t('categorizationRules.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>
