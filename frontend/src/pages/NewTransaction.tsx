@@ -32,9 +32,7 @@ export default function NewTransaction() {
   const accountId = accountIdParam ? Number(accountIdParam) : null;
   const navigate = useNavigate();
   
-  const formatDateForInput = (date: Date): string => {
-    return date.toISOString().slice(0, 16);
-  };
+
 
   const [formData, setFormData] = useState({
     type: 'expense' as TransactionType,
@@ -51,7 +49,6 @@ export default function NewTransaction() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [dateInput, setDateInput] = useState(formatDateForInput(new Date()));
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -106,18 +103,6 @@ export default function NewTransaction() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
-    if (name === 'date') {
-      setDateInput(value);
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        setFormData(prev => ({
-          ...prev,
-          date: date.toISOString()
-        }));
-      }
-      return;
-    }
     
     setFormData(prev => ({
       ...prev,
@@ -341,17 +326,12 @@ export default function NewTransaction() {
               </div>
               
               <div className="sm:col-span-2">
-                <label htmlFor="date" className="block text-sm font-medium mb-2">
-                  {t('newTransaction.dateTime')}
-                </label>
                 <DatePicker
-                  label=""
-                  value={dateInput}
+                  label="newTransaction.date"
+                  value={formData.date}
                   onChange={(value) => {
-                    setDateInput(value);
-                    const date = new Date(value);
-                    if (!isNaN(date.getTime())) {
-                      setFormData(prev => ({ ...prev, date: date.toISOString() }));
+                    if (value) {
+                      setFormData(prev => ({ ...prev, date: value }));
                     }
                   }}
                 />

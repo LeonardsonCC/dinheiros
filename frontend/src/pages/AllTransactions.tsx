@@ -652,16 +652,14 @@ export default function AllTransactions() {
             {/* Date range */}
             <div className="grid grid-cols-2 gap-4">
               <DatePicker
-                label={t('allTransactions.startDate')}
+                label="allTransactions.startDate"
                 value={filters.startDate}
                 onChange={value => handleFilterChange('startDate', value ? value.slice(0, 10) : "")}
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
               />
               <DatePicker
-                label={t('allTransactions.endDate')}
+                label="allTransactions.endDate"
                 value={filters.endDate}
                 onChange={value => handleFilterChange('endDate', value ? value.slice(0, 10) : "")}
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
               />
             </div>
 
