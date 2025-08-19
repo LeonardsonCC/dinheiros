@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
 import SharedAccountBadge from '../components/SharedAccountBadge';
 import { useTranslation } from 'react-i18next';
-import { formatDate } from '../lib/utils';
+import { formatDate, formatCurrency } from '../lib/utils';
 
 interface SharedAccount {
   id: number;
@@ -117,10 +117,7 @@ export default function SharedAccounts() {
                 />
 
                 <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  {new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  }).format(account.balance || 0)}
+                  {formatCurrency(account.balance || 0)}
                 </p>
 
                 <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">

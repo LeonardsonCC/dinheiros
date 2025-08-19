@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
-import { formatDate } from '../lib/utils';
+import { formatDate, formatCurrency } from '../lib/utils';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -170,12 +170,7 @@ export default function Statistics() {
     fetchStats();
   }, [startDate, endDate]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(value);
-  };
+
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

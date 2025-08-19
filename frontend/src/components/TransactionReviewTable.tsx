@@ -16,6 +16,7 @@ import {
   TableRow,
 } from './ui';
 import { CategoryMultiSelect } from './ui/category-multi-select';
+import { MoneyInput } from './ui/money-input';
 import CategoryManager from './CategoryManager';
 
 interface TransactionDraft {
@@ -122,10 +123,9 @@ export default function TransactionReviewTable({
                 />
               </TableCell>
               <TableCell className="text-right">
-                <Input
-                  type="number"
-                  value={typeof tx.amount === 'number' ? tx.amount : ''}
-                  onChange={e => onTransactionChange(idx, 'amount', parseFloat(e.target.value))}
+                <MoneyInput
+                  value={typeof tx.amount === 'number' ? tx.amount : 0}
+                  onChange={(value) => onTransactionChange(idx, 'amount', value)}
                   disabled={!!tx.ignored}
                   className="w-full text-right"
                 />

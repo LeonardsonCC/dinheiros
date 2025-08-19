@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import Loading from '../components/Loading';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
-import { formatDate } from '../lib/utils';
+import { formatDate, formatCurrency } from '../lib/utils';
 
 interface Summary {
   totalBalance: number;
@@ -44,12 +44,7 @@ export default function Dashboard() {
     return <Loading message="Loading dashboard..." />;
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+
 
   return (
     <div className="p-6 space-y-6">

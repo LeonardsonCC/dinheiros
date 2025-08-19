@@ -12,6 +12,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Loading } from '../components/ui/loading';
+import { MoneyInput } from '../components/ui/money-input';
 
 type TransactionType = 'income' | 'expense' | 'transfer';
 
@@ -281,15 +282,12 @@ export default function EditTransaction() {
               {/* Amount */}
               <div className="sm:col-span-2">
                 <Label htmlFor="amount">{t('editTransaction.amount')}</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
+                <MoneyInput
                   name="amount"
                   id="amount"
-                  value={formData.amount}
-                  onChange={handleChange}
-                  placeholder="0.00"
+                  value={parseFloat(formData.amount) || 0}
+                  onChange={(value) => setFormData(prev => ({ ...prev, amount: value.toString() }))}
+                  placeholder="0,00"
                   required
                 />
               </div>

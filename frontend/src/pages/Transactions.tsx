@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import TransactionsTable, { Transaction as TableTransaction } from '../components/TransactionsTable';
 import Loading from '../components/Loading';
 import { useTranslation } from 'react-i18next';
-import { formatDate } from '../lib/utils';
+import { formatDate, formatCurrency } from '../lib/utils';
 import type { AxiosError } from 'axios';
 import { Button } from '@/components/ui';
 
@@ -100,12 +100,7 @@ export default function Transactions() {
     return <Loading message={t('importTransactions.loading')} />;
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+
 
   const handleDeleteTransaction = async (transactionId: number) => {
     if (!window.confirm('Are you sure you want to delete this transaction? This action cannot be undone.')) {

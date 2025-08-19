@@ -7,6 +7,7 @@ import CategoryManager from '../components/CategoryManager';
 import DatePicker from '../components/DatePicker';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Loading } from '@/components/ui';
+import { MoneyInput } from '@/components/ui/money-input';
 
 interface Account {
   id: number;
@@ -253,14 +254,11 @@ export default function NewTransaction() {
                 <label htmlFor="amount" className="block text-sm font-medium mb-2">
                   {t('newTransaction.amount')}
                 </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
+                <MoneyInput
                   name="amount"
-                  value={formData.amount}
-                  onChange={handleChange}
-                  placeholder="0.00"
+                  value={parseFloat(formData.amount) || 0}
+                  onChange={(value) => setFormData(prev => ({ ...prev, amount: value.toString() }))}
+                  placeholder="0,00"
                   required
                 />
               </div>

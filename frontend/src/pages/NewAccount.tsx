@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { Button, Card, CardContent, CardHeader, CardTitle, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { MoneyInput } from '@/components/ui/money-input';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -127,18 +128,18 @@ export default function NewAccount() {
                 />
               </div>
 
-              <FormField
+                <FormField
                 control={form.control}
                 name="initial_balance"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('newAccount.initialBalance')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder={t('newAccount.initialBalancePlaceholder')}
-                        {...field}
+                      <MoneyInput
+                        value={parseFloat(field.value || '0') || 0}
+                        onChange={(value) => field.onChange(value.toString())}
+                        placeholder="0,00"
+                        allowNegative={true}
                       />
                     </FormControl>
                     <FormMessage />

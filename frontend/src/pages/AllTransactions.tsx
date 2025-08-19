@@ -8,7 +8,8 @@ import TransactionsTable from '../components/TransactionsTable';
 import Loading from '../components/Loading';
 import DatePicker from '../components/DatePicker';
 import { useTranslation } from 'react-i18next';
-import { formatDate } from '../lib/utils';
+import { formatDate, formatCurrency } from '../lib/utils';
+import { MoneyInput } from '../components/ui/money-input';
 
 // Type definitions
 interface Account {
@@ -462,13 +463,7 @@ export default function AllTransactions() {
     return sortConfig.direction === 'asc' ? '↑' : '↓';
   };
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(amount);
-  };
+
 
 
 
@@ -619,15 +614,14 @@ export default function AllTransactions() {
                 <label htmlFor="min-amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('allTransactions.minAmount')}
                 </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <input
-                    type="number"
+                <div className="mt-1">
+                  <MoneyInput
                     name="min-amount"
                     id="min-amount"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                    placeholder="0.00"
-                    value={filters.minAmount}
-                    onChange={(e) => handleFilterChange('minAmount', e.target.value)}
+                    value={parseFloat(filters.minAmount) || 0}
+                    onChange={(value) => handleFilterChange('minAmount', value.toString())}
+                    placeholder="0,00"
+                    allowNegative={true}
                   />
                 </div>
               </div>
@@ -635,15 +629,14 @@ export default function AllTransactions() {
                 <label htmlFor="max-amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('allTransactions.maxAmount')}
                 </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <input
-                    type="number"
+                <div className="mt-1">
+                  <MoneyInput
                     name="max-amount"
                     id="max-amount"
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                    placeholder="1000.00"
-                    value={filters.maxAmount}
-                    onChange={(e) => handleFilterChange('maxAmount', e.target.value)}
+                    value={parseFloat(filters.maxAmount) || 0}
+                    onChange={(value) => handleFilterChange('maxAmount', value.toString())}
+                    placeholder="1000,00"
+                    allowNegative={true}
                   />
                 </div>
               </div>
