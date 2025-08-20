@@ -2,6 +2,7 @@ package di
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -41,9 +42,25 @@ type Container struct {
 	AccountShareHandler       *handlers.AccountShareHandler
 }
 
+// getSecret returns the value from Docker secret file, environment variable, or fallback
+func getSecret(key, fallback string) string {
+	// Try Docker secret first (mounted at /run/secrets/<secret_name>)
+	secretPath := "/run/secrets/" + strings.ToLower(key)
+	if data, err := os.ReadFile(secretPath); err == nil {
+		return strings.TrimSpace(string(data))
+	}
+
+	// Fall back to environment variable
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+
+	return fallback
+}
+
 func NewContainer(db *gorm.DB) (*Container, error) {
 	// Initialize JWT manager
-	jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := getSecret("JWT_SECRET_KEY", "")
 	if jwtSecret == "" {
 		// In a production environment, you should always have a proper JWT secret
 		// For development, we'll generate a random one if not set

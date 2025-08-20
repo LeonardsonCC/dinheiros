@@ -1,0 +1,95 @@
+secrets:
+  cf_api_email:
+    external: true
+  cf_dns_api_token:
+    external: true
+  db_host:
+    external: true
+  db_port:
+    external: true
+  db_user:
+    external: true
+  db_pass:
+    external: true
+  db_name:
+    external: true
+  jwt_secret_key:
+    external: true
+
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=leonardson.carvalho@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.cloudflare.acme.email=leonardson.carvalho@gmail.com"
+      - "--certificatesresolvers.cloudflare.acme.storage=/letsencrypt/acme.json"
+    environment:
+      - CF_API_EMAIL_FILE=/run/secrets/cf_api_email
+      - CF_DNS_API_TOKEN_FILE=/run/secrets/cf_dns_api_token
+    secrets:
+      - cf_api_email
+      - cf_dns_api_token
+    ports:
+      - mode: host
+        protocol: tcp
+        published: 80
+        target: 80
+      - mode: host
+        protocol: tcp
+        published: 443
+        target: 443
+    volumes:
+      - letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  backend:
+    image: ghcr.io/leonardsoncc/dinheiros/backend:latest
+    ports:
+      - mode: host
+        protocol: tcp
+        published: 9021
+        target: 8080
+    environment:
+      - DB_TYPE=postgres
+    secrets:
+      - db_host
+      - db_port
+      - db_user
+      - db_pass
+      - db_name
+      - jwt_secret_key
+    deploy:
+      update_config:
+        order: start-first
+
+  frontend:
+    image: ghcr.io/leonardsoncc/dinheiros/frontend:latest
+    ports:
+      - mode: host
+        protocol: tcp
+        published: 9020
+        target: 80
+    depends_on:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dinheiros.rule=Host(`dinheiros.leonardson.com.br`)"
+      - "traefik.http.routers.dinheiros.entrypoints=websecure"
+      - "traefik.http.routers.dinheiros.tls=true"
+      - "traefik.http.routers.dinheiros.tls.certresolver=cloudflare"
+      - "traefik.http.services.dinheiros.loadbalancer.server.port=80"
+
+volumes:
+  letsencrypt:

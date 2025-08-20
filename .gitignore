@@ -6,3 +6,5 @@ frontend/dist/
 bin/
 
 .env
+
+letsencrypt/
