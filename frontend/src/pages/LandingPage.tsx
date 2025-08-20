@@ -1,14 +1,15 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { 
-  ChartBarIcon, 
-  CurrencyDollarIcon, 
-  ShareIcon, 
+import {
+  ChartBarIcon,
+  CurrencyDollarIcon,
+  ShareIcon,
   DocumentArrowUpIcon,
   ShieldCheckIcon,
   DevicePhoneMobileIcon
 } from '@heroicons/react/24/outline';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import { Button } from '@/components/ui';
 
 export default function LandingPage() {
   const { t } = useTranslation();
@@ -59,13 +60,13 @@ export default function LandingPage() {
           </div>
         </nav>
       </header>
-      
+
       {/* Hero section */}
       <div className="relative isolate px-6 pt-14 lg:px-8">
         <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
           <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-primary-400 to-primary-600 opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
         </div>
-        
+
         <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
@@ -76,22 +77,24 @@ export default function LandingPage() {
               {t('landing.hero.description')}
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link
-                to="/register"
-                className="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-colors"
-              >
-                {t('landing.hero.getStarted')}
-              </Link>
-              <Link
-                to="/login"
-                className="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-              >
-                {t('landing.hero.signIn')} <span aria-hidden="true">→</span>
-              </Link>
+              <Button variant="secondary" asChild>
+                <Link
+                  to="/register"
+                >
+                  {t('landing.hero.getStarted')}
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link
+                  to="/login"
+                >
+                  {t('landing.hero.signIn')} <span aria-hidden="true">→</span>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
-        
+
         <div className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]">
           <div className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-primary-400 to-primary-600 opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]" />
         </div>
@@ -142,18 +145,20 @@ export default function LandingPage() {
               {t('landing.cta.description')}
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link
-                to="/register"
-                className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-primary-600 shadow-sm hover:bg-primary-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
-              >
-                {t('landing.cta.createAccount')}
-              </Link>
-              <Link
-                to="/login"
-                className="text-sm font-semibold leading-6 text-white hover:text-primary-100 transition-colors"
-              >
-                {t('landing.cta.alreadyHaveAccount')} <span aria-hidden="true">→</span>
-              </Link>
+              <Button variant="secondary" asChild>
+                <Link
+                  to="/register"
+                >
+                  {t('landing.cta.createAccount')}
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link
+                  to="/login"
+                >
+                  {t('landing.cta.alreadyHaveAccount')} <span aria-hidden="true">→</span>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
