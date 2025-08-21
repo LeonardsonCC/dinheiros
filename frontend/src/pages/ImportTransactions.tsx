@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import Loading from '../components/Loading';
@@ -17,6 +17,7 @@ import {
   ConferenceStep,
   ReviewTransactionsStep
 } from '../components/ImportSteps';
+import { ConferenceStepRef } from '../components/ImportSteps/ConferenceStep';
 
 export default function ImportTransactions() {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ export default function ImportTransactions() {
   const [selectedAccountId, setSelectedAccountId] = useState<string>(urlAccountId || '');
   const [selectedExtractor, setSelectedExtractor] = useState<string>('');
   const [currentStep, setCurrentStep] = useState<string>('account');
+  const conferenceStepRef = useRef<ConferenceStepRef>(null);
 
   const { selectedFile, fileError, setSelectedFile, setFileError, validateFile } = useFileUpload();
   const {
@@ -125,8 +127,29 @@ export default function ImportTransactions() {
     return <Loading message={t('importTransactions.loading')} />;
   }
 
+  const handleWizardStepChange = (stepIndex: number) => {
+    // Update our local state to match the wizard step
+    const stepIds = ['account', 'extractor', 'upload', 'conference', 'review'];
+    if (stepIndex < stepIds.length) {
+      setCurrentStep(stepIds[stepIndex]);
+    }
+  };
+
+  const navigateToNextStep = () => {
+    // This function can be passed to step components to trigger navigation
+    const stepIds = ['account', 'extractor', 'upload', 'conference', 'review'];
+    const currentIndex = stepIds.indexOf(currentStep);
+    if (currentIndex < stepIds.length - 1) {
+      const nextIndex = currentIndex + 1;
+      setCurrentStep(stepIds[nextIndex]);
+      return nextIndex;
+    }
+    return currentIndex;
+  };
+
   const handleConferenceNext = () => {
-    setCurrentStep('review');
+    // Call the ConferenceStep's handleProceed function
+    conferenceStepRef.current?.handleProceed();
   };
 
   // Build wizard steps
@@ -169,10 +192,12 @@ export default function ImportTransactions() {
           isLoading={isLoading}
           onFileSelect={setSelectedFile}
           onProcess={handleProcessFile}
+          onNext={navigateToNextStep}
           validateFile={validateFile}
         />
       ),
-      isValid: transactions.length > 0
+      isValid: !!selectedFile && !fileError,
+      onBeforeNext: handleProcessFile
     },
     {
       id: 'conference',
@@ -180,14 +205,18 @@ export default function ImportTransactions() {
       description: t('importTransactions.conference.description', 'Compare new transactions with existing ones to avoid duplicates.'),
       component: (
         <ConferenceStep
+          ref={conferenceStepRef}
           transactions={transactions}
           accountId={selectedAccountId}
           onTransactionsUpdate={setTransactions}
-          onNext={handleConferenceNext}
           loading={isLoading}
         />
       ),
-      isValid: transactions.length > 0
+      isValid: transactions.length > 0,
+      onBeforeNext: async () => {
+        // Trigger the conference step's handleProceed logic
+        handleConferenceNext();
+      }
     },
     {
       id: 'review',
@@ -236,6 +265,7 @@ export default function ImportTransactions() {
         steps={steps}
         onBack={() => navigate(-1)}
         backText={`${t('importTransactions.back')} ${t('transactions.transactions')}`}
+        onStepChange={handleWizardStepChange}
         summary={summary}
       />
     </div>

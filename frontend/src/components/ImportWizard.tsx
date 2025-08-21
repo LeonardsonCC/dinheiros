@@ -10,12 +10,14 @@ interface WizardStep {
   description: string;
   component: React.ReactNode;
   isValid: boolean;
+  onBeforeNext?: () => Promise<void>;
 }
 
 interface ImportWizardProps {
   steps: WizardStep[];
   onBack?: () => void;
   backText?: string;
+  onStepChange?: (newStepIndex: number) => void;
   summary?: {
     accountName?: string;
     extractorName?: string;
@@ -24,13 +26,19 @@ interface ImportWizardProps {
   };
 }
 
-export default function ImportWizard({ steps, onBack, backText, summary }: ImportWizardProps) {
+export default function ImportWizard({ steps, onBack, backText, onStepChange, summary }: ImportWizardProps) {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
 
-  const goToNextStep = () => {
+  const goToNextStep = async () => {
     if (currentStep < steps.length - 1 && steps[currentStep].isValid) {
-      setCurrentStep(currentStep + 1);
+      // Call onBeforeNext if it exists
+      if (steps[currentStep].onBeforeNext) {
+        await steps[currentStep].onBeforeNext();
+      }
+      const newStep = currentStep + 1;
+      setCurrentStep(newStep);
+      onStepChange?.(newStep);
     }
   };
 
@@ -47,6 +55,7 @@ export default function ImportWizard({ steps, onBack, backText, summary }: Impor
 
     if (canGoToStep) {
       setCurrentStep(stepIndex);
+      onStepChange?.(stepIndex);
     }
   };
 

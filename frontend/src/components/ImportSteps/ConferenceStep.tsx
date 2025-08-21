@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui';
 import { formatCurrency, formatDate } from '../../lib/utils';
@@ -24,17 +24,19 @@ interface ConferenceStepProps {
   transactions: TransactionDraft[];
   accountId: string;
   onTransactionsUpdate: (transactions: TransactionDraft[]) => void;
-  onNext: () => void;
   loading?: boolean;
 }
 
-export default function ConferenceStep({
+export interface ConferenceStepRef {
+  handleProceed: () => void;
+}
+
+const ConferenceStep = forwardRef<ConferenceStepRef, ConferenceStepProps>(({
   transactions,
   accountId,
   onTransactionsUpdate,
-  onNext,
   loading = false
-}: ConferenceStepProps) {
+}, ref) => {
   const { t } = useTranslation();
   const [existingTransactions, setExistingTransactions] = useState<ExistingTransaction[]>([]);
   const [conflictTransactions, setConflictTransactions] = useState<ConflictTransaction[]>([]);
@@ -96,8 +98,11 @@ export default function ConferenceStep({
       });
 
     onTransactionsUpdate(finalTransactions);
-    onNext();
   };
+
+  useImperativeHandle(ref, () => ({
+    handleProceed
+  }));
 
   const conflictsCount = conflictTransactions.filter(tx => tx.conflictsWith && tx.conflictsWith.length > 0).length;
   const hasUnresolvedConflicts = conflictTransactions.some(tx =>
@@ -309,18 +314,11 @@ export default function ConferenceStep({
         </div>
       )}
 
-      <div className="flex justify-end pt-4">
-        <Button
-          onClick={handleProceed}
-          disabled={loading || hasUnresolvedConflicts}
-          variant="default"
-        >
-          {conflictsCount > 0
-            ? t('importTransactions.conference.proceedWithResolution', 'Proceed with Resolution')
-            : t('importTransactions.conference.proceed', 'Proceed to Review')
-          }
-        </Button>
-      </div>
+
     </div>
   );
-}
+});
+
+ConferenceStep.displayName = 'ConferenceStep';
+
+export default ConferenceStep;

@@ -7,7 +7,6 @@ interface FileUploadStepProps {
   fileError: string;
   isLoading: boolean;
   onFileSelect: (file: File | null) => void;
-  onProcess: () => void;
   validateFile: (file: File) => boolean;
 }
 
@@ -16,7 +15,6 @@ export default function FileUploadStep({
   fileError,
   isLoading,
   onFileSelect,
-  onProcess,
   validateFile
 }: FileUploadStepProps) {
   const { t } = useTranslation();
@@ -25,6 +23,16 @@ export default function FileUploadStep({
     onFileSelect(file);
     if (file && validateFile(file)) {
       // File error will be cleared by validateFile
+    }
+  };
+
+  const handleProcess = async () => {
+    try {
+      await onProcess();
+      // Navigate to next step after successful processing
+      onNext?.();
+    } catch (error) {
+      // Error handling is done in the parent component
     }
   };
 
@@ -59,17 +67,7 @@ export default function FileUploadStep({
         </div>
       )}
 
-      {selectedFile && !fileError && (
-        <div className="flex justify-center pt-2">
-          <Button
-            onClick={onProcess}
-            disabled={isLoading}
-            size="lg"
-          >
-            {isLoading ? t('importTransactions.processing', 'Processing...') : t('importTransactions.processFile', 'Process File')}
-          </Button>
-        </div>
-      )}
+
     </div>
   );
 }
