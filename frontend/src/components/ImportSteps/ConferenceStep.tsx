@@ -1,6 +1,6 @@
 import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import { cn } from '../../lib/utils';
 import api from '../../services/api';
@@ -24,7 +24,6 @@ interface ConferenceStepProps {
   transactions: TransactionDraft[];
   accountId: string;
   onTransactionsUpdate: (transactions: TransactionDraft[]) => void;
-  loading?: boolean;
 }
 
 export interface ConferenceStepRef {
@@ -34,8 +33,7 @@ export interface ConferenceStepRef {
 const ConferenceStep = forwardRef<ConferenceStepRef, ConferenceStepProps>(({
   transactions,
   accountId,
-  onTransactionsUpdate,
-  loading = false
+  onTransactionsUpdate
 }, ref) => {
   const { t } = useTranslation();
   const [existingTransactions, setExistingTransactions] = useState<ExistingTransaction[]>([]);
@@ -105,9 +103,6 @@ const ConferenceStep = forwardRef<ConferenceStepRef, ConferenceStepProps>(({
   }));
 
   const conflictsCount = conflictTransactions.filter(tx => tx.conflictsWith && tx.conflictsWith.length > 0).length;
-  const hasUnresolvedConflicts = conflictTransactions.some(tx =>
-    tx.conflictsWith && tx.conflictsWith.length > 0 && !tx.resolution
-  );
 
   if (isLoading) {
     return (

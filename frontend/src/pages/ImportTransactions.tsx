@@ -135,17 +135,7 @@ export default function ImportTransactions() {
     }
   };
 
-  const navigateToNextStep = () => {
-    // This function can be passed to step components to trigger navigation
-    const stepIds = ['account', 'extractor', 'upload', 'conference', 'review'];
-    const currentIndex = stepIds.indexOf(currentStep);
-    if (currentIndex < stepIds.length - 1) {
-      const nextIndex = currentIndex + 1;
-      setCurrentStep(stepIds[nextIndex]);
-      return nextIndex;
-    }
-    return currentIndex;
-  };
+
 
   const handleConferenceNext = () => {
     // Call the ConferenceStep's handleProceed function
@@ -191,8 +181,6 @@ export default function ImportTransactions() {
           fileError={fileError}
           isLoading={isLoading}
           onFileSelect={setSelectedFile}
-          onProcess={handleProcessFile}
-          onNext={navigateToNextStep}
           validateFile={validateFile}
         />
       ),
@@ -209,7 +197,7 @@ export default function ImportTransactions() {
           transactions={transactions}
           accountId={selectedAccountId}
           onTransactionsUpdate={setTransactions}
-          loading={isLoading}
+
         />
       ),
       isValid: transactions.length > 0,

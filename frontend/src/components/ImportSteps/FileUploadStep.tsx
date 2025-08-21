@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Button } from '../ui/button';
+
 import { FileUpload } from '../ui/file-upload';
 
 interface FileUploadStepProps {
@@ -26,15 +26,7 @@ export default function FileUploadStep({
     }
   };
 
-  const handleProcess = async () => {
-    try {
-      await onProcess();
-      // Navigate to next step after successful processing
-      onNext?.();
-    } catch (error) {
-      // Error handling is done in the parent component
-    }
-  };
+
 
   return (
     <div className="space-y-4">
