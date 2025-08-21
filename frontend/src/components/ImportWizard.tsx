@@ -42,9 +42,9 @@ export default function ImportWizard({ steps, onBack, backText, summary }: Impor
 
   const goToStep = (stepIndex: number) => {
     // Only allow going to completed steps or the next incomplete step
-    const canGoToStep = stepIndex <= currentStep || 
+    const canGoToStep = stepIndex <= currentStep ||
       (stepIndex === currentStep + 1 && steps[currentStep].isValid);
-    
+
     if (canGoToStep) {
       setCurrentStep(stepIndex);
     }
@@ -55,7 +55,7 @@ export default function ImportWizard({ steps, onBack, backText, summary }: Impor
       {/* Progress Indicator with Labels */}
       <div className="space-y-4">
         {/* Progress stepper using grid for perfect alignment */}
-        <div 
+        <div
           className="grid gap-4 items-center"
           style={{ gridTemplateColumns: `repeat(${steps.length}, 1fr)` }}
         >
@@ -70,8 +70,8 @@ export default function ImportWizard({ steps, onBack, backText, summary }: Impor
                     index < currentStep
                       ? "bg-primary text-primary-foreground border-primary"
                       : index === currentStep
-                      ? "border-primary text-primary"
-                      : "border-muted-foreground text-muted-foreground"
+                        ? "border-primary text-primary"
+                        : "border-muted-foreground text-muted-foreground"
                   )}
                   onClick={() => goToStep(index)}
                 >
@@ -82,7 +82,7 @@ export default function ImportWizard({ steps, onBack, backText, summary }: Impor
                   )}
                 </div>
               </div>
-              
+
               {/* Connector line */}
               {index < steps.length - 1 && (
                 <div
@@ -98,7 +98,7 @@ export default function ImportWizard({ steps, onBack, backText, summary }: Impor
         </div>
 
         {/* Step Labels using same grid */}
-        <div 
+        <div
           className="grid gap-4"
           style={{ gridTemplateColumns: `repeat(${steps.length}, 1fr)` }}
         >
@@ -107,11 +107,12 @@ export default function ImportWizard({ steps, onBack, backText, summary }: Impor
               key={`${step.id}-label`}
               className={cn(
                 "text-center text-sm transition-colors",
+                // TODO: nested ternary :rocket: AI is the future
                 index === currentStep
                   ? "text-foreground font-medium"
                   : index < currentStep
-                  ? "text-primary"
-                  : "text-muted-foreground"
+                    ? "text-primary"
+                    : "text-muted-foreground"
               )}
             >
               {step.title}
@@ -168,7 +169,7 @@ export default function ImportWizard({ steps, onBack, backText, summary }: Impor
               {steps[currentStep].description}
             </p>
           </div>
-          
+
           {steps[currentStep].component}
         </CardContent>
       </Card>

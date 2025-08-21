@@ -69,7 +69,36 @@
       "caixaExtrato": "Caixa account statements",
       "generic": "Financial document extractor"
     },
-    "selectionSummary": "Your Selections"
+    "selectionSummary": "Your Selections",
+    "conference": {
+      "title": "Check Duplicates",
+      "description": "Compare new transactions with existing ones to avoid duplicates.",
+      "loading": "Checking for duplicate transactions...",
+      "conflictsFound": "Found {{count}} potential duplicate transaction(s). Please review and choose which transactions to keep.",
+      "noConflicts": "No duplicate transactions found. All transactions are ready to import.",
+      "reviewConflicts": "Review Conflicts",
+      "newTransaction": "New Transaction",
+      "existingTransaction": "Existing Transaction",
+      "chooseAction": "Choose Action:",
+      "keepNew": "Keep new transaction (ignore existing)",
+      "keepExisting": "Keep existing transaction (skip new)",
+      "keepBoth": "Keep both transactions",
+      "proceedWithResolution": "Proceed with Resolution",
+      "proceed": "Proceed to Review",
+      "fetchError": "Failed to fetch existing transactions",
+      "date": "Date",
+      "amount": "Amount",
+      "description": "Description",
+      "type": "Type",
+      "notAvailable": "N/A",
+      "conflictDetected": "Duplicate Detected",
+      "new": "New",
+      "existing": "Existing",
+      "both": "Both",
+      "keepNewDesc": "Import the new transaction and ignore the existing one",
+      "keepExistingDesc": "Skip importing the new transaction and keep the existing one",
+      "keepBothDesc": "Import the new transaction alongside the existing one"
+    }
   },
   "transactions": {
     "add": "Add Transaction",

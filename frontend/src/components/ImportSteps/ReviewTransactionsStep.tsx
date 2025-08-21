@@ -1,10 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/button';
 import TransactionReviewTable from '../TransactionReviewTable';
-
-interface TransactionDraft {
-  [key: string]: unknown;
-}
+import { TransactionDraft } from './types';
 
 interface Category {
   id: number;

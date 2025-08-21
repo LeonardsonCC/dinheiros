@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
+import { TransactionDraft } from '@/components/ImportSteps/types';
 
 interface AxiosError {
   response?: {
@@ -9,10 +10,6 @@ interface AxiosError {
       error?: string;
     };
   };
-}
-
-interface TransactionDraft {
-  [key: string]: unknown;
 }
 
 interface UseImportTransactionsReturn {
@@ -84,7 +81,7 @@ export const useImportTransactions = (): UseImportTransactionsReturn => {
 
   const saveTransactions = async (transactions: TransactionDraft[], accountId: string): Promise<void> => {
     if (!accountId || transactions.length === 0) return;
-    
+
     setSaveLoading(true);
     try {
       const toSave = transactions.filter(t => !t.ignored);

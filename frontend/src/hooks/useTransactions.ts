@@ -1,8 +1,5 @@
+import { TransactionDraft } from '@/components/ImportSteps/types';
 import { useState } from 'react';
-
-interface TransactionDraft {
-  [key: string]: unknown;
-}
 
 interface UseTransactionsReturn {
   transactions: TransactionDraft[];

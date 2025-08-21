@@ -18,10 +18,7 @@ import {
 import { CategoryMultiSelect } from './ui/category-multi-select';
 import { MoneyInput } from './ui/money-input';
 import CategoryManager from './CategoryManager';
-
-interface TransactionDraft {
-  [key: string]: unknown;
-}
+import { TransactionDraft } from './ImportSteps/types';
 
 interface Category {
   id: number;

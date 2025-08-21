@@ -69,7 +69,36 @@
       "caixaExtrato": "Extratos de conta Caixa",
       "generic": "Extrator de documentos financeiros"
     },
-    "selectionSummary": "Suas Seleções"
+    "selectionSummary": "Suas Seleções",
+    "conference": {
+      "title": "Verificar Duplicatas",
+      "description": "Compare novas transações com as existentes para evitar duplicatas.",
+      "loading": "Verificando transações duplicadas...",
+      "conflictsFound": "Encontradas {{count}} possível(eis) transação(ões) duplicada(s). Por favor, revise e escolha quais transações manter.",
+      "noConflicts": "Nenhuma transação duplicada encontrada. Todas as transações estão prontas para importar.",
+      "reviewConflicts": "Revisar Conflitos",
+      "newTransaction": "Nova Transação",
+      "existingTransaction": "Transação Existente",
+      "chooseAction": "Escolha uma Ação:",
+      "keepNew": "Manter nova transação (ignorar existente)",
+      "keepExisting": "Manter transação existente (pular nova)",
+      "keepBoth": "Manter ambas as transações",
+      "proceedWithResolution": "Prosseguir com Resolução",
+      "proceed": "Prosseguir para Revisão",
+      "fetchError": "Falha ao buscar transações existentes",
+      "date": "Data",
+      "amount": "Valor",
+      "description": "Descrição",
+      "type": "Tipo",
+      "notAvailable": "N/D",
+      "conflictDetected": "Duplicata Detectada",
+      "new": "Nova",
+      "existing": "Existente",
+      "both": "Ambas",
+      "keepNewDesc": "Importar a nova transação e ignorar a existente",
+      "keepExistingDesc": "Pular a importação da nova transação e manter a existente",
+      "keepBothDesc": "Importar a nova transação junto com a existente"
+    }
   },
   "transactions": {
     "add": "Adicionar Transação",

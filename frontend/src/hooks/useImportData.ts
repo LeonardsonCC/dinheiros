@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
+import { TransactionDraft } from '@/components/ImportSteps/types';
 
 interface Account {
   id: string;
@@ -16,10 +17,6 @@ interface Category {
 interface Extractor {
   name: string;
   displayName: string;
-}
-
-interface TransactionDraft {
-  [key: string]: unknown;
 }
 
 interface UseImportDataReturn {

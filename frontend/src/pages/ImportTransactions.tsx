@@ -14,6 +14,7 @@ import {
   AccountSelectionStep,
   ExtractorSelectionStep,
   FileUploadStep,
+  ConferenceStep,
   ReviewTransactionsStep
 } from '../components/ImportSteps';
 
@@ -23,28 +24,29 @@ export default function ImportTransactions() {
   const navigate = useNavigate();
   const [selectedAccountId, setSelectedAccountId] = useState<string>(urlAccountId || '');
   const [selectedExtractor, setSelectedExtractor] = useState<string>('');
+  const [currentStep, setCurrentStep] = useState<string>('account');
 
   const { selectedFile, fileError, setSelectedFile, setFileError, validateFile } = useFileUpload();
-  const { 
-    transactions, 
-    setTransactions, 
-    handleTransactionChange, 
-    toggleIgnoreTransaction, 
-    toggleAllTransactions 
+  const {
+    transactions,
+    setTransactions,
+    handleTransactionChange,
+    toggleIgnoreTransaction,
+    toggleAllTransactions
   } = useTransactions();
   const { isLoading, saveLoading, importTransactions, saveTransactions } = useImportTransactions();
-  const { 
-    accounts, 
-    accountsLoading, 
-    categories, 
-    setCategories, 
-    extractors, 
-    handleAddCategory 
+  const {
+    accounts,
+    accountsLoading,
+    categories,
+    setCategories,
+    extractors,
+    handleAddCategory
   } = useImportData(urlAccountId, transactions, setTransactions);
 
   const handleProcessFile = async () => {
     const accountId = selectedAccountId;
-    
+
     const validation = validateImportForm(selectedFile, accountId);
     if (!validation.isValid) {
       toast.error(validation.error!);
@@ -104,8 +106,8 @@ export default function ImportTransactions() {
 
       let appliedCount = 0;
       setTransactions(prev => prev.map(tx => {
-        if (typeof tx.description === 'string' && tx.description === description && 
-            typeof tx.type === 'string' && tx.type === type) {
+        if (typeof tx.description === 'string' && tx.description === description &&
+          typeof tx.type === 'string' && tx.type === type) {
           appliedCount++;
           return { ...tx, categoryIds: categoryIds };
         }
@@ -122,6 +124,10 @@ export default function ImportTransactions() {
   if (accountsLoading) {
     return <Loading message={t('importTransactions.loading')} />;
   }
+
+  const handleConferenceNext = () => {
+    setCurrentStep('review');
+  };
 
   // Build wizard steps
   const steps = [
@@ -169,6 +175,21 @@ export default function ImportTransactions() {
       isValid: transactions.length > 0
     },
     {
+      id: 'conference',
+      title: t('importTransactions.conference.title', 'Check Duplicates'),
+      description: t('importTransactions.conference.description', 'Compare new transactions with existing ones to avoid duplicates.'),
+      component: (
+        <ConferenceStep
+          transactions={transactions}
+          accountId={selectedAccountId}
+          onTransactionsUpdate={setTransactions}
+          onNext={handleConferenceNext}
+          loading={isLoading}
+        />
+      ),
+      isValid: transactions.length > 0
+    },
+    {
       id: 'review',
       title: t('importTransactions.reviewTransactions', 'Review Transactions'),
       description: t('importTransactions.reviewDescription', 'Review the extracted transactions before importing them.'),
@@ -193,12 +214,13 @@ export default function ImportTransactions() {
   // Build summary data
   const selectedAccount = accounts.find(acc => acc.id === selectedAccountId);
   const selectedExtractorObj = extractors.find(ext => ext.name === selectedExtractor);
-  
+
   const summary = {
     accountName: selectedAccount?.name,
     extractorName: selectedExtractorObj?.displayName,
     fileName: selectedFile?.name,
-    transactionCount: transactions.length > 0 ? transactions.length : undefined
+    transactionCount: transactions.length > 0 ? transactions.length : undefined,
+    duplicatesChecked: currentStep === 'review' ? true : undefined
   };
 
   return (
@@ -209,7 +231,7 @@ export default function ImportTransactions() {
           {t('importTransactions.wizardDescription', 'Follow the steps below to import transactions from your bank statements.')}
         </p>
       </div>
-      
+
       <ImportWizard
         steps={steps}
         onBack={() => navigate(-1)}
