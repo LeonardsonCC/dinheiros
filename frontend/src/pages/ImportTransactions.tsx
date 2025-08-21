@@ -202,7 +202,6 @@ export default function ImportTransactions() {
       ),
       isValid: transactions.length > 0,
       onBeforeNext: async () => {
-        // Trigger the conference step's handleProceed logic
         handleConferenceNext();
       }
     },

@@ -61,7 +61,10 @@ const ConferenceStep = forwardRef<ConferenceStepRef, ConferenceStepProps>(({
   }, [accountId, t]);
 
   useEffect(() => {
-    if (existingTransactions.length === 0) return;
+    if (existingTransactions.length === 0) {
+      setConflictTransactions(transactions);
+      return;
+    }
 
     const conflicts: ConflictTransaction[] = transactions.map(newTx => {
       const potentialConflicts = existingTransactions.filter(existingTx => {
@@ -88,7 +91,6 @@ const ConferenceStep = forwardRef<ConferenceStepRef, ConferenceStepProps>(({
 
   const handleProceed = () => {
     const finalTransactions = conflictTransactions
-      // .filter(tx => tx.resolution === 'keep_both' || !tx.conflictsWith?.length)
       .map(tx => {
         const { conflictsWith, resolution, ...cleanTx } = tx;
         cleanTx.ignored = (conflictsWith && resolution == 'keep_existing') || false;
