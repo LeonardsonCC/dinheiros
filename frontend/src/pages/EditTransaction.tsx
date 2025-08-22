@@ -86,7 +86,7 @@ export default function EditTransaction() {
         ]);
 
         const transaction = transactionRes.data;
-        setAccounts(accountsRes.data);
+        setAccounts(accountsRes.data.accounts || accountsRes.data);
         setAllCategories(categoriesRes.data);
         
         // Filter categories based on transaction type
@@ -125,6 +125,19 @@ export default function EditTransaction() {
 
   // Update filtered categories when transaction type changes
   useEffect(() => {
+    // Transfers don't use categories
+    if (formData.type === 'transfer') {
+      setFilteredCategories([]);
+      // Clear categories when switching to transfer
+      if (formData.categoryIds.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          categoryIds: []
+        }));
+      }
+      return;
+    }
+
     const filtered = allCategories.filter(cat => cat.type === formData.type);
     setFilteredCategories(filtered);
     
@@ -192,14 +205,14 @@ export default function EditTransaction() {
     try {
       setSubmitting(true);
       
-      const payload = {
-        type: formData.type,
-        amount: parseFloat(formData.amount) * (formData.type === 'expense' ? -1 : 1),
-        description: formData.description,
-        category_ids: formData.categoryIds,
-        date: formData.date,
-        to_account_id: formData.type === 'transfer' ? formData.toAccountId : undefined
-      };
+        const payload = {
+          type: formData.type,
+          amount: parseFloat(formData.amount) * (formData.type === 'expense' ? -1 : 1),
+          description: formData.description,
+          category_ids: formData.type === 'transfer' ? [] : formData.categoryIds,
+          date: formData.date,
+          to_account_id: formData.type === 'transfer' && formData.toAccountId ? Number(formData.toAccountId) : undefined
+        };
 
       await api.put(`/api/accounts/${accountId}/transactions/${transactionIdNum}`, payload);
       
@@ -305,49 +318,52 @@ export default function EditTransaction() {
                 />
               </div>
 
-              {/* Categories */}
-              <div className="sm:col-span-2">
-                <CategoryManager 
-                  onCategoryAdded={(newCategory) => {
-                    setAllCategories(prev => [...prev, newCategory]);
-                    
-                    // Only auto-select if the new category matches the current transaction type
-                    if (newCategory.type === formData.type) {
-                      setFilteredCategories(prev => [...prev, newCategory]);
-                      setFormData(prev => ({
-                        ...prev,
-                        categoryIds: [...prev.categoryIds, newCategory.id]
-                      }));
-                    }
-                  }} 
-                />
-                
-                {filteredCategories.length > 0 ? (
-                  <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {filteredCategories.map(category => (
-                      <div key={category.id} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id={`category-${category.id}`}
-                          checked={formData.categoryIds.includes(category.id)}
-                          onChange={() => handleCategoryChange(category.id)}
-                          className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
-                        />
-                        <label 
-                          htmlFor={`category-${category.id}`} 
-                          className="ml-2 block text-sm text-gray-700 dark:text-gray-300 truncate"
-                          title={category.description}
-                        >
-                          {category.name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                 ) : (
-                   <p className="mt-1 text-sm text-muted-foreground">
-                     {t('editTransaction.noCategories')}
-                   </p>
-                 )}              </div>
+              {/* Categories - only show for non-transfer transactions */}
+              {formData.type !== 'transfer' && (
+                <div className="sm:col-span-2">
+                  <CategoryManager 
+                    onCategoryAdded={(newCategory) => {
+                      setAllCategories(prev => [...prev, newCategory]);
+                      
+                      // Only auto-select if the new category matches the current transaction type
+                      if (newCategory.type === formData.type) {
+                        setFilteredCategories(prev => [...prev, newCategory]);
+                        setFormData(prev => ({
+                          ...prev,
+                          categoryIds: [...prev.categoryIds, newCategory.id]
+                        }));
+                      }
+                    }} 
+                  />
+                  
+                  {filteredCategories.length > 0 ? (
+                    <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {filteredCategories.map(category => (
+                        <div key={category.id} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            id={`category-${category.id}`}
+                            checked={formData.categoryIds.includes(category.id)}
+                            onChange={() => handleCategoryChange(category.id)}
+                            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
+                          />
+                          <label 
+                            htmlFor={`category-${category.id}`} 
+                            className="ml-2 block text-sm text-gray-700 dark:text-gray-300 truncate"
+                            title={category.description}
+                          >
+                            {category.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                   ) : (
+                     <p className="mt-1 text-sm text-muted-foreground">
+                       {t('editTransaction.noCategories')}
+                     </p>
+                   )}
+                </div>
+              )}
 
               {/* Date & Time */}
               <div className="sm:col-span-2">
@@ -374,7 +390,7 @@ export default function EditTransaction() {
                       <SelectValue placeholder={t('editTransaction.selectAccount')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {accounts
+                      {Array.isArray(accounts) && accounts
                         .filter(account => account.id !== accountId)
                         .map(account => (
                           <SelectItem key={account.id} value={account.id.toString()}>
