@@ -2,6 +2,8 @@
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app
 
+ENV VITE_GA_MEASUREMENT_ID=G-6L584C5H71
+
 # Copy package files and install dependencies
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
