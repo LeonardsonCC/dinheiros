@@ -3,6 +3,8 @@ import { XMarkIcon, UserPlusIcon, TrashIcon, ClockIcon } from '@heroicons/react/
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../lib/utils';
+import { ConfirmationModal } from './ConfirmationModal';
+import { useConfirmation } from '../hooks/useConfirmation';
 
 interface ShareInvitation {
   id: number;
@@ -30,6 +32,7 @@ interface ShareAccountModalProps {
 
 export default function ShareAccountModal({ isOpen, onClose, accountId, accountName }: ShareAccountModalProps) {
   const { t } = useTranslation();
+  const { confirm, confirmationProps } = useConfirmation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [shares, setShares] = useState<AccountShare[]>([]);
@@ -115,7 +118,15 @@ export default function ShareAccountModal({ isOpen, onClose, accountId, accountN
   };
 
   const handleRevokeShare = async (userId: number) => {
-    if (!window.confirm(t('sharing.confirmRevoke'))) return;
+    const confirmed = await confirm({
+      title: t('sharing.revokeTitle'),
+      message: t('sharing.confirmRevoke'),
+      confirmText: t('common.revoke'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    });
+    
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/accounts/${accountId}/shares/${userId}`, {
@@ -139,7 +150,15 @@ export default function ShareAccountModal({ isOpen, onClose, accountId, accountN
   };
 
   const handleCancelInvitation = async (invitationId: number) => {
-    if (!window.confirm(t('sharing.confirmCancelInvitation'))) return;
+    const confirmed = await confirm({
+      title: t('sharing.cancelInvitationTitle'),
+      message: t('sharing.confirmCancelInvitation'),
+      confirmText: t('common.cancel'),
+      cancelText: t('common.keepInvitation'),
+      variant: 'destructive',
+    });
+    
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/accounts/${accountId}/invitations/${invitationId}`, {
@@ -304,6 +323,7 @@ export default function ShareAccountModal({ isOpen, onClose, accountId, accountN
           </button>
         </div>
       </div>
+      <ConfirmationModal {...confirmationProps} />
     </div>
   );
 }

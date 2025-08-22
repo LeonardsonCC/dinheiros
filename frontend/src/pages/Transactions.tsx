@@ -9,9 +9,12 @@ import { useTranslation } from 'react-i18next';
 import { formatDate, formatCurrency } from '../lib/utils';
 import type { AxiosError } from 'axios';
 import { Button } from '@/components/ui';
+import { ConfirmationModal } from '../components/ConfirmationModal';
+import { useConfirmation } from '../hooks/useConfirmation';
 
 export default function Transactions() {
   const { t } = useTranslation();
+  const { confirm, confirmationProps } = useConfirmation();
   const { accountId: accountIdParam } = useParams<{ accountId: string }>();
   // Ensure accountId is a number
   const accountId = accountIdParam ? Number(accountIdParam) : null;
@@ -103,7 +106,15 @@ export default function Transactions() {
 
 
   const handleDeleteTransaction = async (transactionId: number) => {
-    if (!window.confirm('Are you sure you want to delete this transaction? This action cannot be undone.')) {
+    const confirmed = await confirm({
+      title: 'Delete Transaction',
+      message: 'Are you sure you want to delete this transaction? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    });
+    
+    if (!confirmed) {
       return;
     }
 
@@ -253,6 +264,7 @@ export default function Transactions() {
           </div>
         )}
       />
+      <ConfirmationModal {...confirmationProps} />
     </div>
   );
 }

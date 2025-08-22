@@ -10,6 +10,8 @@ import DatePicker from '../components/DatePicker';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatCurrency } from '../lib/utils';
 import { MoneyInput } from '../components/ui/money-input';
+import { ConfirmationModal } from '../components/ConfirmationModal';
+import { useConfirmation } from '../hooks/useConfirmation';
 
 // Type definitions
 interface Account {
@@ -260,6 +262,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
 export default function AllTransactions() {
   const { t } = useTranslation();
+  const { confirm, confirmationProps } = useConfirmation();
 
   // Router hooks
   const [searchParams] = useSearchParams();
@@ -474,7 +477,15 @@ export default function AllTransactions() {
 
   // Handle delete transaction
   const handleDeleteTransaction = async (transaction: Transaction) => {
-    if (!window.confirm('Are you sure you want to delete this transaction? This action cannot be undone.')) {
+    const confirmed = await confirm({
+      title: 'Delete Transaction',
+      message: 'Are you sure you want to delete this transaction? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    });
+    
+    if (!confirmed) {
       return;
     }
     setDeletingId(transaction.id);
@@ -705,6 +716,7 @@ export default function AllTransactions() {
           </div>
         )}
       />
+      <ConfirmationModal {...confirmationProps} />
     </div>
   );
 }

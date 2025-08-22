@@ -7,6 +7,8 @@ import Loading from '../components/Loading';
 import ShareAccountModal from '../components/ShareAccountModal';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, CardContent } from '@/components/ui';
+import { ConfirmationModal } from '../components/ConfirmationModal';
+import { useConfirmation } from '../hooks/useConfirmation';
 
 interface Account {
   id: number | string;
@@ -43,6 +45,7 @@ interface AxiosError {
 
 export default function Accounts() {
   const { t } = useTranslation();
+  const { confirm, confirmationProps } = useConfirmation();
   const [accounts, setAccounts] = useState<ProcessedAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
@@ -119,8 +122,15 @@ export default function Accounts() {
   }, [showInactive]);
 
   const handleDelete = async (accountId: string | number) => {
-    if (!window.confirm(t('accounts.confirmDelete')))
-      return;
+    const confirmed = await confirm({
+      title: t('accounts.deleteTitle'),
+      message: t('accounts.confirmDelete'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    });
+    
+    if (!confirmed) return;
 
     try {
       setDeletingId(accountId);
@@ -155,8 +165,15 @@ export default function Accounts() {
   };
 
   const handleReactivate = async (accountId: string | number) => {
-    if (!window.confirm(t('accounts.confirmReactivate')))
-      return;
+    const confirmed = await confirm({
+      title: t('accounts.reactivateTitle'),
+      message: t('accounts.confirmReactivate'),
+      confirmText: t('common.reactivate'),
+      cancelText: t('common.cancel'),
+      variant: 'default',
+    });
+    
+    if (!confirmed) return;
 
     try {
       setReactivatingId(accountId);
@@ -350,6 +367,7 @@ export default function Accounts() {
           accountName={selectedAccount.name}
         />
       )}
+      <ConfirmationModal {...confirmationProps} />
     </div>
   );
 }

@@ -121,7 +121,9 @@
     "sharedOn": "Compartilhado em {{date}}",
     "expiresOn": "Expira em {{date}}",
     "revokeAccess": "Revogar acesso",
+    "revokeTitle": "Revogar Acesso",
     "cancelInvitation": "Cancelar convite",
+    "cancelInvitationTitle": "Cancelar Convite",
     "confirmRevoke": "Tem certeza de que deseja revogar o acesso para este usuário?",
     "confirmCancelInvitation": "Tem certeza de que deseja cancelar este convite?",
     "shareRevoked": "Compartilhamento revogado com sucesso",
@@ -281,6 +283,7 @@
     "editAccount": "Editar conta",
     "noAccounts": "Nenhuma conta encontrada. Adicione uma conta para começar.",
     "deleteAccount": "Excluir conta",
+    "deleteTitle": "Excluir Conta",
     "confirmDelete": "Tem certeza que deseja excluir esta conta? Esta ação não pode ser desfeita.",
     "deleted": "Conta excluída com sucesso",
     "failedDelete": "Falha ao excluir conta",
@@ -292,6 +295,7 @@
     "shared": "Compartilhada",
     "ownedBy": "por {{owner}}",
     "reactivateAccount": "Reativar conta",
+    "reactivateTitle": "Reativar Conta",
     "confirmReactivate": "Tem certeza que deseja reativar esta conta? Isso também reativará todas as transações associadas.",
     "reactivated": "Conta reativada com sucesso",
     "failedReactivate": "Falha ao reativar conta"
@@ -566,6 +570,10 @@
     "save": "Salvar",
     "next": "Próximo",
     "previous": "Anterior",
-    "account": "Conta"
+    "account": "Conta",
+    "delete": "Excluir",
+    "reactivate": "Reativar",
+    "revoke": "Revogar",
+    "keepInvitation": "Manter Convite"
   }
 }
