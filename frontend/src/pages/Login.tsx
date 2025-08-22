@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
+import { trackUserAction } from '../lib/analytics';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Input } from '@/components/ui';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -36,6 +37,7 @@ export default function Login() {
       
       localStorage.setItem('token', response.data.token);
       toast.success(t('login.loggedInSuccess'));
+      trackUserAction.login();
 
       // Force a full page reload to ensure all state is properly initialized
       window.location.href = '/';
@@ -59,6 +61,7 @@ export default function Login() {
       });
       localStorage.setItem('token', response.data.token);
       toast.success(t('login.googleLoginSuccess'));
+      trackUserAction.login();
       window.location.href = '/';
     } catch (error) {
       toast.error(t('login.googleLoginFailed'));

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Input } from '@/components/ui';
+import { trackUserAction } from '../lib/analytics';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function Register() {
@@ -48,6 +49,7 @@ export default function Register() {
       });
       
       toast.success(t('register.accountCreatedSuccess'));
+      trackUserAction.register();
       navigate('/login');
     } catch (error) {
       toast.error(t('register.registrationFailed'));

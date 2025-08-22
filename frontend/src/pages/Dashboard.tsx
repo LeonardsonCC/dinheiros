@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import Loading from '../components/Loading';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import { trackUserAction } from '../lib/analytics';
 import { formatDate, formatCurrency } from '../lib/utils';
 
 interface Summary {
@@ -26,6 +27,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    trackUserAction.viewDashboard();
+    
     const fetchSummary = async () => {
       try {
         const response = await api.get('/api/summary');

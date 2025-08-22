@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import Layout from './components/Layout';
+import { useAnalytics } from './hooks/useAnalytics';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Transactions from './pages/Transactions';
@@ -25,6 +26,9 @@ import api from './services/api';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Track page views
+  useAnalytics();
 
   useEffect(() => {
     const checkAuth = async () => {

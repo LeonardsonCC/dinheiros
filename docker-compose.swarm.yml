@@ -81,6 +81,8 @@ services:
         protocol: tcp
         published: 9020
         target: 80
+    environment:
+      - VITE_GA_MEASUREMENT_ID=G-6L584C5H71
     depends_on:
       - backend
     labels:

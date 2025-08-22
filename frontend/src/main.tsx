@@ -6,6 +6,10 @@ import './index.css';
 import './i18n';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { initGA } from './lib/analytics';
+
+// Initialize Google Analytics
+initGA();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

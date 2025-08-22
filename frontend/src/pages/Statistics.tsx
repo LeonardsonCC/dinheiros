@@ -17,6 +17,7 @@ import {
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatCurrency } from '../lib/utils';
+import { trackUserAction } from '../lib/analytics';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -127,6 +128,8 @@ export default function Statistics() {
   };
 
   useEffect(() => {
+    trackUserAction.viewStatistics();
+    
     async function fetchStats() {
       setLoading(true);
       try {
