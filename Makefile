@@ -67,18 +67,23 @@ build: build-frontend
 	@echo "Building production binary..."
 	env go build -ldflags="-s -w" -o bin/dinheiros ./cmd/dinheiros
 
+generate-version:
+	@echo "Generating new version..."
+	./scripts/generate-version.sh
+
 help:
 	@echo "Available targets:"
-	@echo "  run            - Start both frontend and backend in development mode (default)"
-	@echo "  backend        - Start only the backend server"
-	@echo "  frontend       - Start only the frontend development server"
-	@echo "  setup-frontend - Install frontend dependencies"
-	@echo "  build-frontend - Build frontend assets"
-	@echo "  build          - Build production binary with embedded frontend"
-	@echo "  deps           - Install Go dependencies"
-	@echo "  clean          - Remove generated files"
-	@echo "  install-precommit - Install pre-commit tool"
-	@echo "  setup-hooks    - Setup pre-commit hooks"
-	@echo "  lint           - Run golangci-lint"
-	@echo "  format         - Format Go files with goimports-reviser"
-	@echo "  help           - Show this help message"
+	@echo "  run                             - Start both frontend and backend in development mode (default)"
+	@echo "  backend                         - Start only the backend server"
+	@echo "  frontend                        - Start only the frontend development server"
+	@echo "  setup-frontend                  - Install frontend dependencies"
+	@echo "  build-frontend                  - Build frontend assets"
+	@echo "  build                           - Build production binary with embedded frontend"
+	@echo "  deps                            - Install Go dependencies"
+	@echo "  clean                           - Remove generated files"
+	@echo "  install-precommit               - Install pre-commit tool"
+	@echo "  setup-hooks                     - Setup pre-commit hooks"
+	@echo "  lint                            - Run golangci-lint"
+	@echo "  format                          - Format Go files with goimports-reviser"
+	@echo "  generate-version                - Generate a new version with tag""
+	@echo "  help                            - Show this help message"
