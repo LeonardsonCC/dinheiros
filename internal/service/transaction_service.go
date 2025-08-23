@@ -287,6 +287,22 @@ func (s *transactionService) UpdateTransaction(userID uint, transaction *models.
 		return err
 	}
 
+	// Calculate balance adjustment needed
+	// Old transaction impact on balance
+	oldImpact := existingTx.Amount
+	if existingTx.Type == models.TransactionTypeExpense {
+		oldImpact = -oldImpact // Expenses reduce balance
+	}
+
+	// New transaction impact on balance
+	newImpact := transaction.Amount
+	if transaction.Type == models.TransactionTypeExpense {
+		newImpact = -newImpact // Expenses reduce balance
+	}
+
+	// Calculate the difference (what needs to be added/subtracted from balance)
+	balanceAdjustment := newImpact - oldImpact
+
 	// Update the categories
 	tx := s.transactionRepo.Begin()
 	defer func() {
@@ -294,6 +310,14 @@ func (s *transactionService) UpdateTransaction(userID uint, transaction *models.
 			tx.Rollback()
 		}
 	}()
+
+	// Update account balance if there's a change
+	if balanceAdjustment != 0 {
+		if err := s.accountRepo.UpdateBalance(existingTx.AccountID, balanceAdjustment); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
 
 	// Update transaction fields
 	err = tx.Model(&existingTx).Updates(transaction).Error
@@ -342,6 +366,30 @@ func (s *transactionService) UpdateTransactionWithAttachment(userID uint, transa
 	if err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	// Calculate balance adjustment needed
+	// Old transaction impact on balance
+	oldImpact := existingTx.Amount
+	if existingTx.Type == models.TransactionTypeExpense {
+		oldImpact = -oldImpact // Expenses reduce balance
+	}
+
+	// New transaction impact on balance
+	newImpact := transaction.Amount
+	if transaction.Type == models.TransactionTypeExpense {
+		newImpact = -newImpact // Expenses reduce balance
+	}
+
+	// Calculate the difference (what needs to be added/subtracted from balance)
+	balanceAdjustment := newImpact - oldImpact
+
+	// Update account balance if there's a change
+	if balanceAdjustment != 0 {
+		if err := s.accountRepo.UpdateBalance(existingTx.AccountID, balanceAdjustment); err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 
 	// Handle attachment relationship cleanup and setup
