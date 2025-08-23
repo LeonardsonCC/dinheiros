@@ -76,7 +76,7 @@ func isPDF(fileHeader *multipart.FileHeader) (bool, error) {
 // ImportTransactions handles the import of transactions from a file
 func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -169,7 +169,7 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 // @Router /accounts/{id}/transactions [post]
 func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -336,7 +336,7 @@ func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 // @Router /accounts/{id}/transactions [get]
 func (h *TransactionHandler) GetTransactions(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -385,7 +385,7 @@ func (h *TransactionHandler) GetTransactions(c *gin.Context) {
 // @Router /accounts/{id}/transactions/{transactionId} [get]
 func (h *TransactionHandler) GetTransaction(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -435,7 +435,7 @@ type DashboardSummaryResponse struct {
 // @Router /summary [get]
 func (h *TransactionHandler) GetDashboardSummary(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -487,7 +487,7 @@ func (h *TransactionHandler) GetDashboardSummary(c *gin.Context) {
 // @Router /accounts/{id}/transactions/{transactionId} [put]
 func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -586,7 +586,7 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 // @Router /accounts/{id}/transactions/{transactionId} [delete]
 func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -647,7 +647,7 @@ type BulkCreateTransactionsRequest struct {
 // BulkCreateTransactions handles saving multiple transactions at once
 func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -744,7 +744,7 @@ func ensureChartJsFormatInt(labels []string, data []int) map[string]interface{} 
 
 func (h *TransactionHandler) GetStatisticsTransactionsPerDay(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -773,7 +773,7 @@ func (h *TransactionHandler) GetStatisticsTransactionsPerDay(c *gin.Context) {
 
 func (h *TransactionHandler) GetStatisticsAmountByMonth(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -802,7 +802,7 @@ func (h *TransactionHandler) GetStatisticsAmountByMonth(c *gin.Context) {
 
 func (h *TransactionHandler) GetStatisticsAmountByAccount(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -831,7 +831,7 @@ func (h *TransactionHandler) GetStatisticsAmountByAccount(c *gin.Context) {
 
 func (h *TransactionHandler) GetStatisticsAmountByCategory(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -860,7 +860,7 @@ func (h *TransactionHandler) GetStatisticsAmountByCategory(c *gin.Context) {
 
 func (h *TransactionHandler) GetStatisticsAmountSpentByDay(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -874,7 +874,7 @@ func (h *TransactionHandler) GetStatisticsAmountSpentByDay(c *gin.Context) {
 
 func (h *TransactionHandler) GetStatisticsAmountSpentAndGainedByDay(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}

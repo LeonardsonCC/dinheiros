@@ -1,4 +1,4 @@
-.PHONY: run setup-frontend build-frontend build install-precommit setup-hooks lint format swagger-docs
+.PHONY: run setup-frontend build-frontend build install-precommit setup-hooks lint format swagger-docs install-air backend
 
 # Default target when running just 'make'
 run: setup-frontend
@@ -38,10 +38,15 @@ swagger-docs:
 	@echo "Generating Swagger documentation..."
 	swag init -g ./cmd/dinheiros/main.go --output docs
 
-# Run backend in development mode
-backend:
-	@echo "Starting backend in development mode..."
-	go run cmd/dinheiros/main.go
+# Install air for hot reloading
+install-air:
+	@echo "Installing air for hot reloading..."
+	@which air > /dev/null 2>&1 || go install github.com/air-verse/air@latest
+
+# Run backend in development mode with hot reload
+backend: install-air
+	@echo "Starting backend in development mode with hot reload..."
+	air
 
 # Run frontend in development mode
 .PHONY: frontend
@@ -79,9 +84,10 @@ generate-version:
 help:
 	@echo "Available targets:"
 	@echo "  run                             - Start both frontend and backend in development mode (default)"
-	@echo "  backend                         - Start only the backend server"
+	@echo "  backend                         - Start only the backend server with hot reload"
 	@echo "  frontend                        - Start only the frontend development server"
 	@echo "  setup-frontend                  - Install frontend dependencies"
+	@echo "  install-air                     - Install air for Go hot reloading"
 	@echo "  build-frontend                  - Build frontend assets"
 	@echo "  build                           - Build production binary with embedded frontend"
 	@echo "  deps                            - Install Go dependencies"

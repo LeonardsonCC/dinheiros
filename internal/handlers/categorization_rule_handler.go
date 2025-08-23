@@ -31,7 +31,7 @@ func NewCategorizationRuleHandler(s service.CategorizationRuleService) *Categori
 // @Router /categorization-rules [get]
 func (h *CategorizationRuleHandler) ListRules(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -62,7 +62,7 @@ func (h *CategorizationRuleHandler) ListRules(c *gin.Context) {
 // @Router /categorization-rules/{id} [get]
 func (h *CategorizationRuleHandler) GetRule(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -94,7 +94,7 @@ func (h *CategorizationRuleHandler) GetRule(c *gin.Context) {
 // @Router /categorization-rules [post]
 func (h *CategorizationRuleHandler) CreateRule(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -136,7 +136,7 @@ func (h *CategorizationRuleHandler) CreateRule(c *gin.Context) {
 // @Router /categorization-rules/{id} [put]
 func (h *CategorizationRuleHandler) UpdateRule(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -195,7 +195,7 @@ func (h *CategorizationRuleHandler) UpdateRule(c *gin.Context) {
 // @Router /categorization-rules/{id} [delete]
 func (h *CategorizationRuleHandler) DeleteRule(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}

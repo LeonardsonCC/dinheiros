@@ -118,7 +118,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 func (h *UserHandler) GetCurrentUser(c *gin.Context) {
 	// Get user ID from context (set by auth middleware)
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}

@@ -37,7 +37,7 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 	log.Printf("[AccountHandler] CreateAccount: Starting account creation")
 
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		log.Printf("[AccountHandler] CreateAccount: User not authenticated")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -98,7 +98,7 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 // @Router /accounts [get]
 func (h *AccountHandler) GetAccounts(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -134,7 +134,7 @@ func (h *AccountHandler) GetAccounts(c *gin.Context) {
 // @Router /accounts/{id} [get]
 func (h *AccountHandler) GetAccount(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -172,7 +172,7 @@ func (h *AccountHandler) GetAccount(c *gin.Context) {
 // @Router /accounts/{id} [put]
 func (h *AccountHandler) UpdateAccount(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -217,7 +217,7 @@ func (h *AccountHandler) UpdateAccount(c *gin.Context) {
 // @Router /accounts/{id} [delete]
 func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -254,7 +254,7 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 // @Router /accounts/{id}/reactivate [post]
 func (h *AccountHandler) ReactivateAccount(c *gin.Context) {
 	user := c.GetUint("user")
-	if user != 0 {
+	if user == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
