@@ -62,14 +62,16 @@ func (r *transactionRepository) FindByID(id uint, userID uint) (*models.Transact
 	var transaction models.Transaction
 	// First try to find by direct account ownership
 	err := r.db.Preload("Categories").
+		Preload("AttachedTransaction").
+		Preload("AttachedTransaction.Account").
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
 		Where("transactions.id = ? AND accounts.user_id = ?", id, userID).
 		First(&transaction).Error
-	
+
 	if err == nil {
 		return &transaction, nil
 	}
-	
+
 	// If not found by ownership, check if user has shared access
 	// This will only work if account_shares table exists
 	var count int64
@@ -77,6 +79,8 @@ func (r *transactionRepository) FindByID(id uint, userID uint) (*models.Transact
 	if shareCheckErr == nil {
 		// Try to find transaction where user has shared access to the account
 		err = r.db.Preload("Categories").
+			Preload("AttachedTransaction").
+			Preload("AttachedTransaction.Account").
 			Joins("JOIN accounts ON accounts.id = transactions.account_id").
 			Joins("JOIN account_shares ON account_shares.account_id = accounts.id").
 			Where("transactions.id = ? AND account_shares.shared_user_id = ?", id, userID).
@@ -127,7 +131,7 @@ func (r *transactionRepository) FindByUserID(
 	tx := r.db.Model(&models.Transaction{}).
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
 		Where("accounts.user_id = ?", userID)
-	
+
 	// Try to include shared accounts if account_shares table exists
 	var sharedAccountIDs []uint
 	shareCheckErr := r.db.Table("account_shares").Where("shared_user_id = ?", userID).Pluck("account_id", &sharedAccountIDs)
@@ -185,8 +189,10 @@ func (r *transactionRepository) FindByUserID(
 		tx = tx.Offset(offset).Limit(pageSize)
 	}
 
-	// Execute the query with preloading categories
+	// Execute the query with preloading categories and attached transactions
 	err := tx.Preload("Account").Preload("Categories").
+		Preload("AttachedTransaction").
+		Preload("AttachedTransaction.Account").
 		Order("transactions.date DESC, transactions.id DESC").
 		Find(&transactions).Error
 

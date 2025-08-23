@@ -16,12 +16,20 @@ interface Category {
 export interface Transaction {
   id: number;
   amount: number;
-  type: 'income' | 'expense' | 'transfer';
+  type: 'income' | 'expense';
   description: string;
   date: string;
   categories: Category[];
   account: Account;
-  toAccount?: Account;
+
+  attached_transaction?: {
+    id: number;
+    amount: number;
+    type: 'income' | 'expense';
+    description: string;
+    account: Account;
+  };
+  attachment_type?: 'outbound_transfer' | 'inbound_transfer';
 }
 
 interface PaginationState {
@@ -130,8 +138,10 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {transaction.account?.name || t('transactionsTable.na')}
-                    {transaction.toAccount && (
-                      <span className="text-muted-foreground/70"> → {transaction.toAccount.name}</span>
+                    {transaction.attached_transaction && (
+                      <div className="text-xs text-muted-foreground/70 flex items-center gap-1 mt-1">
+                        🔗 {transaction.attachment_type === 'outbound_transfer' ? '→' : '←'} {transaction.attached_transaction.account.name}
+                      </div>
                     )}
                   </TableCell>
                   <TableCell>

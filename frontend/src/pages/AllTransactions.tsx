@@ -27,12 +27,20 @@ interface Category {
 interface Transaction {
   id: number;
   amount: number;
-  type: 'income' | 'expense' | 'transfer';
+  type: 'income' | 'expense';
   description: string;
   date: string;
   categories: Category[];
   account: Account;
-  toAccount?: Account;
+
+  attached_transaction?: {
+    id: number;
+    amount: number;
+    type: 'income' | 'expense';
+    description: string;
+    account: Account;
+  };
+  attachment_type?: 'outbound_transfer' | 'inbound_transfer';
 }
 
 interface FilterState {
@@ -571,7 +579,7 @@ export default function AllTransactions() {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('allTransactions.type')}</label>
               <div className="space-x-4 flex">
-                {['income', 'expense', 'transfer'].map((type) => (
+                {['income', 'expense'].map((type) => (
                   <div key={type} className="flex items-center">
                     <input
                       id={`type-${type}`}

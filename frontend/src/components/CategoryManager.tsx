@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 
-export type TransactionType = 'income' | 'expense' | 'transfer';
+export type TransactionType = 'income' | 'expense';
 
 export interface Category {
   id: number;
@@ -156,7 +156,7 @@ export default function CategoryManager({ initialType = 'expense', onCategoryAdd
               <SelectContent>
                 <SelectItem value="expense">{t('dashboard.expenses')}</SelectItem>
                 <SelectItem value="income">{t('dashboard.income')}</SelectItem>
-                <SelectItem value="transfer">{t('categoryManager.transfer')}</SelectItem>
+
               </SelectContent>
             </Select>
           </div>

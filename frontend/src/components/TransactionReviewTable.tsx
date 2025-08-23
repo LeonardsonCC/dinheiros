@@ -97,7 +97,7 @@ export default function TransactionReviewTable({
                   <SelectContent>
                     <SelectItem value="expense">{t('transactionsTable.type.expense')}</SelectItem>
                     <SelectItem value="income">{t('transactionsTable.type.income')}</SelectItem>
-                    <SelectItem value="transfer">{t('transactionsTable.type.transfer')}</SelectItem>
+
                   </SelectContent>
                 </Select>
               </TableCell>
@@ -143,7 +143,7 @@ export default function TransactionReviewTable({
                   />
                   <CategoryManager
                     initialType={
-                      typeof tx.type === 'string' && (tx.type === 'expense' || tx.type === 'income' || tx.type === 'transfer')
+                      typeof tx.type === 'string' && (tx.type === 'expense' || tx.type === 'income')
                         ? tx.type
                         : 'expense'
                     }

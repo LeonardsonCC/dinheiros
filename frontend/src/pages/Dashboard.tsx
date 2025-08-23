@@ -15,7 +15,7 @@ interface Summary {
   recentTransactions: Array<{
     id: number;
     amount: number;
-    type: 'income' | 'expense' | 'transfer';
+    type: 'income' | 'expense';
     description: string;
     date: string;
   }>;
