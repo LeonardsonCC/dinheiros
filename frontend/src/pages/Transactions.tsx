@@ -201,8 +201,7 @@ export default function Transactions() {
     .map(tx => ({
       ...tx,
       account: { id: accountId || 0, name: account?.name || 'Account' },
-      // Fix: use toAccount if present, otherwise undefined
-      toAccount: tx.toAccount ? { id: tx.toAccount.id, name: tx.toAccount.name ?? '' } : undefined,
+
     }));
 
   // Use TransactionsTable for displaying transactions

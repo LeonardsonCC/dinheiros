@@ -32,17 +32,26 @@ type ListTransactionsResponse struct {
 }
 
 type CreateTransactionRequest struct {
-	Date        string                 `json:"date" binding:"required"`
-	Amount      float64                `json:"amount" binding:"required,gt=0"`
-	Type        models.TransactionType `json:"type" binding:"required,oneof=income expense transfer"`
-	Description string                 `json:"description"`
-	CategoryIDs []uint                 `json:"category_ids"`
-	ToAccountID *uint                  `json:"to_account_id,omitempty"`
+	Date                  string                 `json:"date" binding:"required"`
+	Amount                float64                `json:"amount" binding:"required,gt=0"`
+	Type                  models.TransactionType `json:"type" binding:"required,oneof=income expense"`
+	Description           string                 `json:"description"`
+	CategoryIDs           []uint                 `json:"category_ids"`
+	ToAccountID           *uint                  `json:"to_account_id,omitempty"`
+	AttachedTransactionID *uint                  `json:"attached_transaction_id,omitempty"`
 }
 
 type CategoryResponse struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
+}
+
+type AttachedTransactionResponse struct {
+	ID          uint            `json:"id"`
+	Amount      float64         `json:"amount"`
+	Type        string          `json:"type"`
+	Description string          `json:"description"`
+	Account     AccountResponse `json:"account"`
 }
 
 type TransactionResponse struct {
@@ -53,7 +62,9 @@ type TransactionResponse struct {
 	Description string             `json:"description"`
 	Categories  []CategoryResponse `json:"categories"`
 	Account     AccountResponse    `json:"account"`
-	ToAccountID *uint              `json:"to_account_id,omitempty"`
+
+	AttachedTransaction *AttachedTransactionResponse `json:"attached_transaction,omitempty"`
+	AttachmentType      *string                      `json:"attachment_type,omitempty"`
 }
 
 func ToTransactionResponse(transaction *models.Transaction) TransactionResponse {
@@ -65,6 +76,23 @@ func ToTransactionResponse(transaction *models.Transaction) TransactionResponse 
 		}
 	}
 
+	var attachedTransaction *AttachedTransactionResponse
+	if transaction.AttachedTransaction != nil {
+		attachedTransaction = &AttachedTransactionResponse{
+			ID:          transaction.AttachedTransaction.ID,
+			Amount:      transaction.AttachedTransaction.Amount,
+			Type:        string(transaction.AttachedTransaction.Type),
+			Description: transaction.AttachedTransaction.Description,
+			Account:     ToAccountResponse(&transaction.AttachedTransaction.Account),
+		}
+	}
+
+	var attachmentType *string
+	if transaction.AttachmentType != nil {
+		typeStr := string(*transaction.AttachmentType)
+		attachmentType = &typeStr
+	}
+
 	return TransactionResponse{
 		ID:          transaction.ID,
 		Date:        transaction.Date,
@@ -73,7 +101,9 @@ func ToTransactionResponse(transaction *models.Transaction) TransactionResponse 
 		Description: transaction.Description,
 		Categories:  categories,
 		Account:     ToAccountResponse(&transaction.Account),
-		ToAccountID: transaction.ToAccountID,
+
+		AttachedTransaction: attachedTransaction,
+		AttachmentType:      attachmentType,
 	}
 }
 

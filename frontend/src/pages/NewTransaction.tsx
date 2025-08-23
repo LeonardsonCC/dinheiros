@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
 import DatePicker from '../components/DatePicker';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Loading } from '@/components/ui';
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Loading, SearchableSelect } from '@/components/ui';
 import { MoneyInput } from '@/components/ui/money-input';
 
 interface Account {
@@ -16,7 +16,7 @@ interface Account {
 
 import { Category } from '../components/CategoryManager';
 
-type TransactionType = 'income' | 'expense' | 'transfer';
+type TransactionType = 'income' | 'expense';
 
 interface AxiosError {
   response?: {
@@ -41,13 +41,16 @@ export default function NewTransaction() {
     description: '',
     categoryIds: [] as number[],
     date: new Date().toISOString(),
-    toAccountId: '',
+    attachToTransactionId: 'none',
     accountId: accountId ? accountId.toString() : ''
   });
   
   const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [availableTransactions, setAvailableTransactions] = useState<any[]>([]);
+  const [selectedSearchAccountId, setSelectedSearchAccountId] = useState<string>('none');
+  const [searchingTransactions, setSearchingTransactions] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +88,31 @@ export default function NewTransaction() {
     fetchData();
   }, [accountId, t]);
 
+  const searchTransactionsByAccount = async (searchAccountId: string) => {
+    if (!searchAccountId || searchAccountId === 'none') {
+      setAvailableTransactions([]);
+      return;
+    }
+
+    try {
+      setSearchingTransactions(true);
+      const response = await api.get(`/api/accounts/${searchAccountId}/transactions`);
+      
+      // Filter out transactions that already have attachments
+      const unattachedTransactions = response.data.filter((tx: any) => 
+        !tx.attached_transaction && !tx.attachment_type
+      );
+      
+      setAvailableTransactions(unattachedTransactions);
+    } catch (error) {
+      console.error('Error searching transactions:', error);
+      toast.error(t('newTransaction.failedLoadTransactions'));
+      setAvailableTransactions([]);
+    } finally {
+      setSearchingTransactions(false);
+    }
+  };
+
   useEffect(() => {
     const filtered = allCategories.filter(cat => cat.type === formData.type);
     setFilteredCategories(filtered);
@@ -101,6 +129,32 @@ export default function NewTransaction() {
       }
     }
   }, [formData.type, allCategories]);
+
+  // Auto-fill form when transaction is selected for attachment
+  useEffect(() => {
+    if (formData.attachToTransactionId && formData.attachToTransactionId !== 'none') {
+      const selectedTransaction = availableTransactions.find(tx => 
+        tx.id.toString() === formData.attachToTransactionId
+      );
+      
+      if (selectedTransaction) {
+        // Determine opposite transaction type for the attachment
+        const oppositeType: TransactionType = selectedTransaction.type === 'expense' ? 'income' : 'expense';
+        
+        setFormData(prev => ({
+          ...prev,
+          type: oppositeType,
+          amount: Math.abs(selectedTransaction.amount).toString(),
+          description: selectedTransaction.description || '',
+          date: selectedTransaction.date,
+          categoryIds: [] // Clear categories so user can select appropriate ones for their account
+        }));
+      }
+    }
+  }, [formData.attachToTransactionId, availableTransactions]);
+
+  // Helper to determine if fields should be disabled when transaction is attached
+  const isAttachmentSelected = Boolean(formData.attachToTransactionId && formData.attachToTransactionId !== 'none');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -147,7 +201,7 @@ export default function NewTransaction() {
         description: formData.description,
         category_ids: formData.categoryIds,
         date: formData.date,
-        to_account_id: formData.type === 'transfer' && !isNaN(Number(formData.toAccountId)) ? Number(formData.toAccountId) : undefined
+        attached_transaction_id: formData.attachToTransactionId && formData.attachToTransactionId !== 'none' && !isNaN(Number(formData.attachToTransactionId)) ? Number(formData.attachToTransactionId) : undefined
       };
 
       await api.post(`/api/accounts/${selectedAccountId}/transactions`, payload);
@@ -227,7 +281,7 @@ export default function NewTransaction() {
                           {account.name}
                         </SelectItem>
                       )) : (
-                        <SelectItem value="" disabled>{t('importTransactions.noAccounts')}</SelectItem>
+                        <SelectItem value="none" disabled>{t('importTransactions.noAccounts')}</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
@@ -238,14 +292,17 @@ export default function NewTransaction() {
                 <label htmlFor="type" className="block text-sm font-medium mb-2">
                   {t('newTransaction.transactionType')}
                 </label>
-                <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as TransactionType }))}>
-                  <SelectTrigger>
+                <Select 
+                  value={formData.type} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as TransactionType }))}
+                  disabled={isAttachmentSelected}
+                >
+                  <SelectTrigger className={isAttachmentSelected ? "opacity-50" : undefined}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="expense">{t('dashboard.expenses')}</SelectItem>
                     <SelectItem value="income">{t('dashboard.income')}</SelectItem>
-                    <SelectItem value="transfer">{t('categoryManager.transfer')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -260,6 +317,7 @@ export default function NewTransaction() {
                   onChange={(value) => setFormData(prev => ({ ...prev, amount: value.toString() }))}
                   placeholder="0,00"
                   required
+                  disabled={isAttachmentSelected}
                 />
               </div>
               
@@ -273,6 +331,7 @@ export default function NewTransaction() {
                   value={formData.description}
                   onChange={handleChange}
                   placeholder={t('newTransaction.description')}
+                  disabled={isAttachmentSelected}
                 />
               </div>
 
@@ -280,6 +339,11 @@ export default function NewTransaction() {
                 <label className="block text-sm font-medium mb-2">
                   {t('newTransaction.categories')}
                 </label>
+                {isAttachmentSelected && (
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {t('newTransaction.selectCategoriesForYourAccount')}
+                  </p>
+                )}
                 <div className="space-y-4">
                   <CategoryManager
                     initialType={formData.type}
@@ -332,32 +396,81 @@ export default function NewTransaction() {
                       setFormData(prev => ({ ...prev, date: value }));
                     }
                   }}
+                  disabled={isAttachmentSelected}
                 />
+                {isAttachmentSelected && (
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    <span>🔗</span>
+                    {t('newTransaction.fieldsAutoFilledFromAttachment')}
+                  </p>
+                )}
               </div>
               
-              {formData.type === 'transfer' && (
-                <div className="sm:col-span-2">
-                  <label htmlFor="toAccountId" className="block text-sm font-medium mb-2">
-                    {t('newTransaction.toAccount')}
-                  </label>
-                  <Select value={formData.toAccountId} onValueChange={(value) => setFormData(prev => ({ ...prev, toAccountId: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('newTransaction.toAccount')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.length > 0 ? accounts
-                        .filter(account => account.id !== accountId)
-                        .map(account => (
-                          <SelectItem key={account.id} value={account.id.toString()}>
-                            {account.name}
-                          </SelectItem>
-                        )) : (
-                        <SelectItem value="" disabled>{t('importTransactions.noAccounts')}</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div className="sm:col-span-2">
+                <label htmlFor="searchAccountId" className="block text-sm font-medium mb-2">
+                  {t('newTransaction.searchTransactionsInAccount')} ({t('newTransaction.optional')})
+                </label>
+                <Select 
+                  value={selectedSearchAccountId} 
+                  onValueChange={(value) => {
+                    setSelectedSearchAccountId(value);
+                    searchTransactionsByAccount(value);
+                    // Reset attachment selection when changing search account
+                    if (formData.attachToTransactionId !== 'none') {
+                      setFormData(prev => ({ ...prev, attachToTransactionId: 'none' }));
+                    }
+                  }}
+                  disabled={isAttachmentSelected}
+                >
+                  <SelectTrigger className={isAttachmentSelected ? "opacity-50" : undefined}>
+                    <SelectValue placeholder={t('newTransaction.selectAccountToSearch')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t('newTransaction.noAccountSelected')}</SelectItem>
+                    {accounts
+                      .filter(account => account.id !== (accountId || Number(formData.accountId)))
+                      .map(account => (
+                        <SelectItem key={account.id} value={account.id.toString()}>
+                          {account.name}
+                        </SelectItem>
+                      ))
+                    }
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label htmlFor="attachToTransactionId" className="block text-sm font-medium mb-2">
+                  {t('newTransaction.attachToTransaction')} ({t('newTransaction.optional')})
+                </label>
+                <SearchableSelect
+                  value={formData.attachToTransactionId}
+                  onChange={(value) => setFormData(prev => ({ ...prev, attachToTransactionId: value }))}
+                  disabled={availableTransactions.length === 0 || searchingTransactions}
+                  placeholder={
+                    searchingTransactions 
+                      ? t('newTransaction.searchingTransactions')
+                      : availableTransactions.length === 0 
+                      ? t('newTransaction.selectAccountFirst') 
+                      : t('newTransaction.selectTransactionToAttach')
+                  }
+                  searchPlaceholder={t('newTransaction.searchTransactions')}
+                  noOptionsText={t('newTransaction.noTransactionsMatch')}
+                  options={[
+                    { value: 'none', label: t('newTransaction.noAttachment') },
+                    ...availableTransactions.map(tx => ({
+                      value: tx.id.toString(),
+                      label: `${tx.description || t('newTransaction.noDescription')}`,
+                      sublabel: `${tx.account.name} - ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tx.amount)} - ${new Date(tx.date).toLocaleDateString()}`
+                    }))
+                  ]}
+                />
+                {availableTransactions.length === 0 && selectedSearchAccountId && selectedSearchAccountId !== 'none' && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t('newTransaction.noTransactionsFound')}
+                  </p>
+                )}
+              </div>
             </div>
             
             <div className="flex justify-end space-x-4 pt-4">

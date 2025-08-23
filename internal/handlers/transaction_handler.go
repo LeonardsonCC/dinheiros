@@ -22,12 +22,12 @@ import (
 )
 
 type UpdateTransactionRequest struct {
-	Date        string  `json:"date"`
-	Amount      float64 `json:"amount"`
-	Type        string  `json:"type"`
-	Description string  `json:"description"`
-	CategoryIDs []uint  `json:"category_ids"`
-	ToAccountID *uint   `json:"to_account_id,omitempty"`
+	Date                  string  `json:"date"`
+	Amount                float64 `json:"amount"`
+	Type                  string  `json:"type"`
+	Description           string  `json:"description"`
+	CategoryIDs           []uint  `json:"category_ids"`
+	AttachedTransactionID *uint   `json:"attached_transaction_id,omitempty"`
 }
 
 type TransactionHandler struct {
@@ -193,26 +193,27 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 		return
 	}
 
-	if req.Type == models.TransactionTypeTransfer {
-		if req.ToAccountID == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Destination account ID is required for transfers"})
-			return
-		}
-
-		expenseTx, incomeTx, err := h.transactionService.CreateTransferTransaction(user, uint(accountID), *req.ToAccountID, req.Amount, req.Description, parsedDate)
+	// Handle attachment to another transaction if specified
+	if req.AttachedTransactionID != nil {
+		// Create transaction with attachment
+		transaction, err := h.transactionService.CreateTransactionWithAttachment(
+			user,
+			uint(accountID),
+			req.Amount,
+			req.Type,
+			req.Description,
+			parsedDate,
+			req.CategoryIDs,
+			*req.AttachedTransactionID,
+		)
 		if err != nil {
-			if err == errors.ErrSameAccountTransfer || err == errors.ErrFromAccountNotFound || err == errors.ErrToAccountNotFound {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create transfer transaction"})
-			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create transaction with attachment"})
 			return
 		}
 
 		c.JSON(http.StatusCreated, gin.H{
-			"message":             "Transfer created successfully",
-			"expense_transaction": dto.ToTransactionResponse(expenseTx),
-			"income_transaction":  dto.ToTransactionResponse(incomeTx),
+			"message":     "Transaction created successfully",
+			"transaction": dto.ToTransactionResponse(transaction),
 		})
 		return
 	}
@@ -509,11 +510,6 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 		return
 	}
 
-	if existingTx.ToAccountID != nil && (existingTx.Type == models.TransactionTypeExpense || existingTx.Type == models.TransactionTypeIncome) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot update a transaction that is part of a transfer."})
-		return
-	}
-
 	var req UpdateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -537,7 +533,6 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 	existingTx.Type = models.TransactionType(req.Type)
 	existingTx.Description = req.Description
 	existingTx.Date = parsedDate
-	existingTx.ToAccountID = req.ToAccountID
 
 	// Update categories if provided
 	if req.CategoryIDs != nil {
@@ -547,8 +542,8 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 		}
 	}
 
-	// Save the updated transaction
-	err = h.transactionService.UpdateTransaction(user, existingTx)
+	// Save the updated transaction with attachment handling
+	err = h.transactionService.UpdateTransactionWithAttachment(user, existingTx, req.AttachedTransactionID)
 	if err != nil {
 		switch e := err.(type) {
 		case *errors.ValidationError:
@@ -614,8 +609,9 @@ func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
 		return
 	}
 
-	if existingTx.ToAccountID != nil && (existingTx.Type == models.TransactionTypeExpense || existingTx.Type == models.TransactionTypeIncome) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete a transaction that is part of a transfer."})
+	// Check if transaction has attachments and warn user
+	if existingTx.AttachedTransactionID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete a transaction that is attached to another transaction. Remove the attachment first."})
 		return
 	}
 
@@ -699,7 +695,7 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 				t.Amount,
 				txType,
 				t.Description,
-				nil, // ToAccountID
+				nil, // toAccountID
 				t.CategoryIDs,
 				parsedDate,
 			)

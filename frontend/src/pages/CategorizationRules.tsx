@@ -381,7 +381,7 @@ export default function CategorizationRules() {
                           <SelectContent>
                             <SelectItem value="expense">{t('categorizationRules.transactionTypes.expense')}</SelectItem>
                             <SelectItem value="income">{t('categorizationRules.transactionTypes.income')}</SelectItem>
-                            <SelectItem value="transfer">{t('categorizationRules.transactionTypes.transfer')}</SelectItem>
+
                           </SelectContent>
                         </Select>
                       ) : (

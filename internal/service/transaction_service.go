@@ -17,7 +17,8 @@ import (
 type TransactionService interface {
 	CreateTransaction(userID uint, accountID uint, amount float64, transactionType models.TransactionType,
 		description string, toAccountID *uint, categoryIDs []uint, date time.Time) (*models.Transaction, error)
-	CreateTransferTransaction(userID uint, fromAccountID uint, toAccountID uint, amount float64, description string, date time.Time) (*models.Transaction, *models.Transaction, error)
+	CreateTransactionWithAttachment(userID uint, accountID uint, amount float64, transactionType models.TransactionType,
+		description string, date time.Time, categoryIDs []uint, attachedTransactionID uint) (*models.Transaction, error)
 	GetTransactionByID(userID uint, transactionID uint) (*models.Transaction, error)
 	GetTransactionsByAccountID(userID uint, accountID uint) ([]models.Transaction, error)
 	ListTransactions(
@@ -34,6 +35,7 @@ type TransactionService interface {
 		pageSize int,
 	) ([]models.Transaction, int64, error)
 	UpdateTransaction(userID uint, transaction *models.Transaction) error
+	UpdateTransactionWithAttachment(userID uint, transaction *models.Transaction, attachedTransactionID *uint) error
 	DeleteTransaction(userID uint, transactionID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
 	ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error)
@@ -85,10 +87,6 @@ func (s *transactionService) CreateTransaction(
 		return nil, err
 	}
 
-	if transactionType == models.TransactionTypeTransfer {
-		return nil, stdErrors.New("CreateTransaction does not handle transfers. Use CreateTransferTransaction instead")
-	}
-
 	// Create the transaction
 	transaction := &models.Transaction{
 		Date:        date,
@@ -96,7 +94,6 @@ func (s *transactionService) CreateTransaction(
 		Type:        transactionType,
 		Description: description,
 		AccountID:   accountID,
-		ToAccountID: toAccountID,
 	}
 
 	// Save the transaction
@@ -127,58 +124,78 @@ func (s *transactionService) CreateTransaction(
 	return transaction, nil
 }
 
-func (s *transactionService) CreateTransferTransaction(userID uint, fromAccountID uint, toAccountID uint, amount float64, description string, date time.Time) (*models.Transaction, *models.Transaction, error) {
-	if fromAccountID == toAccountID {
-		return nil, nil, errors.ErrSameAccountTransfer
-	}
-	// Verify accounts exist and user has access (owner or shared)
-	if _, err := s.accountRepo.FindByID(fromAccountID, userID); err != nil {
-		return nil, nil, errors.ErrFromAccountNotFound
-	}
-	if _, err := s.accountRepo.FindByID(toAccountID, userID); err != nil {
-		return nil, nil, errors.ErrToAccountNotFound
+func (s *transactionService) CreateTransactionWithAttachment(userID uint, accountID uint, amount float64, transactionType models.TransactionType, description string, date time.Time, categoryIDs []uint, attachedTransactionID uint) (*models.Transaction, error) {
+	// Verify account exists and user has access
+	if _, err := s.accountRepo.FindByID(accountID, userID); err != nil {
+		return nil, err
 	}
 
-	expenseDesc := "Transfer to account " + strconv.FormatUint(uint64(toAccountID), 10)
-	if description != "" {
-		expenseDesc += " - " + description
-	}
-	expenseTx := &models.Transaction{
-		Date:        date,
-		Amount:      amount,
-		Type:        models.TransactionTypeExpense,
-		Description: expenseDesc,
-		AccountID:   fromAccountID,
-		ToAccountID: &toAccountID,
+	// Verify attached transaction exists and user has access
+	attachedTransaction, err := s.transactionRepo.FindByID(attachedTransactionID, userID)
+	if err != nil {
+		return nil, stdErrors.New("attached transaction not found or access denied")
 	}
 
-	incomeDesc := "Transfer from account " + strconv.FormatUint(uint64(fromAccountID), 10)
-	if description != "" {
-		incomeDesc += " - " + description
-	}
-	incomeTx := &models.Transaction{
-		Date:        date,
-		Amount:      amount,
-		Type:        models.TransactionTypeIncome,
-		Description: incomeDesc,
-		AccountID:   toAccountID,
-		ToAccountID: &fromAccountID,
+	// Determine attachment type based on transaction type
+	var attachmentType models.AttachmentType
+	if transactionType == models.TransactionTypeExpense {
+		attachmentType = models.AttachmentTypeOutboundTransfer
+	} else {
+		attachmentType = models.AttachmentTypeInboundTransfer
 	}
 
-	if err := s.transactionRepo.CreateInBatch([]*models.Transaction{expenseTx, incomeTx}); err != nil {
-		return nil, nil, err
+	// Create the transaction with attachment
+	transaction := &models.Transaction{
+		Date:                  date,
+		Amount:                amount,
+		Type:                  transactionType,
+		Description:           description,
+		AccountID:             accountID,
+		AttachedTransactionID: &attachedTransactionID,
+		AttachmentType:        &attachmentType,
 	}
 
-	if err := s.accountRepo.UpdateBalance(fromAccountID, -amount); err != nil {
-		return nil, nil, err
-	}
-	if err := s.accountRepo.UpdateBalance(toAccountID, amount); err != nil {
-		// Rollback balance update
-		_ = s.accountRepo.UpdateBalance(fromAccountID, amount)
-		return nil, nil, err
+	// Save the transaction
+	if err := s.transactionRepo.Create(transaction); err != nil {
+		return nil, err
 	}
 
-	return expenseTx, incomeTx, nil
+	// Associate categories if provided
+	if len(categoryIDs) > 0 {
+		if err := s.transactionRepo.AssociateCategories(transaction.ID, categoryIDs); err != nil {
+			return nil, err
+		}
+	}
+
+	// Update account balance based on transaction type
+	switch transactionType {
+	case models.TransactionTypeIncome:
+		if err := s.accountRepo.UpdateBalance(accountID, amount); err != nil {
+			return nil, err
+		}
+	case models.TransactionTypeExpense:
+		if err := s.accountRepo.UpdateBalance(accountID, -amount); err != nil {
+			return nil, err
+		}
+	}
+
+	// Update the attached transaction with reciprocal attachment if it doesn't have one
+	if attachedTransaction.AttachedTransactionID == nil {
+		var reciprocalAttachmentType models.AttachmentType
+		if attachmentType == models.AttachmentTypeOutboundTransfer {
+			reciprocalAttachmentType = models.AttachmentTypeInboundTransfer
+		} else {
+			reciprocalAttachmentType = models.AttachmentTypeOutboundTransfer
+		}
+
+		attachedTransaction.AttachedTransactionID = &transaction.ID
+		attachedTransaction.AttachmentType = &reciprocalAttachmentType
+		if err := s.transactionRepo.Update(attachedTransaction); err != nil {
+			return nil, err
+		}
+	}
+
+	return transaction, nil
 }
 
 func (s *transactionService) GetTransactionByID(userID uint, transactionID uint) (*models.Transaction, error) {
@@ -270,6 +287,22 @@ func (s *transactionService) UpdateTransaction(userID uint, transaction *models.
 		return err
 	}
 
+	// Calculate balance adjustment needed
+	// Old transaction impact on balance
+	oldImpact := existingTx.Amount
+	if existingTx.Type == models.TransactionTypeExpense {
+		oldImpact = -oldImpact // Expenses reduce balance
+	}
+
+	// New transaction impact on balance
+	newImpact := transaction.Amount
+	if transaction.Type == models.TransactionTypeExpense {
+		newImpact = -newImpact // Expenses reduce balance
+	}
+
+	// Calculate the difference (what needs to be added/subtracted from balance)
+	balanceAdjustment := newImpact - oldImpact
+
 	// Update the categories
 	tx := s.transactionRepo.Begin()
 	defer func() {
@@ -277,6 +310,189 @@ func (s *transactionService) UpdateTransaction(userID uint, transaction *models.
 			tx.Rollback()
 		}
 	}()
+
+	// Update account balance if there's a change
+	if balanceAdjustment != 0 {
+		if err := s.accountRepo.UpdateBalance(existingTx.AccountID, balanceAdjustment); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	// Update transaction fields
+	err = tx.Model(&existingTx).Updates(transaction).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Update categories association
+	if len(transaction.Categories) > 0 {
+		err = tx.Model(&existingTx).Association("Categories").Replace(transaction.Categories)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	} else {
+		// If no categories provided, clear existing ones
+		err = tx.Model(&existingTx).Association("Categories").Clear()
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit().Error
+}
+
+func (s *transactionService) UpdateTransactionWithAttachment(userID uint, transaction *models.Transaction, attachedTransactionID *uint) error {
+	// Start a transaction for atomic updates
+	tx := s.transactionRepo.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Verify transaction exists and user has access to the account
+	existingTx, err := s.transactionRepo.FindByID(transaction.ID, userID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Verify user has access to the account (owner or shared)
+	_, err = s.accountRepo.FindByID(existingTx.AccountID, userID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Calculate balance adjustment needed
+	// Old transaction impact on balance
+	oldImpact := existingTx.Amount
+	if existingTx.Type == models.TransactionTypeExpense {
+		oldImpact = -oldImpact // Expenses reduce balance
+	}
+
+	// New transaction impact on balance
+	newImpact := transaction.Amount
+	if transaction.Type == models.TransactionTypeExpense {
+		newImpact = -newImpact // Expenses reduce balance
+	}
+
+	// Calculate the difference (what needs to be added/subtracted from balance)
+	balanceAdjustment := newImpact - oldImpact
+
+	// Update account balance if there's a change
+	if balanceAdjustment != 0 {
+		if err := s.accountRepo.UpdateBalance(existingTx.AccountID, balanceAdjustment); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	// Handle attachment relationship cleanup and setup
+	if attachedTransactionID != nil {
+		// Verify the attached transaction exists and user has access
+		attachedTx, err := s.transactionRepo.FindByID(*attachedTransactionID, userID)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		// Ensure 1:1 relationship - verify types are opposite (income/expense)
+		if existingTx.Type == attachedTx.Type {
+			tx.Rollback()
+			return errors.NewValidationError("Attached transactions must have opposite types (one income, one expense)")
+		}
+
+		// Clean up any existing attachments for both transactions
+		// Remove existing attachment for current transaction
+		if existingTx.AttachedTransactionID != nil {
+			err = tx.Model(&models.Transaction{}).
+				Where("id = ?", *existingTx.AttachedTransactionID).
+				Updates(map[string]interface{}{
+					"attached_transaction_id": nil,
+					"attachment_type":         nil,
+				}).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+
+		// Remove existing attachment for target transaction
+		if attachedTx.AttachedTransactionID != nil {
+			err = tx.Model(&models.Transaction{}).
+				Where("id = ?", *attachedTx.AttachedTransactionID).
+				Updates(map[string]interface{}{
+					"attached_transaction_id": nil,
+					"attachment_type":         nil,
+				}).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+
+		// Set up new 1:1 relationship
+		var currentAttachmentType, attachedAttachmentType models.AttachmentType
+		if existingTx.Type == models.TransactionTypeExpense {
+			currentAttachmentType = models.AttachmentTypeOutboundTransfer
+			attachedAttachmentType = models.AttachmentTypeInboundTransfer
+		} else {
+			currentAttachmentType = models.AttachmentTypeInboundTransfer
+			attachedAttachmentType = models.AttachmentTypeOutboundTransfer
+		}
+
+		// Update current transaction
+		transaction.AttachedTransactionID = attachedTransactionID
+		transaction.AttachmentType = &currentAttachmentType
+
+		// Update attached transaction to point back
+		err = tx.Model(&models.Transaction{}).
+			Where("id = ?", *attachedTransactionID).
+			Updates(map[string]interface{}{
+				"attached_transaction_id": transaction.ID,
+				"attachment_type":         attachedAttachmentType,
+			}).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	} else {
+		// Removing attachment - clean up the relationship
+		if existingTx.AttachedTransactionID != nil {
+			// Remove the reverse relationship
+			err = tx.Model(&models.Transaction{}).
+				Where("id = ?", *existingTx.AttachedTransactionID).
+				Updates(map[string]interface{}{
+					"attached_transaction_id": nil,
+					"attachment_type":         nil,
+				}).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+
+		// Clear attachment for current transaction
+		transaction.AttachedTransactionID = nil
+		transaction.AttachmentType = nil
+
+		// Explicitly update the current transaction's attachment fields
+		err = tx.Model(&models.Transaction{}).
+			Where("id = ?", transaction.ID).
+			Updates(map[string]interface{}{
+				"attached_transaction_id": nil,
+				"attachment_type":         nil,
+			}).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
 
 	// Update transaction fields
 	err = tx.Model(&existingTx).Updates(transaction).Error
@@ -331,8 +547,6 @@ func (s *transactionService) DeleteTransaction(userID uint, transactionID uint) 
 			return err
 		}
 
-	case models.TransactionTypeTransfer:
-		return stdErrors.New("transfer type is deprecated")
 	}
 
 	// Delete the transaction
