@@ -9,6 +9,7 @@ import { cn } from '../lib/utils';
 import { Button } from './ui/button';
 import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 export type DatePickerProps = {
   label: string;
@@ -31,10 +32,17 @@ const DatePicker: React.FC<DatePickerProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = React.useState(false);
-  
+  const [month, setMonth] = React.useState(() => {
+    if (value) {
+      const date = new Date(value);
+      return new Date(date.getFullYear(), date.getMonth());
+    }
+    return new Date();
+  });
+
   // Parse the ISO string to a Date object
   const selectedDate = value ? new Date(value) : undefined;
-  
+
   // Get the appropriate locale based on current language
   const getDateLocale = () => {
     switch (i18n.language) {
@@ -45,7 +53,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         return enUS;
     }
   };
-  
+
   // Get the appropriate date format based on locale
   const getDateFormat = () => {
     switch (i18n.language) {
@@ -56,7 +64,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         return 'MM/dd/yyyy'; // US format
     }
   };
-  
+
   const handleSelect = (date: Date | undefined) => {
     if (date) {
       // Convert to ISO string for consistency with existing code
@@ -65,6 +73,44 @@ const DatePicker: React.FC<DatePickerProps> = ({
       onChange("");
     }
     setOpen(false);
+  };
+
+  // Generate months array for the select
+  const months = React.useMemo(() => {
+    const monthsArray = [];
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(2024, i, 1); // Use any year for month names
+      monthsArray.push({
+        value: i,
+        label: format(date, 'MMMM', { locale: getDateLocale() }),
+      });
+    }
+    return monthsArray;
+  }, [i18n.language]);
+
+  // Generate years array for the select
+  const years = React.useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const startYear = minDate ? minDate.getFullYear() : currentYear - 30;
+    const endYear = maxDate ? maxDate.getFullYear() : currentYear + 10;
+
+    const yearsArray = [];
+    for (let year = startYear; year <= endYear; year++) {
+      yearsArray.push(year);
+    }
+    return yearsArray;
+  }, [minDate, maxDate]);
+
+  // Handle month change
+  const handleMonthChange = (newMonth: string) => {
+    const newDate = new Date(month.getFullYear(), parseInt(newMonth));
+    setMonth(newDate);
+  };
+
+  // Handle year change
+  const handleYearChange = (newYear: string) => {
+    const newDate = new Date(parseInt(newYear), month.getMonth());
+    setMonth(newDate);
   };
 
   return (
@@ -92,10 +138,41 @@ const DatePicker: React.FC<DatePickerProps> = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
+          <div className="p-3 border-b">
+            <div className="flex gap-2">
+              <Select value={month.getMonth().toString()} onValueChange={handleMonthChange}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((monthItem) => (
+                    <SelectItem key={monthItem.value} value={monthItem.value.toString()}>
+                      {monthItem.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={month.getFullYear().toString()} onValueChange={handleYearChange}>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <Calendar
             mode="single"
             selected={selectedDate}
             onSelect={handleSelect}
+            month={month}
+            onMonthChange={setMonth}
             disabled={(date) => {
               if (minDate && date < minDate) return true;
               if (maxDate && date > maxDate) return true;
