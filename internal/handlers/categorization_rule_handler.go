@@ -19,14 +19,23 @@ func NewCategorizationRuleHandler(s service.CategorizationRuleService) *Categori
 	return &CategorizationRuleHandler{Service: s}
 }
 
+// ListRules handles fetching all categorization rules
+// @Summary List categorization rules
+// @Description Get all categorization rules for the authenticated user
+// @Tags categorization-rules
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.CategorizationRuleDTO
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /categorization-rules [get]
 func (h *CategorizationRuleHandler) ListRules(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	userID := user.(uint)
-	rules, err := h.Service.ListRules(c.Request.Context(), userID)
+	rules, err := h.Service.ListRules(c.Request.Context(), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -38,19 +47,31 @@ func (h *CategorizationRuleHandler) ListRules(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos)
 }
 
+// GetRule handles fetching a specific categorization rule
+// @Summary Get categorization rule by ID
+// @Description Get details of a specific categorization rule by its ID
+// @Tags categorization-rules
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Rule ID"
+// @Success 200 {object} dto.CategorizationRuleDTO
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /categorization-rules/{id} [get]
 func (h *CategorizationRuleHandler) GetRule(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	userID := user.(uint)
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	rule, err := h.Service.GetRuleByID(c.Request.Context(), uint(id), userID)
+	rule, err := h.Service.GetRuleByID(c.Request.Context(), uint(id), user)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
@@ -58,20 +79,32 @@ func (h *CategorizationRuleHandler) GetRule(c *gin.Context) {
 	c.JSON(http.StatusOK, toCategorizationRuleDTO(*rule))
 }
 
+// CreateRule handles creating a new categorization rule
+// @Summary Create categorization rule
+// @Description Create a new categorization rule for automatic transaction categorization
+// @Tags categorization-rules
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.CreateCategorizationRuleDTO true "Categorization rule data"
+// @Success 201 {object} dto.CategorizationRuleDTO
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /categorization-rules [post]
 func (h *CategorizationRuleHandler) CreateRule(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	userID := user.(uint)
 	var req dto.CreateCategorizationRuleDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	rule := models.CategorizationRule{
-		UserID:          userID,
+		UserID:          user,
 		Name:            req.Name,
 		Type:            req.Type,
 		Value:           req.Value,
@@ -86,19 +119,33 @@ func (h *CategorizationRuleHandler) CreateRule(c *gin.Context) {
 	c.JSON(http.StatusCreated, toCategorizationRuleDTO(rule))
 }
 
+// UpdateRule handles updating an existing categorization rule
+// @Summary Update categorization rule
+// @Description Update details of an existing categorization rule
+// @Tags categorization-rules
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Rule ID"
+// @Param request body dto.UpdateCategorizationRuleDTO true "Rule update data"
+// @Success 200 {object} dto.CategorizationRuleDTO
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /categorization-rules/{id} [put]
 func (h *CategorizationRuleHandler) UpdateRule(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	userID := user.(uint)
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	rule, err := h.Service.GetRuleByID(c.Request.Context(), uint(id), userID)
+	rule, err := h.Service.GetRuleByID(c.Request.Context(), uint(id), user)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
@@ -133,19 +180,31 @@ func (h *CategorizationRuleHandler) UpdateRule(c *gin.Context) {
 	c.JSON(http.StatusOK, toCategorizationRuleDTO(*rule))
 }
 
+// DeleteRule handles deleting a categorization rule
+// @Summary Delete categorization rule
+// @Description Delete a specific categorization rule
+// @Tags categorization-rules
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Rule ID"
+// @Success 204
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /categorization-rules/{id} [delete]
 func (h *CategorizationRuleHandler) DeleteRule(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	userID := user.(uint)
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	if err := h.Service.DeleteRule(c.Request.Context(), uint(id), userID); err != nil {
+	if err := h.Service.DeleteRule(c.Request.Context(), uint(id), user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

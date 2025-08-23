@@ -23,7 +23,22 @@ func NewAccountShareHandler(shareService *service.AccountShareService) *AccountS
 	}
 }
 
-// POST /api/accounts/:id/shares
+// CreateShareInvitation handles creating a new share invitation
+// @Summary Create share invitation
+// @Description Create a new invitation to share an account with another user
+// @Tags account-sharing
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Param request body dto.CreateShareInvitationRequest true "Share invitation data"
+// @Success 201 {object} dto.ShareInvitationResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id}/shares [post]
 func (h *AccountShareHandler) CreateShareInvitation(c *gin.Context) {
 	userID := c.GetUint("user")
 	accountIDStr := c.Param("id")
@@ -65,7 +80,20 @@ func (h *AccountShareHandler) CreateShareInvitation(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
-// GET /api/accounts/:id/shares
+// GetAccountShares handles fetching all shares for an account
+// @Summary Get account shares
+// @Description Get all active shares for a specific account
+// @Tags account-sharing
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Success 200 {array} dto.AccountShareResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id}/shares [get]
 func (h *AccountShareHandler) GetAccountShares(c *gin.Context) {
 	userID := c.GetUint("user")
 	accountIDStr := c.Param("id")
@@ -200,7 +228,20 @@ func (h *AccountShareHandler) CancelInvitation(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Invitation canceled successfully"})
 }
 
-// POST /api/shares/accept
+// AcceptInvitation handles accepting a share invitation
+// @Summary Accept share invitation
+// @Description Accept an invitation to access a shared account
+// @Tags account-sharing
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.AcceptInvitationRequest true "Invitation token"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /shares/accept [post]
 func (h *AccountShareHandler) AcceptInvitation(c *gin.Context) {
 	userID := c.GetUint("user")
 
@@ -222,7 +263,16 @@ func (h *AccountShareHandler) AcceptInvitation(c *gin.Context) {
 	})
 }
 
-// GET /api/shares/accounts
+// GetSharedAccounts handles fetching accounts shared with the user
+// @Summary Get shared accounts
+// @Description Get all accounts that have been shared with the authenticated user
+// @Tags account-sharing
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.SharedAccountResponse
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /shares/accounts [get]
 func (h *AccountShareHandler) GetSharedAccounts(c *gin.Context) {
 	userID := c.GetUint("user")
 

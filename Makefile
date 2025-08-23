@@ -1,4 +1,4 @@
-.PHONY: run setup-frontend build-frontend build install-precommit setup-hooks lint format
+.PHONY: run setup-frontend build-frontend build install-precommit setup-hooks lint format swagger-docs
 
 # Default target when running just 'make'
 run: setup-frontend
@@ -32,6 +32,11 @@ lint:
 format:
 	@echo "Formatting Go files with goimports-reviser..."
 	goimports-reviser -project-name github.com/LeonardsonCC/dinheiros ./...
+
+# Generate Swagger documentation
+swagger-docs:
+	@echo "Generating Swagger documentation..."
+	swag init -g ./cmd/dinheiros/main.go --output docs
 
 # Run backend in development mode
 backend:
@@ -85,5 +90,6 @@ help:
 	@echo "  setup-hooks                     - Setup pre-commit hooks"
 	@echo "  lint                            - Run golangci-lint"
 	@echo "  format                          - Format Go files with goimports-reviser"
+	@echo "  swagger-docs                    - Generate Swagger API documentation"
 	@echo "  generate-version                - Generate a new version with tag""
 	@echo "  help                            - Show this help message"

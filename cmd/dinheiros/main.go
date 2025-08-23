@@ -11,11 +11,20 @@ import (
 	"github.com/LeonardsonCC/dinheiros/internal/routes"
 )
 
-func main() {
-	// Load .env file if present
-	_ = godotenv.Load()
+// @title Dinheiros API
+// @version 1.0
+// @description Personal finance management API
+// @host localhost:8080
+// @BasePath /api
+// @schemes http https
 
-	// Load configuration
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token
+
+func main() {
+	_ = godotenv.Load()
 	cfg := config.LoadConfig()
 
 	// Initialize database

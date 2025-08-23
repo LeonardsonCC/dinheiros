@@ -75,8 +75,8 @@ func isPDF(fileHeader *multipart.FileHeader) (bool, error) {
 
 // ImportTransactions handles the import of transactions from a file
 func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -139,7 +139,7 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 	// Get extractor from form (optional, fallback to default)
 	extractor := c.PostForm("extractor")
 	// Extract transaction lines from PDF using the selected extractor and apply categorization rules
-	transactions, err := h.transactionService.ExtractTransactionsFromPDFWithExtractorAndRules(dst, uint(accountID), user.(uint), extractor, h.categorizationRuleService)
+	transactions, err := h.transactionService.ExtractTransactionsFromPDFWithExtractorAndRules(dst, uint(accountID), user, extractor, h.categorizationRuleService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process PDF: " + err.Error()})
 		return
@@ -151,9 +151,25 @@ func (h *TransactionHandler) ImportTransactions(c *gin.Context) {
 	})
 }
 
+// CreateTransaction handles creating a new transaction
+// @Summary Create a new transaction
+// @Description Create a new transaction for an account
+// @Tags transactions
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Param request body dto.CreateTransactionRequest true "Transaction creation data"
+// @Success 201 {object} dto.TransactionResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id}/transactions [post]
 func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -181,7 +197,7 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 	if req.AttachedTransactionID != nil {
 		// Create transaction with attachment
 		transaction, err := h.transactionService.CreateTransactionWithAttachment(
-			user.(uint),
+			user,
 			uint(accountID),
 			req.Amount,
 			req.Type,
@@ -195,13 +211,16 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusCreated, dto.ToTransactionResponse(transaction))
+		c.JSON(http.StatusCreated, gin.H{
+			"message":     "Transaction created successfully",
+			"transaction": dto.ToTransactionResponse(transaction),
+		})
 		return
 	}
 
 	// Create the transaction using the service
 	transaction, err := h.transactionService.CreateTransaction(
-		user.(uint),
+		user,
 		uint(accountID),
 		req.Amount,
 		req.Type,
@@ -229,6 +248,27 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 	})
 }
 
+// ListTransactions handles listing all transactions with filters
+// @Summary List all transactions
+// @Description Get all transactions across accounts with filtering and pagination
+// @Tags transactions
+// @Produce json
+// @Security BearerAuth
+// @Param types query []string false "Transaction types"
+// @Param account_ids query []int false "Account IDs to filter by"
+// @Param category_ids query []int false "Category IDs to filter by"
+// @Param description query string false "Description filter"
+// @Param min_amount query number false "Minimum amount"
+// @Param max_amount query number false "Maximum amount"
+// @Param start_date query string false "Start date (YYYY-MM-DD)"
+// @Param end_date query string false "End date (YYYY-MM-DD)"
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Page size (1-100)" default(20)
+// @Success 200 {object} dto.ListTransactionsResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /transactions [get]
 func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 	// Parse query parameters
 	var req dto.ListTransactionsRequest
@@ -278,9 +318,25 @@ func (h *TransactionHandler) ListTransactions(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// GetTransactions handles fetching transactions for a specific account
+// @Summary Get transactions for an account
+// @Description Get paginated transactions for a specific account
+// @Tags transactions
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Page size (1-100)" default(20)
+// @Success 200 {object} dto.ListTransactionsResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id}/transactions [get]
 func (h *TransactionHandler) GetTransactions(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -291,7 +347,7 @@ func (h *TransactionHandler) GetTransactions(c *gin.Context) {
 		return
 	}
 
-	transactions, err := h.transactionService.GetTransactionsByAccountID(user.(uint), uint(accountID))
+	transactions, err := h.transactionService.GetTransactionsByAccountID(user, uint(accountID))
 	if err != nil {
 		// Only treat as error if it's not NotFoundError
 		if _, ok := err.(*errors.NotFoundError); ok {
@@ -312,9 +368,24 @@ func (h *TransactionHandler) GetTransactions(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToTransactionResponseList(transactions))
 }
 
+// GetTransaction handles fetching a specific transaction
+// @Summary Get transaction by ID
+// @Description Get details of a specific transaction by its ID
+// @Tags transactions
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Param transactionId path int true "Transaction ID"
+// @Success 200 {object} dto.TransactionResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id}/transactions/{transactionId} [get]
 func (h *TransactionHandler) GetTransaction(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -325,7 +396,7 @@ func (h *TransactionHandler) GetTransaction(c *gin.Context) {
 		return
 	}
 
-	transaction, err := h.transactionService.GetTransactionByID(user.(uint), uint(transactionID))
+	transaction, err := h.transactionService.GetTransactionByID(user, uint(transactionID))
 	if err != nil {
 		switch e := err.(type) {
 		case *errors.NotFoundError:
@@ -352,14 +423,24 @@ type DashboardSummaryResponse struct {
 	} `json:"recentTransactions"`
 }
 
+// GetDashboardSummary handles fetching dashboard summary data
+// @Summary Get dashboard summary
+// @Description Get summary data for the user's dashboard including recent transactions and statistics
+// @Tags dashboard
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /summary [get]
 func (h *TransactionHandler) GetDashboardSummary(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
 
-	totalBalance, totalIncome, totalExpenses, recentTransactions, err := h.transactionService.GetDashboardSummary(user.(uint))
+	totalBalance, totalIncome, totalExpenses, recentTransactions, err := h.transactionService.GetDashboardSummary(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching dashboard summary"})
 		return
@@ -387,9 +468,26 @@ func (h *TransactionHandler) GetDashboardSummary(c *gin.Context) {
 	})
 }
 
+// UpdateTransaction handles updating an existing transaction
+// @Summary Update transaction
+// @Description Update details of an existing transaction
+// @Tags transactions
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Param transactionId path int true "Transaction ID"
+// @Param request body dto.CreateTransactionRequest true "Transaction update data"
+// @Success 200 {object} dto.TransactionResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id}/transactions/{transactionId} [put]
 func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -401,7 +499,7 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 	}
 
 	// Get the existing transaction to check its type
-	existingTx, err := h.transactionService.GetTransactionByID(user.(uint), uint(transactionID))
+	existingTx, err := h.transactionService.GetTransactionByID(user, uint(transactionID))
 	if err != nil {
 		switch e := err.(type) {
 		case *errors.NotFoundError:
@@ -445,7 +543,7 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 	}
 
 	// Save the updated transaction with attachment handling
-	err = h.transactionService.UpdateTransactionWithAttachment(user.(uint), existingTx, req.AttachedTransactionID)
+	err = h.transactionService.UpdateTransactionWithAttachment(user, existingTx, req.AttachedTransactionID)
 	if err != nil {
 		switch e := err.(type) {
 		case *errors.ValidationError:
@@ -459,7 +557,7 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 	}
 
 	// Fetch the updated transaction with all its relations
-	updatedTx, err := h.transactionService.GetTransactionByID(user.(uint), existingTx.ID)
+	updatedTx, err := h.transactionService.GetTransactionByID(user, existingTx.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching updated transaction"})
 		return
@@ -471,9 +569,24 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 	})
 }
 
+// DeleteTransaction handles deleting a transaction
+// @Summary Delete transaction
+// @Description Delete a specific transaction
+// @Tags transactions
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Param transactionId path int true "Transaction ID"
+// @Success 204
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id}/transactions/{transactionId} [delete]
 func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -484,7 +597,25 @@ func (h *TransactionHandler) DeleteTransaction(c *gin.Context) {
 		return
 	}
 
-	err = h.transactionService.DeleteTransaction(user.(uint), uint(transactionID))
+	// Get the existing transaction to check its type
+	existingTx, err := h.transactionService.GetTransactionByID(user, uint(transactionID))
+	if err != nil {
+		switch e := err.(type) {
+		case *errors.NotFoundError:
+			c.JSON(http.StatusNotFound, gin.H{"error": e.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching transaction"})
+		}
+		return
+	}
+
+	// Check if transaction has attachments and warn user
+	if existingTx.AttachedTransactionID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete a transaction that is attached to another transaction. Remove the attachment first."})
+		return
+	}
+
+	err = h.transactionService.DeleteTransaction(user, uint(transactionID))
 	if err != nil {
 		switch e := err.(type) {
 		case *errors.NotFoundError:
@@ -515,8 +646,8 @@ type BulkCreateTransactionsRequest struct {
 
 // BulkCreateTransactions handles saving multiple transactions at once
 func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -542,7 +673,6 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 	g.SetLimit(5)
 
 	for _, t := range req.Transactions {
-		t := t // capture loop variable
 		g.Go(func() error {
 			var parsedDate time.Time
 			var err error
@@ -560,7 +690,7 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 			txType := models.TransactionType(t.Type)
 
 			transaction, err := h.transactionService.CreateTransaction(
-				user.(uint),
+				user,
 				uint(accountID),
 				t.Amount,
 				txType,
@@ -613,8 +743,8 @@ func ensureChartJsFormatInt(labels []string, data []int) map[string]interface{} 
 }
 
 func (h *TransactionHandler) GetStatisticsTransactionsPerDay(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -633,7 +763,7 @@ func (h *TransactionHandler) GetStatisticsTransactionsPerDay(c *gin.Context) {
 			endDate = &t
 		}
 	}
-	data, err := h.transactionService.GetTransactionsPerDayWithRange(user.(uint), startDate, endDate)
+	data, err := h.transactionService.GetTransactionsPerDayWithRange(user, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
 		return
@@ -642,8 +772,8 @@ func (h *TransactionHandler) GetStatisticsTransactionsPerDay(c *gin.Context) {
 }
 
 func (h *TransactionHandler) GetStatisticsAmountByMonth(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -662,7 +792,7 @@ func (h *TransactionHandler) GetStatisticsAmountByMonth(c *gin.Context) {
 			endDate = &t
 		}
 	}
-	data, err := h.transactionService.GetAmountByMonth(user.(uint), startDate, endDate)
+	data, err := h.transactionService.GetAmountByMonth(user, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
 		return
@@ -671,8 +801,8 @@ func (h *TransactionHandler) GetStatisticsAmountByMonth(c *gin.Context) {
 }
 
 func (h *TransactionHandler) GetStatisticsAmountByAccount(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -691,7 +821,7 @@ func (h *TransactionHandler) GetStatisticsAmountByAccount(c *gin.Context) {
 			endDate = &t
 		}
 	}
-	data, err := h.transactionService.GetAmountByAccount(user.(uint), startDate, endDate)
+	data, err := h.transactionService.GetAmountByAccount(user, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
 		return
@@ -700,8 +830,8 @@ func (h *TransactionHandler) GetStatisticsAmountByAccount(c *gin.Context) {
 }
 
 func (h *TransactionHandler) GetStatisticsAmountByCategory(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -720,7 +850,7 @@ func (h *TransactionHandler) GetStatisticsAmountByCategory(c *gin.Context) {
 			endDate = &t
 		}
 	}
-	data, err := h.transactionService.GetAmountByCategory(user.(uint), startDate, endDate)
+	data, err := h.transactionService.GetAmountByCategory(user, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
 		return
@@ -729,12 +859,12 @@ func (h *TransactionHandler) GetStatisticsAmountByCategory(c *gin.Context) {
 }
 
 func (h *TransactionHandler) GetStatisticsAmountSpentByDay(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	data, err := h.transactionService.GetAmountSpentByDay(user.(uint))
+	data, err := h.transactionService.GetAmountSpentByDay(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching statistics"})
 		return
@@ -743,8 +873,8 @@ func (h *TransactionHandler) GetStatisticsAmountSpentByDay(c *gin.Context) {
 }
 
 func (h *TransactionHandler) GetStatisticsAmountSpentAndGainedByDay(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -763,7 +893,7 @@ func (h *TransactionHandler) GetStatisticsAmountSpentAndGainedByDay(c *gin.Conte
 			endDate = &t
 		}
 	}
-	data, labels := h.transactionService.GetAmountSpentAndGainedByDayWithRange(user.(uint), startDate, endDate)
+	data, labels := h.transactionService.GetAmountSpentAndGainedByDayWithRange(user, startDate, endDate)
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"labels": labels,
 		"datasets": []map[string]interface{}{

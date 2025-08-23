@@ -4,7 +4,10 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
+	_ "github.com/LeonardsonCC/dinheiros/docs"
 	"github.com/LeonardsonCC/dinheiros/internal/di"
 	"github.com/LeonardsonCC/dinheiros/internal/middleware"
 )
@@ -31,6 +34,8 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 	// Public routes
 	api := r.Group("/api")
 	{
+		api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 		// Auth routes
 		authGroup := api.Group("/auth")
 		{

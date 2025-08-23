@@ -117,15 +117,14 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Router /users/me [get]
 func (h *UserHandler) GetCurrentUser(c *gin.Context) {
 	// Get user ID from context (set by auth middleware)
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	userID := user.(uint)
 
 	// Get user from service
-	userObj, err := h.userService.FindByID(userID)
+	userObj, err := h.userService.FindByID(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving user"})
 		return
@@ -225,7 +224,7 @@ func (h *UserHandler) UpdatePassword(c *gin.Context) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param input body struct{ Credential string `json:"credential" binding:"required"` } true "Google login credentials"
+// @Param input body dto.GoogleLoginRequest true "Google login credentials"
 // @Success 200 {object} dto.AuthResponse
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
@@ -234,9 +233,7 @@ func (h *UserHandler) UpdatePassword(c *gin.Context) {
 func (h *UserHandler) GoogleLogin(c *gin.Context) {
 	log.Printf("[UserHandler] GoogleLogin: Starting Google login")
 
-	var req struct {
-		Credential string `json:"credential" binding:"required"`
-	}
+	var req dto.GoogleLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Printf("[UserHandler] GoogleLogin: JSON binding error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing Google credential"})

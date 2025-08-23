@@ -20,18 +20,30 @@ func NewAccountHandler(accountService service.AccountService) *AccountHandler {
 	return &AccountHandler{accountService: accountService}
 }
 
+// CreateAccount handles account creation
+// @Summary Create a new account
+// @Description Create a new financial account for the authenticated user
+// @Tags accounts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.CreateAccountRequest true "Account creation data"
+// @Success 201 {object} dto.AccountResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts [post]
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
 	log.Printf("[AccountHandler] CreateAccount: Starting account creation")
 
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		log.Printf("[AccountHandler] CreateAccount: User not authenticated")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
 
-	userID := user.(uint)
-	log.Printf("[AccountHandler] CreateAccount: User ID: %d", userID)
+	log.Printf("[AccountHandler] CreateAccount: User ID: %d", user)
 
 	var req dto.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -47,7 +59,7 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		Name:           req.Name,
 		Type:           req.Type,
 		InitialBalance: req.InitialBalance,
-		UserID:         userID,
+		UserID:         user,
 		Color:          req.Color,
 	}
 
@@ -72,9 +84,21 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 	})
 }
 
+// GetAccounts handles fetching all accounts for the user
+// @Summary Get all accounts
+// @Description Get all accounts owned by or shared with the authenticated user
+// @Tags accounts
+// @Produce json
+// @Security BearerAuth
+// @Param include_inactive query boolean false "Include inactive/deleted accounts"
+// @Param include_shared query boolean false "Include accounts shared with user"
+// @Success 200 {array} dto.AccountResponse
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts [get]
 func (h *AccountHandler) GetAccounts(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -83,7 +107,7 @@ func (h *AccountHandler) GetAccounts(c *gin.Context) {
 	includeDeleted := c.Query("include_deleted") == "true"
 	includeShared := c.Query("include_shared") != "false" // Default to true
 
-	accounts, err := h.accountService.GetAccountsWithOwnershipInfo(user.(uint), includeDeleted, includeShared)
+	accounts, err := h.accountService.GetAccountsWithOwnershipInfo(user, includeDeleted, includeShared)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching accounts"})
 		return
@@ -94,9 +118,23 @@ func (h *AccountHandler) GetAccounts(c *gin.Context) {
 	})
 }
 
+// GetAccount handles fetching a specific account
+// @Summary Get account by ID
+// @Description Get details of a specific account by its ID
+// @Tags accounts
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Success 200 {object} dto.AccountResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id} [get]
 func (h *AccountHandler) GetAccount(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -107,7 +145,7 @@ func (h *AccountHandler) GetAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := h.accountService.GetAccountByID(uint(accountID), user.(uint))
+	account, err := h.accountService.GetAccountByID(uint(accountID), user)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
 		return
@@ -116,9 +154,25 @@ func (h *AccountHandler) GetAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToAccountResponse(account))
 }
 
+// UpdateAccount handles updating an existing account
+// @Summary Update account
+// @Description Update details of an existing account
+// @Tags accounts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Param request body dto.UpdateAccountRequest true "Account update data"
+// @Success 200 {object} dto.AccountResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id} [put]
 func (h *AccountHandler) UpdateAccount(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -135,7 +189,7 @@ func (h *AccountHandler) UpdateAccount(c *gin.Context) {
 		return
 	}
 
-	updatedAccount, err := h.accountService.UpdateAccount(uint(accountID), user.(uint), &req)
+	updatedAccount, err := h.accountService.UpdateAccount(uint(accountID), user, &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating account"})
 		return
@@ -147,9 +201,23 @@ func (h *AccountHandler) UpdateAccount(c *gin.Context) {
 	})
 }
 
+// DeleteAccount handles soft deleting an account
+// @Summary Delete account
+// @Description Soft delete an account (mark as inactive)
+// @Tags accounts
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Success 204
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id} [delete]
 func (h *AccountHandler) DeleteAccount(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -160,7 +228,7 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	if err := h.accountService.DeleteAccount(uint(accountID), user.(uint)); err != nil {
+	if err := h.accountService.DeleteAccount(uint(accountID), user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting account"})
 		return
 	}
@@ -170,9 +238,23 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 	})
 }
 
+// ReactivateAccount handles reactivating a deleted account
+// @Summary Reactivate account
+// @Description Reactivate a previously deleted account
+// @Tags accounts
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Success 200 {object} dto.AccountResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id}/reactivate [post]
 func (h *AccountHandler) ReactivateAccount(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	user := c.GetUint("user")
+	if user != 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -183,7 +265,7 @@ func (h *AccountHandler) ReactivateAccount(c *gin.Context) {
 		return
 	}
 
-	if err := h.accountService.ReactivateAccount(uint(accountID), user.(uint)); err != nil {
+	if err := h.accountService.ReactivateAccount(uint(accountID), user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error reactivating account"})
 		return
 	}
