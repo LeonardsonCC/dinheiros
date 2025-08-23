@@ -4,6 +4,7 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import CategoryManager from '../components/CategoryManager';
+import DatePicker from '../components/DatePicker';
 import { Category } from '../components/CategoryManager';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/button';
@@ -465,14 +466,15 @@ export default function EditTransaction() {
 
               {/* Date & Time */}
               <div className="sm:col-span-2">
-                <Label htmlFor="date">{t('editTransaction.dateTime')}</Label>
-                <Input
-                  type="datetime-local"
-                  name="date"
-                  id="date"
-                  value={dateInput}
-                  onChange={handleChange}
-                  required
+                <DatePicker
+                  label="editTransaction.dateTime"
+                  value={formData.date}
+                  onChange={(value) => {
+                    if (value) {
+                      setFormData(prev => ({ ...prev, date: value }));
+                      setDateInput(formatDateForInput(value));
+                    }
+                  }}
                   disabled={isAttachmentSelected}
                 />
                 {isAttachmentSelected && (
