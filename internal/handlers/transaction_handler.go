@@ -22,11 +22,12 @@ import (
 )
 
 type UpdateTransactionRequest struct {
-	Date        string  `json:"date"`
-	Amount      float64 `json:"amount"`
-	Type        string  `json:"type"`
-	Description string  `json:"description"`
-	CategoryIDs []uint  `json:"category_ids"`
+	Date                  string  `json:"date"`
+	Amount                float64 `json:"amount"`
+	Type                  string  `json:"type"`
+	Description           string  `json:"description"`
+	CategoryIDs           []uint  `json:"category_ids"`
+	AttachedTransactionID *uint   `json:"attached_transaction_id,omitempty"`
 }
 
 type TransactionHandler struct {
@@ -205,6 +206,7 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 		req.Amount,
 		req.Type,
 		req.Description,
+		req.ToAccountID,
 		req.CategoryIDs,
 		parsedDate,
 	)
@@ -442,8 +444,8 @@ func (h *TransactionHandler) UpdateTransaction(c *gin.Context) {
 		}
 	}
 
-	// Save the updated transaction
-	err = h.transactionService.UpdateTransaction(user.(uint), existingTx)
+	// Save the updated transaction with attachment handling
+	err = h.transactionService.UpdateTransactionWithAttachment(user.(uint), existingTx, req.AttachedTransactionID)
 	if err != nil {
 		switch e := err.(type) {
 		case *errors.ValidationError:
@@ -563,6 +565,7 @@ func (h *TransactionHandler) BulkCreateTransactions(c *gin.Context) {
 				t.Amount,
 				txType,
 				t.Description,
+				nil, // toAccountID
 				t.CategoryIDs,
 				parsedDate,
 			)

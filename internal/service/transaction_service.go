@@ -16,7 +16,7 @@ import (
 
 type TransactionService interface {
 	CreateTransaction(userID uint, accountID uint, amount float64, transactionType models.TransactionType,
-		description string, categoryIDs []uint, date time.Time) (*models.Transaction, error)
+		description string, toAccountID *uint, categoryIDs []uint, date time.Time) (*models.Transaction, error)
 	CreateTransactionWithAttachment(userID uint, accountID uint, amount float64, transactionType models.TransactionType,
 		description string, date time.Time, categoryIDs []uint, attachedTransactionID uint) (*models.Transaction, error)
 	GetTransactionByID(userID uint, transactionID uint) (*models.Transaction, error)
@@ -35,6 +35,7 @@ type TransactionService interface {
 		pageSize int,
 	) ([]models.Transaction, int64, error)
 	UpdateTransaction(userID uint, transaction *models.Transaction) error
+	UpdateTransactionWithAttachment(userID uint, transaction *models.Transaction, attachedTransactionID *uint) error
 	DeleteTransaction(userID uint, transactionID uint) error
 	GetDashboardSummary(userID uint) (float64, float64, float64, []models.Transaction, error)
 	ExtractTransactionsFromPDF(filePath string, accountID uint) ([]models.Transaction, error)
@@ -76,6 +77,7 @@ func (s *transactionService) CreateTransaction(
 	amount float64,
 	transactionType models.TransactionType,
 	description string,
+	toAccountID *uint,
 	categoryIDs []uint,
 	date time.Time,
 ) (*models.Transaction, error) {
@@ -292,6 +294,157 @@ func (s *transactionService) UpdateTransaction(userID uint, transaction *models.
 			tx.Rollback()
 		}
 	}()
+
+	// Update transaction fields
+	err = tx.Model(&existingTx).Updates(transaction).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Update categories association
+	if len(transaction.Categories) > 0 {
+		err = tx.Model(&existingTx).Association("Categories").Replace(transaction.Categories)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	} else {
+		// If no categories provided, clear existing ones
+		err = tx.Model(&existingTx).Association("Categories").Clear()
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit().Error
+}
+
+func (s *transactionService) UpdateTransactionWithAttachment(userID uint, transaction *models.Transaction, attachedTransactionID *uint) error {
+	// Start a transaction for atomic updates
+	tx := s.transactionRepo.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Verify transaction exists and user has access to the account
+	existingTx, err := s.transactionRepo.FindByID(transaction.ID, userID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Verify user has access to the account (owner or shared)
+	_, err = s.accountRepo.FindByID(existingTx.AccountID, userID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Handle attachment relationship cleanup and setup
+	if attachedTransactionID != nil {
+		// Verify the attached transaction exists and user has access
+		attachedTx, err := s.transactionRepo.FindByID(*attachedTransactionID, userID)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		// Ensure 1:1 relationship - verify types are opposite (income/expense)
+		if existingTx.Type == attachedTx.Type {
+			tx.Rollback()
+			return errors.NewValidationError("Attached transactions must have opposite types (one income, one expense)")
+		}
+
+		// Clean up any existing attachments for both transactions
+		// Remove existing attachment for current transaction
+		if existingTx.AttachedTransactionID != nil {
+			err = tx.Model(&models.Transaction{}).
+				Where("id = ?", *existingTx.AttachedTransactionID).
+				Updates(map[string]interface{}{
+					"attached_transaction_id": nil,
+					"attachment_type":         nil,
+				}).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+
+		// Remove existing attachment for target transaction
+		if attachedTx.AttachedTransactionID != nil {
+			err = tx.Model(&models.Transaction{}).
+				Where("id = ?", *attachedTx.AttachedTransactionID).
+				Updates(map[string]interface{}{
+					"attached_transaction_id": nil,
+					"attachment_type":         nil,
+				}).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+
+		// Set up new 1:1 relationship
+		var currentAttachmentType, attachedAttachmentType models.AttachmentType
+		if existingTx.Type == models.TransactionTypeExpense {
+			currentAttachmentType = models.AttachmentTypeOutboundTransfer
+			attachedAttachmentType = models.AttachmentTypeInboundTransfer
+		} else {
+			currentAttachmentType = models.AttachmentTypeInboundTransfer
+			attachedAttachmentType = models.AttachmentTypeOutboundTransfer
+		}
+
+		// Update current transaction
+		transaction.AttachedTransactionID = attachedTransactionID
+		transaction.AttachmentType = &currentAttachmentType
+
+		// Update attached transaction to point back
+		err = tx.Model(&models.Transaction{}).
+			Where("id = ?", *attachedTransactionID).
+			Updates(map[string]interface{}{
+				"attached_transaction_id": transaction.ID,
+				"attachment_type":         attachedAttachmentType,
+			}).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	} else {
+		// Removing attachment - clean up the relationship
+		if existingTx.AttachedTransactionID != nil {
+			// Remove the reverse relationship
+			err = tx.Model(&models.Transaction{}).
+				Where("id = ?", *existingTx.AttachedTransactionID).
+				Updates(map[string]interface{}{
+					"attached_transaction_id": nil,
+					"attachment_type":         nil,
+				}).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+
+		// Clear attachment for current transaction
+		transaction.AttachedTransactionID = nil
+		transaction.AttachmentType = nil
+
+		// Explicitly update the current transaction's attachment fields
+		err = tx.Model(&models.Transaction{}).
+			Where("id = ?", transaction.ID).
+			Updates(map[string]interface{}{
+				"attached_transaction_id": nil,
+				"attachment_type":         nil,
+			}).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
 
 	// Update transaction fields
 	err = tx.Model(&existingTx).Updates(transaction).Error

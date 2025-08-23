@@ -50,6 +50,11 @@ export default function EditTransaction() {
 
   const formatDateForInput = (dateString: string): string => {
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string received:', dateString);
+      // If invalid date, return current date formatted for input
+      return new Date().toISOString().slice(0, 16);
+    }
     return date.toISOString().slice(0, 16);
   };
 
@@ -104,11 +109,29 @@ export default function EditTransaction() {
           amount: Math.abs(transaction.amount).toString(),
           description: transaction.description,
           categoryIds: transaction.categories ? transaction.categories.map((c: { id: number }) => c.id) : [],
-          date: transaction.date,
-          attachToTransactionId: transaction.attached_transaction_id ? transaction.attached_transaction_id.toString() : 'none'
+          date: transaction.date || new Date().toISOString(),
+          attachToTransactionId: transaction.attached_transaction ? transaction.attached_transaction.id.toString() : 'none'
         });
 
-        setDateInput(formatDateForInput(transaction.date));
+        // If transaction has an attached transaction, hydrate the search fields
+        if (transaction.attached_transaction) {
+          const attachedTx = transaction.attached_transaction;
+          // Set the search account to the attached transaction's account
+          setSelectedSearchAccountId(attachedTx.account.id.toString());
+          // Load transactions for that account to populate the dropdown
+          const transactions = await searchTransactionsByAccount(attachedTx.account.id.toString());
+          
+          // Ensure the currently attached transaction is included in available transactions
+          // even if it has an attachment (since we're editing this relationship)
+          const attachedTxExists = transactions.some((tx: any) => tx.id === attachedTx.id);
+          if (!attachedTxExists) {
+            setAvailableTransactions(prev => [...prev, attachedTx]);
+          }
+        }
+
+        if (transaction.date) {
+          setDateInput(formatDateForInput(transaction.date));
+        }
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
         let errorMessage = t('editTransaction.failedLoad');
@@ -131,23 +154,30 @@ export default function EditTransaction() {
   const searchTransactionsByAccount = async (searchAccountId: string) => {
     if (!searchAccountId || searchAccountId === 'none') {
       setAvailableTransactions([]);
-      return;
+      return [];
     }
 
     try {
       setSearchingTransactions(true);
       const response = await api.get(`/api/accounts/${searchAccountId}/transactions`);
 
-      // Filter out transactions that already have attachments
-      const unattachedTransactions = response.data.filter((tx: any) =>
-        !tx.attached_transaction && !tx.attachment_type
-      );
+      // Filter out transactions that already have attachments, but keep the currently attached one
+      const unattachedTransactions = response.data.filter((tx: any) => {
+        // Always include transactions without attachments
+        if (!tx.attached_transaction && !tx.attachment_type) {
+          return true;
+        }
+        // Include the currently attached transaction (so it can be edited)
+        return tx.id.toString() === formData.attachToTransactionId;
+      });
 
       setAvailableTransactions(unattachedTransactions);
+      return unattachedTransactions;
     } catch (error) {
       console.error('Error searching transactions:', error);
       toast.error(t('newTransaction.failedLoadTransactions'));
       setAvailableTransactions([]);
+      return [];
     } finally {
       setSearchingTransactions(false);
     }
@@ -182,19 +212,25 @@ export default function EditTransaction() {
       if (selectedTransaction) {
         // Determine opposite transaction type for the attachment
         const oppositeType: TransactionType = selectedTransaction.type === 'expense' ? 'income' : 'expense';
+        console.log(`Selected transaction type: ${selectedTransaction.type}, setting current to: ${oppositeType}`);
 
         setFormData(prev => ({
           ...prev,
           type: oppositeType,
           amount: Math.abs(selectedTransaction.amount).toString(),
           description: selectedTransaction.description || '',
-          date: selectedTransaction.date,
+          date: selectedTransaction.date || new Date().toISOString(),
           categoryIds: [] // Clear categories so user can select appropriate ones for their account
         }));
 
         // Update the date input field for display
-        setDateInput(formatDateForInput(selectedTransaction.date));
+        if (selectedTransaction.date) {
+          setDateInput(formatDateForInput(selectedTransaction.date));
+        }
       }
+    } else if (formData.attachToTransactionId === 'none') {
+      // When attachment is removed, user can freely change the type again
+      console.log('Attachment removed, type field is now freely editable');
     }
   }, [formData.attachToTransactionId, availableTransactions]);
 
@@ -339,6 +375,11 @@ export default function EditTransaction() {
                     <SelectItem value="income">{t('dashboard.income')}</SelectItem>
                   </SelectContent>
                 </Select>
+                {isAttachmentSelected && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('editTransaction.typeSetAutomaticallyFromAttachment', 'Type set automatically to be opposite of attached transaction')}
+                  </p>
+                )}
               </div>
 
               {/* Amount */}
@@ -456,9 +497,8 @@ export default function EditTransaction() {
                       setFormData(prev => ({ ...prev, attachToTransactionId: 'none' }));
                     }
                   }}
-                  disabled={isAttachmentSelected}
                 >
-                  <SelectTrigger className={isAttachmentSelected ? "opacity-50" : undefined}>
+                  <SelectTrigger>
                     <SelectValue placeholder={t('newTransaction.selectAccountToSearch')} />
                   </SelectTrigger>
                   <SelectContent>
