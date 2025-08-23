@@ -1,0 +1,1885 @@
+basePath: /api
+definitions:
+  dto.AcceptInvitationRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  dto.AccountResponse:
+    properties:
+      balance:
+        type: number
+      color:
+        type: string
+      id:
+        type: integer
+      initial_balance:
+        type: number
+      is_active:
+        type: boolean
+      is_owner:
+        type: boolean
+      name:
+        type: string
+      owner_name:
+        type: string
+      type:
+        $ref: '#/definitions/models.AccountType'
+    type: object
+  dto.AccountShareResponse:
+    properties:
+      account_id:
+        type: integer
+      account_name:
+        type: string
+      id:
+        type: integer
+      permission_level:
+        type: string
+      shared_at:
+        type: string
+      shared_user_email:
+        type: string
+      shared_user_name:
+        type: string
+    type: object
+  dto.AuthResponse:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserResponse'
+    type: object
+  dto.CategorizationRuleDTO:
+    properties:
+      active:
+        type: boolean
+      category_dst:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      transaction_type:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      value:
+        type: string
+    type: object
+  dto.CategoryDTO:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/models.TransactionType'
+    type: object
+  dto.CategoryResponse:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.CreateAccountRequest:
+    properties:
+      color:
+        type: string
+      initial_balance:
+        type: number
+      name:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/models.AccountType'
+        enum:
+        - checking
+        - savings
+        - credit_card
+        - cash
+    required:
+    - name
+    - type
+    type: object
+  dto.CreateCategorizationRuleDTO:
+    properties:
+      active:
+        type: boolean
+      category_dst:
+        type: integer
+      name:
+        type: string
+      transaction_type:
+        type: string
+      type:
+        type: string
+      value:
+        type: string
+    type: object
+  dto.CreateCategoryRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/models.TransactionType'
+        enum:
+        - income
+        - expense
+        - transfer
+    required:
+    - name
+    - type
+    type: object
+  dto.CreateShareInvitationRequest:
+    properties:
+      invited_email:
+        type: string
+      permission_level:
+        enum:
+        - read
+        type: string
+    required:
+    - invited_email
+    type: object
+  dto.CreateTransactionRequest:
+    properties:
+      amount:
+        type: number
+      category_ids:
+        items:
+          type: integer
+        type: array
+      date:
+        type: string
+      description:
+        type: string
+      to_account_id:
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/models.TransactionType'
+        enum:
+        - income
+        - expense
+        - transfer
+    required:
+    - amount
+    - date
+    - type
+    type: object
+  dto.GoogleLoginRequest:
+    properties:
+      credential:
+        type: string
+    required:
+    - credential
+    type: object
+  dto.ListTransactionsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.TransactionResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.PaginationMeta'
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.PaginationMeta:
+    properties:
+      current_page:
+        type: integer
+      page_size:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  dto.ShareInvitationResponse:
+    properties:
+      account_id:
+        type: integer
+      account_name:
+        type: string
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: integer
+      invited_email:
+        type: string
+      permission_level:
+        type: string
+      status:
+        type: string
+    type: object
+  dto.SharedAccountResponse:
+    properties:
+      balance:
+        type: number
+      color:
+        type: string
+      id:
+        type: integer
+      is_shared:
+        type: boolean
+      name:
+        type: string
+      owner_email:
+        type: string
+      owner_name:
+        type: string
+      permission_level:
+        type: string
+      shared_at:
+        type: string
+      type:
+        type: string
+    type: object
+  dto.TransactionResponse:
+    properties:
+      account:
+        $ref: '#/definitions/dto.AccountResponse'
+      amount:
+        type: number
+      categories:
+        items:
+          $ref: '#/definitions/dto.CategoryResponse'
+        type: array
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      to_account_id:
+        type: integer
+      type:
+        type: string
+    type: object
+  dto.UpdateAccountRequest:
+    properties:
+      color:
+        type: string
+      name:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/models.AccountType'
+        enum:
+        - checking
+        - savings
+        - credit_card
+        - cash
+    required:
+    - name
+    - type
+    type: object
+  dto.UpdateCategorizationRuleDTO:
+    properties:
+      active:
+        type: boolean
+      category_dst:
+        type: integer
+      name:
+        type: string
+      transaction_type:
+        type: string
+      type:
+        type: string
+      value:
+        type: string
+    type: object
+  dto.UpdateCategoryRequest:
+    properties:
+      name:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/models.TransactionType'
+        enum:
+        - income
+        - expense
+        - transfer
+    required:
+    - name
+    - type
+    type: object
+  dto.UpdateNameRequest:
+    properties:
+      name:
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdatePasswordRequest:
+    properties:
+      currentPassword:
+        minLength: 6
+        type: string
+      newPassword:
+        minLength: 6
+        type: string
+    required:
+    - currentPassword
+    - newPassword
+    type: object
+  dto.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  models.AccountType:
+    enum:
+    - checking
+    - savings
+    - credit_card
+    - cash
+    type: string
+    x-enum-varnames:
+    - AccountTypeChecking
+    - AccountTypeSavings
+    - AccountTypeCredit
+    - AccountTypeCash
+  models.TransactionType:
+    enum:
+    - income
+    - expense
+    - transfer
+    - initial
+    type: string
+    x-enum-varnames:
+    - TransactionTypeIncome
+    - TransactionTypeExpense
+    - TransactionTypeTransfer
+    - TransactionTypeInitial
+host: localhost:8080
+info:
+  contact: {}
+  description: Personal finance management API
+  title: Dinheiros API
+  version: "1.0"
+paths:
+  /accounts:
+    get:
+      description: Get all accounts owned by or shared with the authenticated user
+      parameters:
+      - description: Include inactive/deleted accounts
+        in: query
+        name: include_inactive
+        type: boolean
+      - description: Include accounts shared with user
+        in: query
+        name: include_shared
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.AccountResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all accounts
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Create a new financial account for the authenticated user
+      parameters:
+      - description: Account creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new account
+      tags:
+      - accounts
+  /accounts/{id}:
+    delete:
+      description: Soft delete an account (mark as inactive)
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete account
+      tags:
+      - accounts
+    get:
+      description: Get details of a specific account by its ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get account by ID
+      tags:
+      - accounts
+    put:
+      consumes:
+      - application/json
+      description: Update details of an existing account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Account update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update account
+      tags:
+      - accounts
+  /accounts/{id}/reactivate:
+    post:
+      description: Reactivate a previously deleted account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Reactivate account
+      tags:
+      - accounts
+  /accounts/{id}/shares:
+    get:
+      description: Get all active shares for a specific account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.AccountShareResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get account shares
+      tags:
+      - account-sharing
+    post:
+      consumes:
+      - application/json
+      description: Create a new invitation to share an account with another user
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Share invitation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateShareInvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ShareInvitationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create share invitation
+      tags:
+      - account-sharing
+  /accounts/{id}/transactions:
+    get:
+      description: Get paginated transactions for a specific account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size (1-100)
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListTransactionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get transactions for an account
+      tags:
+      - transactions
+    post:
+      consumes:
+      - application/json
+      description: Create a new transaction for an account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Transaction creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new transaction
+      tags:
+      - transactions
+  /accounts/{id}/transactions/{transactionId}:
+    delete:
+      description: Delete a specific transaction
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Transaction ID
+        in: path
+        name: transactionId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete transaction
+      tags:
+      - transactions
+    get:
+      description: Get details of a specific transaction by its ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Transaction ID
+        in: path
+        name: transactionId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get transaction by ID
+      tags:
+      - transactions
+    put:
+      consumes:
+      - application/json
+      description: Update details of an existing transaction
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Transaction ID
+        in: path
+        name: transactionId
+        required: true
+        type: integer
+      - description: Transaction update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update transaction
+      tags:
+      - transactions
+  /auth/google:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user with Google OAuth and return a token
+      parameters:
+      - description: Google login credentials
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GoogleLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login a user with Google
+      tags:
+      - users
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a token
+      parameters:
+      - description: User login credentials
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login a user
+      tags:
+      - users
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with the provided information
+      parameters:
+      - description: User registration data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - users
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Get all categories for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.CategoryDTO'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List all categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new category for the authenticated user
+      parameters:
+      - description: Category details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CategoryDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new category
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a category for the authenticated user
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a category
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Update a category for the authenticated user
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Category details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CategoryDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a category
+      tags:
+      - categories
+  /categorization-rules:
+    get:
+      description: Get all categorization rules for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.CategorizationRuleDTO'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List categorization rules
+      tags:
+      - categorization-rules
+    post:
+      consumes:
+      - application/json
+      description: Create a new categorization rule for automatic transaction categorization
+      parameters:
+      - description: Categorization rule data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCategorizationRuleDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CategorizationRuleDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create categorization rule
+      tags:
+      - categorization-rules
+  /categorization-rules/{id}:
+    delete:
+      description: Delete a specific categorization rule
+      parameters:
+      - description: Rule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete categorization rule
+      tags:
+      - categorization-rules
+    get:
+      description: Get details of a specific categorization rule by its ID
+      parameters:
+      - description: Rule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CategorizationRuleDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get categorization rule by ID
+      tags:
+      - categorization-rules
+    put:
+      consumes:
+      - application/json
+      description: Update details of an existing categorization rule
+      parameters:
+      - description: Rule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Rule update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCategorizationRuleDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CategorizationRuleDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update categorization rule
+      tags:
+      - categorization-rules
+  /shares/accept:
+    post:
+      consumes:
+      - application/json
+      description: Accept an invitation to access a shared account
+      parameters:
+      - description: Invitation token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AcceptInvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Accept share invitation
+      tags:
+      - account-sharing
+  /shares/accounts:
+    get:
+      description: Get all accounts that have been shared with the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.SharedAccountResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get shared accounts
+      tags:
+      - account-sharing
+  /summary:
+    get:
+      description: Get summary data for the user's dashboard including recent transactions
+        and statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get dashboard summary
+      tags:
+      - dashboard
+  /transactions:
+    get:
+      description: Get all transactions across accounts with filtering and pagination
+      parameters:
+      - collectionFormat: csv
+        description: Transaction types
+        in: query
+        items:
+          type: string
+        name: types
+        type: array
+      - collectionFormat: csv
+        description: Account IDs to filter by
+        in: query
+        items:
+          type: integer
+        name: account_ids
+        type: array
+      - collectionFormat: csv
+        description: Category IDs to filter by
+        in: query
+        items:
+          type: integer
+        name: category_ids
+        type: array
+      - description: Description filter
+        in: query
+        name: description
+        type: string
+      - description: Minimum amount
+        in: query
+        name: min_amount
+        type: number
+      - description: Maximum amount
+        in: query
+        name: max_amount
+        type: number
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size (1-100)
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListTransactionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all transactions
+      tags:
+      - transactions
+  /users/me:
+    get:
+      description: Get the currently authenticated user's information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get current user
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: Update the current user's name
+      parameters:
+      - description: Name update data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateNameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update user's name
+      tags:
+      - users
+  /users/me/password:
+    patch:
+      consumes:
+      - application/json
+      description: Update the current user's password
+      parameters:
+      - description: Password update data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update user's password
+      tags:
+      - users
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

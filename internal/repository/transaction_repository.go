@@ -51,7 +51,7 @@ func NewTransactionRepository(db *gorm.DB) TransactionRepository {
 }
 
 func (r *transactionRepository) Create(transaction *models.Transaction) error {
-	return r.db.Debug().Create(transaction).Error
+	return r.db.Create(transaction).Error
 }
 
 func (r *transactionRepository) CreateInBatch(transactions []*models.Transaction) error {
@@ -65,11 +65,11 @@ func (r *transactionRepository) FindByID(id uint, userID uint) (*models.Transact
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
 		Where("transactions.id = ? AND accounts.user_id = ?", id, userID).
 		First(&transaction).Error
-	
+
 	if err == nil {
 		return &transaction, nil
 	}
-	
+
 	// If not found by ownership, check if user has shared access
 	// This will only work if account_shares table exists
 	var count int64
@@ -127,7 +127,7 @@ func (r *transactionRepository) FindByUserID(
 	tx := r.db.Model(&models.Transaction{}).
 		Joins("JOIN accounts ON accounts.id = transactions.account_id").
 		Where("accounts.user_id = ?", userID)
-	
+
 	// Try to include shared accounts if account_shares table exists
 	var sharedAccountIDs []uint
 	shareCheckErr := r.db.Table("account_shares").Where("shared_user_id = ?", userID).Pluck("account_id", &sharedAccountIDs)

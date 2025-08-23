@@ -42,7 +42,7 @@ func (r *userRepository) Create(user *models.User) error {
 	log.Printf("[UserRepository] Create: Creating user: %+v", user)
 	log.Printf("[UserRepository] Create: User ID before creation: %d", user.ID)
 
-	if err := r.db.Debug().Create(user).Error; err != nil {
+	if err := r.db.Create(user).Error; err != nil {
 		log.Printf("[UserRepository] Create: Error creating user: %v", err)
 		return err
 	}

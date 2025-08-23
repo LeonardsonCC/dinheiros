@@ -41,7 +41,7 @@ func NewAccountRepository(db *gorm.DB) AccountRepository {
 
 func (r *accountRepository) Create(account *models.Account) error {
 	log.Printf("[AccountRepository] Create: Creating account: %+v", account)
-	err := r.db.Debug().Create(account).Error
+	err := r.db.Create(account).Error
 	if err != nil {
 		log.Printf("[AccountRepository] Create: Error creating account: %v", err)
 	} else {
@@ -57,7 +57,7 @@ func (r *accountRepository) FindByID(id uint, userID uint) (*models.Account, err
 	if err == nil {
 		return &account, nil
 	}
-	
+
 	// If not found by ownership, check if user has shared access
 	// This will only work if account_shares table exists
 	var count int64
@@ -70,7 +70,7 @@ func (r *accountRepository) FindByID(id uint, userID uint) (*models.Account, err
 		}
 		return &account, nil
 	}
-	
+
 	// Return the original error (not found)
 	return nil, err
 }
@@ -109,7 +109,7 @@ func (r *accountRepository) FindByUserIDIncludingShared(userID uint) ([]models.A
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Try to get shared accounts if account_shares table exists
 	var sharedAccounts []models.Account
 	shareCheckErr := r.db.Table("account_shares").Where("shared_user_id = ?", userID).Select("account_id").Error
@@ -122,7 +122,7 @@ func (r *accountRepository) FindByUserIDIncludingShared(userID uint) ([]models.A
 			accounts = append(accounts, sharedAccounts...)
 		}
 	}
-	
+
 	return accounts, nil
 }
 
@@ -133,7 +133,7 @@ func (r *accountRepository) FindByUserIDIncludingSharedAndDeleted(userID uint) (
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Try to get shared accounts if account_shares table exists
 	var sharedAccounts []models.Account
 	shareCheckErr := r.db.Table("account_shares").Where("shared_user_id = ?", userID).Select("account_id").Error
@@ -146,7 +146,7 @@ func (r *accountRepository) FindByUserIDIncludingSharedAndDeleted(userID uint) (
 			accounts = append(accounts, sharedAccounts...)
 		}
 	}
-	
+
 	return accounts, nil
 }
 
@@ -160,13 +160,13 @@ func (r *accountRepository) HasAccess(accountID uint, userID uint) (bool, error)
 	if count > 0 {
 		return true, nil
 	}
-	
+
 	// Check shared access if account_shares table exists
 	shareCheckErr := r.db.Table("account_shares").Where("account_id = ? AND shared_user_id = ?", accountID, userID).Count(&count).Error
 	if shareCheckErr == nil && count > 0 {
 		return true, nil
 	}
-	
+
 	return false, nil
 }
 

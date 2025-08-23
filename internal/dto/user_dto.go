@@ -57,3 +57,8 @@ type UpdatePasswordRequest struct {
 	CurrentPassword string `json:"currentPassword" binding:"required,min=6"`
 	NewPassword     string `json:"newPassword" binding:"required,min=6,nefield=CurrentPassword"`
 }
+
+// GoogleLoginRequest represents the request body for Google OAuth login
+type GoogleLoginRequest struct {
+	Credential string `json:"credential" binding:"required"`
+}
