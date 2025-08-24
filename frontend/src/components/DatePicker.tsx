@@ -10,6 +10,7 @@ import { Button } from './ui/button';
 import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Label } from "./ui";
 
 export type DatePickerProps = {
   label: string;
@@ -114,9 +115,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   return (
-    <div className="flex flex-col space-y-2">
+    <div>
       {label && (
-        <label className="text-sm font-medium text-foreground">{t(label)}</label>
+        <Label>{t(label)}</Label>
       )}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
