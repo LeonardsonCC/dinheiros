@@ -129,7 +129,7 @@ export default function Accounts() {
       cancelText: t('common.cancel'),
       variant: 'destructive',
     });
-    
+
     if (!confirmed) return;
 
     try {
@@ -172,7 +172,7 @@ export default function Accounts() {
       cancelText: t('common.cancel'),
       variant: 'default',
     });
-    
+
     if (!confirmed) return;
 
     try {
@@ -324,7 +324,7 @@ export default function Accounts() {
                     </>
                   ) : null}
                 </div>
-                <Link to={account.isActive ? `/accounts/${account.id}/transactions` : '#'} className={`block ${!account.isActive ? 'pointer-events-none' : ''}`}>
+                <Link to={account.isActive ? `/accounts/transactions?accountIds=${account.id}` : '#'} className={`block ${!account.isActive ? 'pointer-events-none' : ''}`}>
                   <div className="flex items-center gap-2 mb-2">
                     <span
                       className="inline-block w-4 h-4 rounded-full border"
