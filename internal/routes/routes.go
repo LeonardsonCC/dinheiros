@@ -15,6 +15,9 @@ import (
 func SetupRoutes(container *di.Container) *gin.Engine {
 	r := gin.Default()
 
+	// Set multipart memory limit to 10MB
+	r.MaxMultipartMemory = 10 << 20 // 10MB
+
 	// Add request logging middleware
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		log.Printf("[GIN] %s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
