@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { SearchableSelect } from '../components/ui/searchable-select';
 import { Loading } from '../components/ui/loading';
 import { MoneyInput } from '../components/ui/money-input';
+import { Transaction } from '@/components/TransactionsTable';
 
 type TransactionType = 'income' | 'expense';
 
@@ -72,12 +73,12 @@ export default function EditTransaction() {
   const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [availableTransactions, setAvailableTransactions] = useState<any[]>([]);
+  const [availableTransactions, setAvailableTransactions] = useState<Transaction[]>([]);
   const [selectedSearchAccountId, setSelectedSearchAccountId] = useState<string>('none');
   const [searchingTransactions, setSearchingTransactions] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [_, setDateInput] = useState(formatDateForInput(new Date().toISOString()));
+  const [, setDateInput] = useState(formatDateForInput(new Date().toISOString()));
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -124,7 +125,7 @@ export default function EditTransaction() {
 
           // Ensure the currently attached transaction is included in available transactions
           // even if it has an attachment (since we're editing this relationship)
-          const attachedTxExists = transactions.some((tx: any) => tx.id === attachedTx.id);
+          const attachedTxExists = transactions.some((tx: Transaction) => tx.id === attachedTx.id);
           if (!attachedTxExists) {
             setAvailableTransactions(prev => [...prev, attachedTx]);
           }
@@ -163,7 +164,7 @@ export default function EditTransaction() {
       const response = await api.get(`/api/accounts/${searchAccountId}/transactions`);
 
       // Filter out transactions that already have attachments, but keep the currently attached one
-      const unattachedTransactions = response.data.filter((tx: any) => {
+      const unattachedTransactions = response.data.filter((tx: Transaction) => {
         // Always include transactions without attachments
         if (!tx.attached_transaction && !tx.attachment_type) {
           return true;

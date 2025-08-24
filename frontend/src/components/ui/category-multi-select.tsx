@@ -13,7 +13,7 @@ export interface CategoryMultiSelectProps {
   placeholder?: string
   disabled?: boolean
   className?: string
-  onAddCategory?: (name: string) => void | Promise<void>
+  onAddCategory?: (name: string) => void | Promise<unknown>
   searchPlaceholder?: string
   addText?: string
   noMatchText?: string

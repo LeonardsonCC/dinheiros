@@ -15,6 +15,7 @@ interface Account {
 }
 
 import { Category } from '../components/CategoryManager';
+import { Transaction } from '@/components/TransactionsTable';
 
 type TransactionType = 'income' | 'expense';
 
@@ -32,7 +33,7 @@ export default function NewTransaction() {
   const { accountId: accountIdParam } = useParams<{ accountId: string }>();
   const accountId = accountIdParam ? Number(accountIdParam) : null;
   const navigate = useNavigate();
-  
+
 
 
   const [formData, setFormData] = useState({
@@ -44,11 +45,11 @@ export default function NewTransaction() {
     attachToTransactionId: 'none',
     accountId: accountId ? accountId.toString() : ''
   });
-  
+
   const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [availableTransactions, setAvailableTransactions] = useState<any[]>([]);
+  const [availableTransactions, setAvailableTransactions] = useState<Transaction[]>([]);
   const [selectedSearchAccountId, setSelectedSearchAccountId] = useState<string>('none');
   const [searchingTransactions, setSearchingTransactions] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -60,12 +61,12 @@ export default function NewTransaction() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const [accountsRes, categoriesRes] = await Promise.all([
           api.get('/api/accounts'),
           api.get('/api/categories')
         ]);
-        
+
         setAccounts(accountsRes.data.accounts);
         setAllCategories(categoriesRes.data);
         const filtered = categoriesRes.data.filter((cat: Category) => cat.type === 'expense');
@@ -97,12 +98,12 @@ export default function NewTransaction() {
     try {
       setSearchingTransactions(true);
       const response = await api.get(`/api/accounts/${searchAccountId}/transactions`);
-      
+
       // Filter out transactions that already have attachments
-      const unattachedTransactions = response.data.filter((tx: any) => 
+      const unattachedTransactions = response.data.filter((tx: Transaction) =>
         !tx.attached_transaction && !tx.attachment_type
       );
-      
+
       setAvailableTransactions(unattachedTransactions);
     } catch (error) {
       console.error('Error searching transactions:', error);
@@ -116,11 +117,11 @@ export default function NewTransaction() {
   useEffect(() => {
     const filtered = allCategories.filter(cat => cat.type === formData.type);
     setFilteredCategories(filtered);
-    
+
     if (formData.categoryIds.length > 0) {
       const validCategoryIds = filtered.map(c => c.id);
       const newCategoryIds = formData.categoryIds.filter(id => validCategoryIds.includes(id));
-      
+
       if (newCategoryIds.length !== formData.categoryIds.length) {
         setFormData(prev => ({
           ...prev,
@@ -133,14 +134,14 @@ export default function NewTransaction() {
   // Auto-fill form when transaction is selected for attachment
   useEffect(() => {
     if (formData.attachToTransactionId && formData.attachToTransactionId !== 'none') {
-      const selectedTransaction = availableTransactions.find(tx => 
+      const selectedTransaction = availableTransactions.find(tx =>
         tx.id.toString() === formData.attachToTransactionId
       );
-      
+
       if (selectedTransaction) {
         // Determine opposite transaction type for the attachment
         const oppositeType: TransactionType = selectedTransaction.type === 'expense' ? 'income' : 'expense';
-        
+
         setFormData(prev => ({
           ...prev,
           type: oppositeType,
@@ -158,24 +159,24 @@ export default function NewTransaction() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
   };
-  
+
   const handleCategoryChange = (categoryId: number) => {
     setFormData(prev => {
       const newCategoryIds = [...prev.categoryIds];
       const index = newCategoryIds.indexOf(categoryId);
-      
+
       if (index === -1) {
         newCategoryIds.push(categoryId);
       } else {
         newCategoryIds.splice(index, 1);
       }
-      
+
       return {
         ...prev,
         categoryIds: newCategoryIds
@@ -185,7 +186,7 @@ export default function NewTransaction() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const selectedAccountId = accountId || formData.accountId;
     if (!selectedAccountId) {
       toast.error(t('newTransaction.selectAccountError'));
@@ -194,7 +195,7 @@ export default function NewTransaction() {
 
     try {
       setSubmitting(true);
-      
+
       const payload = {
         type: formData.type,
         amount: parseFloat(formData.amount),
@@ -205,7 +206,7 @@ export default function NewTransaction() {
       };
 
       await api.post(`/api/accounts/${selectedAccountId}/transactions`, payload);
-      
+
       toast.success(t('newTransaction.added'));
       navigate(`/accounts/${selectedAccountId}/transactions`);
     } catch (error: unknown) {
@@ -258,7 +259,7 @@ export default function NewTransaction() {
           {t('newTransaction.back')}
         </Button>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>{t('newTransaction.addNew')}</CardTitle>
@@ -287,13 +288,13 @@ export default function NewTransaction() {
                   </Select>
                 </div>
               )}
-              
+
               <div className="sm:col-span-2">
                 <label htmlFor="type" className="block text-sm font-medium mb-2">
                   {t('newTransaction.transactionType')}
                 </label>
-                <Select 
-                  value={formData.type} 
+                <Select
+                  value={formData.type}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as TransactionType }))}
                   disabled={isAttachmentSelected}
                 >
@@ -320,7 +321,7 @@ export default function NewTransaction() {
                   disabled={isAttachmentSelected}
                 />
               </div>
-              
+
               <div className="sm:col-span-2">
                 <label htmlFor="description" className="block text-sm font-medium mb-2">
                   {t('newTransaction.description')}
@@ -386,7 +387,7 @@ export default function NewTransaction() {
                   )}
                 </div>
               </div>
-              
+
               <div className="sm:col-span-2">
                 <DatePicker
                   label="newTransaction.date"
@@ -405,13 +406,13 @@ export default function NewTransaction() {
                   </p>
                 )}
               </div>
-              
+
               <div className="sm:col-span-2">
                 <label htmlFor="searchAccountId" className="block text-sm font-medium mb-2">
                   {t('newTransaction.searchTransactionsInAccount')} ({t('newTransaction.optional')})
                 </label>
-                <Select 
-                  value={selectedSearchAccountId} 
+                <Select
+                  value={selectedSearchAccountId}
                   onValueChange={(value) => {
                     setSelectedSearchAccountId(value);
                     searchTransactionsByAccount(value);
@@ -448,11 +449,11 @@ export default function NewTransaction() {
                   onChange={(value) => setFormData(prev => ({ ...prev, attachToTransactionId: value }))}
                   disabled={availableTransactions.length === 0 || searchingTransactions}
                   placeholder={
-                    searchingTransactions 
+                    searchingTransactions
                       ? t('newTransaction.searchingTransactions')
-                      : availableTransactions.length === 0 
-                      ? t('newTransaction.selectAccountFirst') 
-                      : t('newTransaction.selectTransactionToAttach')
+                      : availableTransactions.length === 0
+                        ? t('newTransaction.selectAccountFirst')
+                        : t('newTransaction.selectTransactionToAttach')
                   }
                   searchPlaceholder={t('newTransaction.searchTransactions')}
                   noOptionsText={t('newTransaction.noTransactionsMatch')}
@@ -472,7 +473,7 @@ export default function NewTransaction() {
                 )}
               </div>
             </div>
-            
+
             <div className="flex justify-end space-x-4 pt-4">
               <Button
                 type="button"

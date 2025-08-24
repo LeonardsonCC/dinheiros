@@ -31,3 +31,7 @@ DO NOT install or use the git cli with the environment_run_cmd tool. All environ
 You MUST inform the user how to view your work using `container-use log <env_id>` AND `container-use checkout <env_id>`. Failure to do this will make your work inaccessible to others.
 
 Only run the build if I asked to. Usually the user will have a development build running.
+
+## IMPORTANT
+
+Everytime you change something on frontend, you must run `npm run lint` and `npm run tsc` to make sure everything is working. If there's any error, you must fix it or give the options on how to fix. You cannot leave lint or build problems without saying to me why.
