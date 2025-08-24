@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { PlusIcon, FunnelIcon, XMarkIcon, BanknotesIcon, MinusIcon, MinusCircleIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, FunnelIcon, XMarkIcon, BanknotesIcon, MinusCircleIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import TransactionsTable from '../components/TransactionsTable';
