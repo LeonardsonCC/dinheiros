@@ -77,7 +77,7 @@ export default function EditTransaction() {
   const [searchingTransactions, setSearchingTransactions] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [dateInput, setDateInput] = useState(formatDateForInput(new Date().toISOString()));
+  const [_, setDateInput] = useState(formatDateForInput(new Date().toISOString()));
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

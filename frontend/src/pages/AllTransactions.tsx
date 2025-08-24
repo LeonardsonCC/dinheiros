@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { formatDate, formatCurrency } from '../lib/utils';
 import { MoneyInput } from '../components/ui/money-input';
 import { Button } from '../components/ui/button';
-import { CategoryMultiSelect } from '../components/ui/category-multi-select';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { useConfirmation } from '../hooks/useConfirmation';
 import { MultiSelect } from '@/components/ui';
