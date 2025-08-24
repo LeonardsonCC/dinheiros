@@ -121,10 +121,24 @@ type SearchTransactionsRequest struct {
 	AccountIDs  []uint                   `form:"account_ids"`
 	CategoryIDs []uint                   `form:"category_ids"`
 	Description string                   `form:"description"`
-	MinAmount   *float64                 `form:"min_amount"`
-	MaxAmount   *float64                 `form:"max_amount"`
+	MinAmount   float64                  `form:"min_amount"`
+	MaxAmount   float64                  `form:"max_amount"`
 	StartDate   *time.Time               `form:"start_date" time_format:"2006-01-02"`
 	EndDate     *time.Time               `form:"end_date" time_format:"2006-01-02"`
 	Page        int                      `form:"page,default=1" binding:"min=1"`
 	PageSize    int                      `form:"page_size,default=20" binding:"min=1,max=100"`
+}
+
+type SearchTransactionsResponse struct {
+	Data       []TransactionResponse `json:"data"`
+	Pagination PaginationMeta        `json:"pagination"`
+}
+
+func ToTransactionResponseSearch(transactions []models.Transaction) []TransactionResponse {
+	responses := make([]TransactionResponse, len(transactions))
+	for i, t := range transactions {
+		transaction := t // Create a new variable to avoid implicit memory aliasing
+		responses[i] = ToTransactionResponse(&transaction)
+	}
+	return responses
 }

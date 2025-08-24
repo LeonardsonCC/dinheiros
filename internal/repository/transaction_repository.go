@@ -119,8 +119,8 @@ func (r *transactionRepository) Search(userID uint, searchParams models.SearchTr
 		searchParams.AccountIDs,
 		searchParams.CategoryIDs,
 		searchParams.Description,
-		&searchParams.MinAmount,
-		&searchParams.MaxAmount,
+		getPointerOrZeroIsNil(searchParams.MinAmount),
+		getPointerOrZeroIsNil(searchParams.MaxAmount),
 		searchParams.StartDate,
 		searchParams.EndDate,
 		pagination.CurrentPage,
@@ -128,6 +128,14 @@ func (r *transactionRepository) Search(userID uint, searchParams models.SearchTr
 	)
 
 	return transactions, total, err
+}
+
+func getPointerOrZeroIsNil[T comparable](value T) *T {
+	var zero T
+	if value == zero {
+		return nil
+	}
+	return &value
 }
 
 func (r *transactionRepository) FindByUserID(

@@ -139,7 +139,6 @@ export default function AllTransactions() {
   const fetchTransactions = useCallback(async () => {
     try {
       if (!loading) setTableLoading(true);
-      setLoading(true);
 
       // Build query params
       const params = new URLSearchParams({
@@ -160,7 +159,7 @@ export default function AllTransactions() {
       filters.accountIds.forEach(id => params.append('account_ids', id.toString()));
       filters.categoryIds.forEach(id => params.append('category_ids', id.toString()));
 
-      const response = await api.get(`/api/transactions?${params.toString()}`);
+      const response = await api.get(`/api/transactions/search?${params.toString()}`);
 
       setTransactions(response.data.data);
       setPagination(prev => ({
