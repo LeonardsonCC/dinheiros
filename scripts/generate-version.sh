@@ -17,7 +17,7 @@ check_workflow_status() {
     while [ $attempt -lt $max_attempts ]; do
         # Get workflow runs and check if any are running for our commit
         local git_commit=$(git rev-parse HEAD)
-        local workflow_status=$(gh run list --limit 10 --json status,conclusion,headSha,event,createdAt --jq ".[] | select(.headSha == \"$git_commit\" and .event == \"push\") | {status: .status, conclusion: .conclusion, createdAt: .createdAt}")
+        local workflow_status=$(gh run list --workflow "publish.yml" --limit 10 --json status,conclusion,headSha,event,createdAt --jq ".[] | select(.headSha == \"$git_commit\" and .event == \"push\") | {status: .status, conclusion: .conclusion, createdAt: .createdAt}")
         
         if [ -n "$workflow_status" ]; then
             workflow_found=true
