@@ -21,6 +21,7 @@ type AccountService interface {
 	UpdateAccount(id uint, userID uint, req *dto.UpdateAccountRequest) (*models.Account, error)
 	DeleteAccount(id uint, userID uint) error
 	ReactivateAccount(id uint, userID uint) error
+	RecalculateAccountBalance(id uint, userID uint) error
 }
 
 type accountService struct {
@@ -276,4 +277,82 @@ func (s *accountService) GetAccountsWithOwnershipInfo(userID uint, includeDelete
 	}
 
 	return responses, nil
+}
+
+func (s *accountService) RecalculateAccountBalance(id uint, userID uint) error {
+	log.Printf("[AccountService] RecalculateAccountBalance: Starting balance recalculation for account %d, user %d", id, userID)
+
+	// Verify the account belongs to the user (only owners can recalculate)
+	isOwner, err := s.repo.IsOwner(id, userID)
+	if err != nil {
+		log.Printf("[AccountService] RecalculateAccountBalance: Error checking ownership: %v", err)
+		return err
+	}
+	if !isOwner {
+		log.Printf("[AccountService] RecalculateAccountBalance: User %d is not owner of account %d", userID, id)
+		return errors.New("only account owners can recalculate account balance")
+	}
+
+	// Get account to verify it exists and get initial balance
+	account, err := s.repo.FindByID(id, userID)
+	if err != nil {
+		log.Printf("[AccountService] RecalculateAccountBalance: Account not found: %v", err)
+		return err
+	}
+
+	// Get all transactions for this account
+	transactions, err := s.transactionRepo.FindByAccountID(id, userID)
+	if err != nil {
+		log.Printf("[AccountService] RecalculateAccountBalance: Error fetching transactions: %v", err)
+		return err
+	}
+
+	log.Printf("[AccountService] RecalculateAccountBalance: Found %d transactions for account %d", len(transactions), id)
+
+	// Calculate balance based on transactions
+	calculatedBalance := 0.0
+
+	for _, transaction := range transactions {
+		switch transaction.Type {
+		case models.TransactionTypeIncome, models.TransactionTypeInitial:
+			calculatedBalance += transaction.Amount
+			log.Printf("[AccountService] RecalculateAccountBalance: Adding %s: %f (new balance: %f)", transaction.Type, transaction.Amount, calculatedBalance)
+		case models.TransactionTypeExpense:
+			calculatedBalance -= transaction.Amount
+			log.Printf("[AccountService] RecalculateAccountBalance: Subtracting %s: %f (new balance: %f)", transaction.Type, transaction.Amount, calculatedBalance)
+		}
+	}
+
+	log.Printf("[AccountService] RecalculateAccountBalance: Current balance: %f, Calculated balance: %f", account.Balance, calculatedBalance)
+
+	// Update account balance
+	tx := s.repo.Begin()
+	if tx.Error != nil {
+		log.Printf("[AccountService] RecalculateAccountBalance: Failed to begin transaction: %v", tx.Error)
+		return tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[AccountService] RecalculateAccountBalance: Panic occurred, rolling back: %v", r)
+			tx.Rollback()
+		}
+	}()
+
+	accountRepoTx := s.repo.WithTx(tx)
+	err = accountRepoTx.UpdateBalance(id, calculatedBalance)
+	if err != nil {
+		log.Printf("[AccountService] RecalculateAccountBalance: Failed to update balance: %v", err)
+		tx.Rollback()
+		return err
+	}
+
+	commitErr := tx.Commit().Error
+	if commitErr != nil {
+		log.Printf("[AccountService] RecalculateAccountBalance: Failed to commit transaction: %v", commitErr)
+		return commitErr
+	}
+
+	log.Printf("[AccountService] RecalculateAccountBalance: Successfully updated account %d balance from %f to %f", id, account.Balance, calculatedBalance)
+	return nil
 }

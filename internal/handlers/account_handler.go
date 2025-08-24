@@ -274,3 +274,40 @@ func (h *AccountHandler) ReactivateAccount(c *gin.Context) {
 		"message": "Account reactivated successfully",
 	})
 }
+
+// RecalculateAccountBalance handles recalculating account balance based on transactions
+// @Summary Recalculate account balance
+// @Description Recalculates the account balance based on all income and expense transactions
+// @Tags accounts
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Account ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /accounts/{id}/recalculate-balance [post]
+func (h *AccountHandler) RecalculateAccountBalance(c *gin.Context) {
+	user := c.GetUint("user")
+	if user == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	accountID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+		return
+	}
+
+	if err := h.accountService.RecalculateAccountBalance(uint(accountID), user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error recalculating account balance", "message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Account balance recalculated successfully",
+	})
+}
