@@ -86,7 +86,7 @@ func (r *accountRepository) FindByIDWithoutUserCheck(id uint) (*models.Account, 
 
 func (r *accountRepository) FindByUserID(userID uint) ([]models.Account, error) {
 	var accounts []models.Account
-	err := r.db.Where("user_id = ?", userID).Find(&accounts).Error
+	err := r.db.Where("user_id = ?", userID).Find(&accounts).Order("name").Error
 	if err != nil {
 		return nil, err
 	}
