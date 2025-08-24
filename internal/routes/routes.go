@@ -103,6 +103,7 @@ func SetupRoutes(container *di.Container) *gin.Engine {
 			transactions := protected.Group("/transactions")
 			{
 				transactions.GET("", container.TransactionHandler.ListTransactions)
+				transactions.GET("/search", container.TransactionHandler.SearchTransactions)
 			}
 
 			// Category routes

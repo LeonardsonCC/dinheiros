@@ -15,6 +15,7 @@ type TransactionRepository interface {
 	CreateInBatch(transactions []*models.Transaction) error
 	FindByID(id uint, userID uint) (*models.Transaction, error)
 	FindByAccountID(accountID uint, userID uint) ([]models.Transaction, error)
+	Search(userID uint, searchParams models.SearchTransactionParams, pagination models.PaginationParams) ([]models.Transaction, int64, error)
 	FindByUserID(
 		userID uint,
 		transactionTypes []models.TransactionType,
@@ -111,6 +112,24 @@ func (r *transactionRepository) FindByAccountID(accountID uint, userID uint) ([]
 	return transactions, err
 }
 
+func (r *transactionRepository) Search(userID uint, searchParams models.SearchTransactionParams, pagination models.PaginationParams) ([]models.Transaction, int64, error) {
+	transactions, total, err := r.FindByUserID(
+		userID,
+		searchParams.Types,
+		searchParams.AccountIDs,
+		searchParams.CategoryIDs,
+		searchParams.Description,
+		&searchParams.MinAmount,
+		&searchParams.MaxAmount,
+		searchParams.StartDate,
+		searchParams.EndDate,
+		pagination.CurrentPage,
+		pagination.PageSize,
+	)
+
+	return transactions, total, err
+}
+
 func (r *transactionRepository) FindByUserID(
 	userID uint,
 	transactionTypes []models.TransactionType,
@@ -190,7 +209,9 @@ func (r *transactionRepository) FindByUserID(
 	}
 
 	// Execute the query with preloading categories and attached transactions
-	err := tx.Preload("Account").Preload("Categories").
+	err := tx.
+		Preload("Account").
+		Preload("Categories").
 		Preload("AttachedTransaction").
 		Preload("AttachedTransaction.Account").
 		Order("transactions.date DESC, transactions.id DESC").

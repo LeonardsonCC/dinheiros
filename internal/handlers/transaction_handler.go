@@ -916,3 +916,79 @@ func (h *TransactionHandler) ListExtractors(c *gin.Context) {
 	extractors := pdfextractors.ListExtractors()
 	c.JSON(http.StatusOK, gin.H{"extractors": extractors})
 }
+
+// SearchTransactions handles listing all transactions with filters
+// @Summary Search all transactions
+// @Description Get all transactions across accounts with filtering and pagination
+// @Tags transactions
+// @Produce json
+// @Security BearerAuth
+// @Param types query []string false "Transaction types"
+// @Param account_ids query []int false "Account IDs to filter by"
+// @Param category_ids query []int false "Category IDs to filter by"
+// @Param description query string false "Description filter"
+// @Param min_amount query number false "Minimum amount"
+// @Param max_amount query number false "Maximum amount"
+// @Param start_date query string false "Start date (YYYY-MM-DD)"
+// @Param end_date query string false "End date (YYYY-MM-DD)"
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Page size (1-100)" default(20)
+// @Success 200 {object} dto.SearchTransactionsResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /transactions [get]
+func (h *TransactionHandler) SearchTransactions(c *gin.Context) {
+	// Parse query parameters
+	var req dto.SearchTransactionsRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+		return
+	}
+
+	// Get user ID from context
+	userID := c.GetUint("user")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Call service to get transactions
+	transactions, totalItems, err := h.transactionService.SearchTransactions(
+		userID,
+		models.SearchTransactionParams{
+			Types:       req.Types,
+			AccountIDs:  req.AccountIDs,
+			CategoryIDs: req.CategoryIDs,
+			Description: req.Description,
+			MinAmount:   *req.MinAmount,
+			MaxAmount:   *req.MaxAmount,
+			StartDate:   req.StartDate,
+			EndDate:     req.EndDate,
+			Page:        req.Page,
+			PageSize:    req.PageSize,
+		},
+		models.PaginationParams{
+			CurrentPage: req.Page,
+			PageSize:    req.PageSize,
+		},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch transactions"})
+		return
+	}
+
+	// Convert transactions to response DTOs
+	response := dto.SearchTransactionsResponse{
+		Data: dto.ToTransactionResponseSearch(transactions),
+		Pagination: dto.PaginationMeta{
+			CurrentPage: req.Page,
+			PageSize:    req.PageSize,
+			TotalItems:  totalItems,
+			TotalPages:  int((totalItems + int64(req.PageSize) - 1) / int64(req.PageSize)),
+		},
+	}
+
+	// Return response
+	c.JSON(http.StatusOK, response)
+}

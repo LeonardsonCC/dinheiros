@@ -121,7 +121,7 @@ export default function EditTransaction() {
           setSelectedSearchAccountId(attachedTx.account.id.toString());
           // Load transactions for that account to populate the dropdown
           const transactions = await searchTransactionsByAccount(attachedTx.account.id.toString());
-          
+
           // Ensure the currently attached transaction is included in available transactions
           // even if it has an attachment (since we're editing this relationship)
           const attachedTxExists = transactions.some((tx: any) => tx.id === attachedTx.id);
@@ -213,7 +213,6 @@ export default function EditTransaction() {
       if (selectedTransaction) {
         // Determine opposite transaction type for the attachment
         const oppositeType: TransactionType = selectedTransaction.type === 'expense' ? 'income' : 'expense';
-        console.log(`Selected transaction type: ${selectedTransaction.type}, setting current to: ${oppositeType}`);
 
         setFormData(prev => ({
           ...prev,

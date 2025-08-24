@@ -40,6 +40,7 @@ const CategoryMultiSelect = React.forwardRef<HTMLDivElement, CategoryMultiSelect
     const [isOpen, setIsOpen] = React.useState(false)
     const [searchTerm, setSearchTerm] = React.useState("")
     const dropdownRef = React.useRef<HTMLDivElement>(null)
+    const searchInputRef = React.useRef<HTMLInputElement>(null)
 
     React.useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -47,9 +48,13 @@ const CategoryMultiSelect = React.forwardRef<HTMLDivElement, CategoryMultiSelect
           setIsOpen(false)
         }
       }
-      
+
       if (isOpen) {
-        document.addEventListener("mousedown", handleClickOutside)
+        // document.addEventListener("mousedown", handleClickOutside)
+        // Auto-focus the search input when dropdown opens
+        setTimeout(() => {
+          searchInputRef.current?.focus()
+        }, 0)
         return () => document.removeEventListener("mousedown", handleClickOutside)
       }
     }, [isOpen])
@@ -120,24 +125,30 @@ const CategoryMultiSelect = React.forwardRef<HTMLDivElement, CategoryMultiSelect
         </div>
 
         {isOpen && (
-          <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95"
-               onMouseDown={(e) => {
-                 // Prevent the dropdown from closing when clicking inside
-                 e.preventDefault();
-                 e.stopPropagation();
-               }}
-          >
-            <div className="p-2">
+          <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95">
+            <div className="p-2"
+              onMouseDown={(e) => {
+                // Prevent the dropdown from closing when clicking in the search area
+                e.stopPropagation();
+              }}
+            >
               <Input
+                ref={searchInputRef}
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Ensure focus
+                  e.currentTarget.focus();
+                }}
                 className="h-8 text-xs"
+                autoFocus
               />
             </div>
-            
+
             <div className="max-h-60 overflow-auto">
               {filteredOptions.length === 0 && searchTerm.trim() ? (
                 <div className="px-3 py-2 text-muted-foreground flex items-center justify-between">
@@ -163,8 +174,7 @@ const CategoryMultiSelect = React.forwardRef<HTMLDivElement, CategoryMultiSelect
                       "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
                       selected.includes(option.id) && "font-semibold"
                     )}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
+                    onClick={(e) => {
                       e.stopPropagation();
                       toggleOption(option.id);
                     }}

@@ -89,7 +89,6 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
             !disabled && "cursor-pointer"
           )}
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          ref={dropdownRef}
         >
           <div className="flex flex-wrap gap-1 flex-1 min-w-0">
             {selectedOptions.length === 0 ? (
@@ -118,7 +117,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
         </div>
 
         {isOpen && (
-          <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95">
+          <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95" ref={dropdownRef}>
             <div className="p-2">
               <Input
                 type="text"
@@ -129,8 +128,8 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                 className="h-8 text-xs"
               />
             </div>
-            
-            <div className="max-h-60 overflow-auto">
+
+            <div className="max-h-60 overflow-auto p-2">
               {filteredOptions.length === 0 && searchTerm.trim() ? (
                 <div className="px-3 py-2 text-muted-foreground flex items-center justify-between">
                   <span className="text-xs">{noMatchText} {searchTerm}</span>

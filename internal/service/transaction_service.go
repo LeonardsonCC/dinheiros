@@ -34,6 +34,11 @@ type TransactionService interface {
 		page int,
 		pageSize int,
 	) ([]models.Transaction, int64, error)
+	SearchTransactions(
+		userID uint,
+		searchParams models.SearchTransactionParams,
+		pagination models.PaginationParams,
+	) ([]models.Transaction, int64, error)
 	UpdateTransaction(userID uint, transaction *models.Transaction) error
 	UpdateTransactionWithAttachment(userID uint, transaction *models.Transaction, attachedTransactionID *uint) error
 	DeleteTransaction(userID uint, transactionID uint) error
@@ -932,4 +937,34 @@ func (s *transactionService) ApplyCategorizationRules(transactions []models.Tran
 	}
 
 	return transactions, nil
+}
+
+func (s *transactionService) SearchTransactions(
+	userID uint,
+	searchParams models.SearchTransactionParams,
+	pagination models.PaginationParams,
+) ([]models.Transaction, int64, error) {
+	// Verify accounts belong to user if accountIDs are provided
+	if len(searchParams.AccountIDs) > 0 {
+		userAccounts, err := s.accountRepo.FindByUserID(userID)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		// Create a map of valid account IDs for this user
+		validAccountIDs := make(map[uint]bool)
+		for _, account := range userAccounts {
+			validAccountIDs[account.ID] = true
+		}
+
+		// Verify all requested account IDs are valid
+		for _, id := range searchParams.AccountIDs {
+			if !validAccountIDs[id] {
+				return nil, 0, errors.ErrNotFound
+			}
+		}
+	}
+
+	// Call the repository method with all filters
+	return s.transactionRepo.Search(userID, searchParams, pagination)
 }

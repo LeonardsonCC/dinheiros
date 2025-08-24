@@ -35,3 +35,16 @@ type Transaction struct {
 	AttachmentType        *AttachmentType `json:"attachment_type,omitempty" gorm:"type:varchar(20)"`
 	Categories            []*Category     `json:"categories,omitempty" gorm:"many2many:transaction_categories;"`
 }
+
+type SearchTransactionParams struct {
+	Types       []TransactionType
+	AccountIDs  []uint
+	CategoryIDs []uint
+	Description string
+	MinAmount   float64
+	MaxAmount   float64
+	StartDate   *time.Time
+	EndDate     *time.Time
+	Page        int
+	PageSize    int
+}
