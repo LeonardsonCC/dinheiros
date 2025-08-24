@@ -40,7 +40,9 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
   }, ref) => {
     const [isOpen, setIsOpen] = React.useState(false)
     const [searchTerm, setSearchTerm] = React.useState("")
+    const [focusedIndex, setFocusedIndex] = React.useState(-1)
     const dropdownRef = React.useRef<HTMLDivElement>(null)
+    const searchInputRef = React.useRef<HTMLInputElement>(null)
 
     React.useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -51,6 +53,17 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
       document.addEventListener("mousedown", handleClickOutside)
       return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
+
+    React.useEffect(() => {
+      if (isOpen && searchInputRef.current) {
+        searchInputRef.current.focus()
+        setFocusedIndex(-1)
+      }
+    }, [isOpen])
+
+    React.useEffect(() => {
+      setFocusedIndex(-1)
+    }, [searchTerm])
 
     const filteredOptions = options.filter(option =>
       option.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -78,6 +91,43 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
       }
     }
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (!isOpen) return
+
+      const availableOptions = filteredOptions.length === 0 && searchTerm.trim() && onAddOption ? 
+        [{ id: 'add-option', name: searchTerm, isAddOption: true }] : 
+        filteredOptions
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault()
+          setFocusedIndex(prev => 
+            prev < availableOptions.length - 1 ? prev + 1 : 0
+          )
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          setFocusedIndex(prev => 
+            prev > 0 ? prev - 1 : availableOptions.length - 1
+          )
+          break
+        case 'Enter':
+          e.preventDefault()
+          if (focusedIndex >= 0 && focusedIndex < availableOptions.length) {
+            const focusedOption = availableOptions[focusedIndex]
+            if ('isAddOption' in focusedOption && focusedOption.isAddOption) {
+              handleAddOption()
+            } else {
+              toggleOption(focusedOption.id)
+            }
+          }
+          break
+        case 'Escape':
+          setIsOpen(false)
+          break
+      }
+    }
+
     const selectedOptions = selected.map(id => options.find(opt => opt.id === id)).filter(Boolean) as MultiSelectOption[]
 
     return (
@@ -89,6 +139,12 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
             !disabled && "cursor-pointer",
           )}
           onClick={() => !disabled && setIsOpen(!isOpen)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && isOpen) {
+              setIsOpen(false)
+            }
+          }}
+          tabIndex={disabled ? -1 : 0}
         >
           <div className="flex flex-wrap gap-1 flex-1 min-w-0">
             {selectedOptions.length === 0 ? (
@@ -120,18 +176,25 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
           <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95" ref={dropdownRef}>
             <div className="p-2">
               <Input
+                ref={searchInputRef}
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
+                onKeyDown={handleKeyDown}
                 className="h-8 text-xs"
               />
             </div>
 
             <div className="max-h-60 overflow-auto p-2">
               {filteredOptions.length === 0 && searchTerm.trim() ? (
-                <div className="px-3 py-2 text-muted-foreground flex items-center justify-between">
+                <div 
+                  className={cn(
+                    "px-3 py-2 text-muted-foreground flex items-center justify-between rounded-sm",
+                    focusedIndex === 0 && "bg-accent text-accent-foreground"
+                  )}
+                >
                   <span className="text-xs">{noMatchText} {searchTerm}</span>
                   {onAddOption && (
                     <Button
@@ -150,12 +213,13 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                   )}
                 </div>
               ) : (
-                filteredOptions.map(option => (
+                filteredOptions.map((option, index) => (
                   <div
                     key={option.id}
                     className={cn(
                       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                      selected.includes(option.id) && "font-semibold"
+                      selected.includes(option.id) && "font-semibold",
+                      focusedIndex === index && "bg-accent text-accent-foreground"
                     )}
                     onClick={() => toggleOption(option.id)}
                   >
